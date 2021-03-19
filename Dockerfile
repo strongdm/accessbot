@@ -1,22 +1,20 @@
-FROM python:3.9-slim
+FROM continuumio/miniconda3
 
 ENV ERRBOT_DIR=/errbot
-
-RUN mkdir -p $ERRBOT_DIR
-
-WORKDIR $ERRBOT_DIR
-
 VOLUME ["/errbot/data", "/errbot/plugins"]
 
-COPY requirements.txt ./requirements.txt
+RUN mkdir -p $ERRBOT_DIR
+WORKDIR $ERRBOT_DIR
 
-RUN pip install \
+COPY requirements.txt ./requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install \
       --no-cache-dir \
       --disable-pip-version-check \
       -r requirements.txt
 
 RUN errbot --init
-RUN pip install errbot[slack]
+RUN pip3 install errbot[slack]
 COPY config.py .
 
 RUN mkdir -p plugins
