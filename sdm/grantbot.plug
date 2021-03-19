@@ -1,0 +1,12 @@
+[Core]
+name = GrantBot
+module = grantbot
+
+[Documentation]
+description = Grants access to strongDM resources
+
+[Python]
+version = 3
+
+[Errbot]
+min = 5.2.0

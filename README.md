@@ -1,21 +1,21 @@
-# Garden Template
-The Garden Template contains sample files you could use for creating new Garden Repositories. It includes templates for:
-* [README](README-sample.md)
-* [License](LICENSE)
-* [Contributing](CONTRIBUTING.md)
-* [Support](SUPPORT.md)
-* Report [bug](.github/ISSUE_TEMPLATE/bug_report.md) or [feature requests](.github/ISSUE_TEMPLATE/feature_request.md)
-* [Pull Request](.github/PULL_REQUEST_TEMPLATE/pull_request_template.md)
-* [Documentation](docs)
+This is a Docker setup for strongDM with errBot! To use it:
 
-In order to use this repository, you could:
-* Use it as a Template - Green button at the top of the repo
-* Clone it and manually adjust it - Useful if you want to start a fresh project history
+1. Clone the repo.
+2. Edit config.py and add a valid Slack bot token (replace "REDACTED)", and user account as admin.
+2. Edit sdm/grantbot.py and add SDM API key/secret at top of file.
+3. Build the image from the Dockerfile, set image tag.
+4. Deploy the container with: `docker run -dit --rm --name grantbot <image tag>`
+5. Container should start errbot automagically. If not, use `docker exec` to get in and run `errbot`.
+5. There is an error log at `/errbot/errbot.log`.
+6. In Slack, invite @grantbot into your test channel.
+7. Run !status to make sure you're connected.
+8. Run `access to <resource>` to grant access to the calling user.
 
-After cloning the repo, remember to: 
-1. Remove this README file
-2. Rename the file README-sample.md to README.md and adjust the content
-3. Adjust the Contributing and Support guidelines
-4. Adjust the templates for bugs and feature requests under the .github folder 
+---
 
-A template repo that can be used as a reference: [Auth0 Open Source Template](https://github.com/auth0/open-source-template)
+V2:
+- Removed command prefix (!)
+- Successful grant gives same message 'chatops' used
+- Fixed bug with spaces in resource name
+- Script now pulls email from Slack user, rather than calculating it from Slack username
+(6 Jan 2021)
