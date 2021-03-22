@@ -1,0 +1,5 @@
+plugins/
+venv/
+__pycache__/
+data/
+errbot.log
