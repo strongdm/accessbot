@@ -10,8 +10,6 @@ admin1 = os.getenv("SDM_ADMIN")
 access_key = os.getenv("SDM_API_ACCESS_KEY")
 secret_key = os.getenv("SDM_API_SECRET_KEY")
 
-client = strongdm.Client(access_key, secret_key)
-
 class Grantbot(BotPlugin):
 
     def callback_message(self, mess):
@@ -30,6 +28,8 @@ class Grantbot(BotPlugin):
         """
         A command which grants access to the named SDM resource.
         """
+        client = strongdm.Client(access_key, secret_key)
+
         self['Approved'] = "false"
         email = message.frm.email
         result = re.sub('^access to (.+)$','\\1',match.string)        
