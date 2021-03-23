@@ -1,5 +1,5 @@
-plugins/
+set-env.sh
 venv/
-__pycache__/
+__pycache__
 data/
 errbot.log
