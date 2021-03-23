@@ -6,7 +6,7 @@ The installation of grpcio can be challenging, for that reason you might want to
 conda create --prefix venv
 conda install --prefix venv pip
 conda activate venv
-pip install -r requirements.txt
+pip install -r requirements/dev.txt
 ```
 
 ## Variables configuration
@@ -15,10 +15,12 @@ You need to fill in the details for this file
 . set-env.sh
 ```
 
-## Configure plugins directory
-You could change [config.py](../config.py) or use a symbolic link
+## Initialize errbot
 ```
-ln -s FULL_PATH_TO_SDM_FOLDER plugins
+mv config.py config.py.back
+errbot --init
+pip install errbot[slack]
+mv config.py.back config.py
 ```
 
 ## Create Slack App

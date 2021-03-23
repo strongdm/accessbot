@@ -1,0 +1,5 @@
+# Contains requirements common to all environments
+strongdm
+datetime
+errbot
+slackclient

@@ -16,7 +16,7 @@ WORKDIR $ERRBOT_DIR
 
 VOLUME ["/errbot/data", "/errbot/plugins"]
 
-COPY requirements.txt ./requirements.txt
+COPY requirements/common.txt ./requirements.txt
 
 RUN pip install \
       --no-cache-dir \
@@ -27,8 +27,7 @@ RUN errbot --init
 RUN pip install errbot[slack]
 COPY config.py .
 
-RUN mkdir -p plugins
 RUN mkdir -p plugins/sdm
-COPY sdm ./plugins/sdm/
+COPY plugins/sdm ./plugins/sdm/
 
 ENTRYPOINT [ "errbot" ]

@@ -2,6 +2,8 @@ from errbot import BotPlugin, botcmd, arg_botcmd, webhook, re_botcmd
 import strongdm, datetime, re, time, os
 from datetime import timezone, timedelta
 
+from access_service import service 
+
 # Get config settings from env
 admin_timeout = os.getenv("SDM_ADMIN_TIMEOUT", "30")
 admin1 = os.getenv("SDM_ADMIN")
@@ -16,9 +18,13 @@ class Grantbot(BotPlugin):
         if mess.body == "yes" and mess.frm == self.build_identifier(admin1):
             self['Approved'] = "true"
 
-    """
-    Grants access to strongDM resources
-    """
+    @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
+    def help(self, message, match):
+        """
+        A command for showing help
+        """
+        yield service.help()
+
     @re_botcmd(pattern=r"^access to (.+)$", prefixed=False, flags=re.IGNORECASE)
     def access(self, message, match):
         """
