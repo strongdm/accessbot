@@ -25,6 +25,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         pip install -r requirements/dev.txt
+        pip install errbot -U 
         
     - name: Lint with flake8
       run: |
