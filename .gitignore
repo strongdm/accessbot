@@ -3,3 +3,4 @@ venv/
 __pycache__
 data/
 errbot.log
+.vscode/
