@@ -4,3 +4,4 @@
 errbot[graphic]
 pytest
 pytest-mock
+pytest-env
