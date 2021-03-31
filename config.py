@@ -8,9 +8,7 @@ BOT_EXTRA_PLUGIN_DIR = r'plugins'
 BOT_LOG_FILE = r'errbot.log'
 BOT_LOG_LEVEL = logging.DEBUG
 
-
-# Change this to a Slack user in your org
-BOT_ADMINS = (os.getenv("SDM_ADMIN") )
+BOT_ADMINS = (os.getenv("SDM_ADMIN"))
 CHATROOM_PRESENCE = ()
 BOT_IDENTITY = {
     'token': os.getenv('SLACK_TOKEN', '')
