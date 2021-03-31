@@ -1,9 +1,11 @@
 import strongdm
 
-from properties import get_properties
+import properties
 
-props = get_properties()
-_INSTANCE = strongdm.Client(props.sdm_api_access_key(), props.sdm_api_secret_key())
-
-def create_client():
+_INSTANCE = None
+def get_instance(props = properties.get()):
+    global _INSTANCE
+    if not _INSTANCE:
+        _INSTANCE = strongdm.Client(props.sdm_api_access_key(), props.sdm_api_secret_key())
     return _INSTANCE
+

@@ -1,23 +1,9 @@
 import sdm_client
 import strongdm
 
-help_message = """
-NAME: 
-    accessbot - Manages access to strongDM resources via chatbots
-
-COMMANDS:
-    access to resource-name       - Grant access to a resource (using the requester's email address)
-"""
-
 class AccessService:
     def __init__(self, client):
         self.client = client
-
-    def help(self):
-        """
-        Returns bot help
-        """
-        return help_message
 
     def get_resource_by_name(self, name):
         """
@@ -54,12 +40,15 @@ class AccessService:
                 start_from = start_from, 
                 valid_until = valid_until
             )
+            # TODO Check response 
             self.client.account_grants.create(sdm_grant)
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex))
 
 
-_INSTANCE = AccessService(sdm_client.create_client())
-def create_service():
+_INSTANCE = None
+def get_instance():
+    global _INSTANCE
+    if not _INSTANCE:
+        _INSTANCE = AccessService(sdm_client.get_instance())
     return _INSTANCE
-

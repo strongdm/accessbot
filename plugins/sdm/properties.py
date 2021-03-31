@@ -25,10 +25,15 @@ class Properties:
     def sdm_api_secret_key(self):
         return self._sdm_api_secret_key
 
-def get_properties():
-    return Properties(
-        os.getenv("SDM_ADMIN_TIMEOUT", "30"),
-        os.getenv("SDM_ADMIN"), 
-        os.getenv("SDM_API_ACCESS_KEY"),
-        os.getenv("SDM_API_SECRET_KEY")
-    )
+
+_INSTANCE = None
+def get():
+    global _INSTANCE
+    if not _INSTANCE:
+        _INSTANCE = Properties(
+                        int(os.getenv("SDM_ADMIN_TIMEOUT", "30")),
+                        os.getenv("SDM_ADMIN"), 
+                        os.getenv("SDM_API_ACCESS_KEY"),
+                        os.getenv("SDM_API_SECRET_KEY")
+                    )
+    return _INSTANCE

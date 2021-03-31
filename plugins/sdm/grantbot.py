@@ -3,15 +3,15 @@ import datetime, re, time
 from datetime import timezone, timedelta
 
 import access_service
-from properties import get_properties
-import sdm_client
+from bot_support import help_message
+import properties
 
 class Grantbot(BotPlugin):
-    client = sdm_client.create_client()
-    service = access_service.create_service()
-    props = get_properties()
+    service = access_service.get_instance()
+    props = properties.get()
 
     def callback_message(self, mess):
+        # TODO Make this check case insensitive 
         if mess.body == "yes" and mess.frm == self.build_identifier(self.props.admin()):
             self.approved = True
 
@@ -20,22 +20,20 @@ class Grantbot(BotPlugin):
         """
         A command for showing help
         """
-        yield self.service.help()
+        yield help_message
 
     @re_botcmd(pattern=r"^access to (.+)$", prefixed=False, flags=re.IGNORECASE)
     def access(self, message, match):
         """
         A command which grants access to the named SDM resource.
-        """
-        # TODO Validate possible race conditions introduced by this flag
+        """        
+        # TODO Fix possible race conditions introduced by this flag
         self.approved = False
-        
+
         resource_name = re.sub("^access to (.+)$", "\\1", match.string)
         admin_slack_id =  self.build_identifier(self.props.admin())
-        grant_start_from = datetime.datetime.now(timezone.utc) + timedelta(minutes=1)
-        grant_valid_until = grant_start_from + timedelta(hours=1)
 
-        # TODO Default value introduced for testing, mock and remove
+        # TODO Default value introduced for testing - mock and remove check
         sender_email = "" if message.frm.email is None else str(message.frm.email)
         sender_nick = "" if message.frm.nick is None else str(message.frm.nick)
 
@@ -44,19 +42,27 @@ class Grantbot(BotPlugin):
             sdm_account = self.service.get_account_by_email(sender_email)
 
             yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins!"
-            self.send(admin_slack_id, f"Hey I have an access request from USER `{sender_nick}` for RESOURCE `{resource_name}`! Enter 'yes' to approve.")
-            time.sleep(10)
+            self.send(admin_slack_id, r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + r"\`! Enter 'yes' to approve.")
+            self.wait_before_check()
             if not self.approved:
                 self.send(admin_slack_id, "Request timed out, user will be denied access!")
                 yield "Sorry, not approved! Please contact your SDM admin directly."
                 return
 
-            self.service.grant_temporary_access(resource.id, account.id, grant_start_from, grant_valid_until)
+            self.grant_1hour_access(sdm_resource.id, sdm_account.id)
             self.add_thumbsup(message)
             yield f"@{sender_nick} : Granting {sender_email} access to '{resource_name}' for 1 hour"
         except Exception as ex:
             yield str(ex)
         
+
+    def wait_before_check(self):
+        time.sleep(self.props.admin_timeout())
+
+    def grant_1hour_access(self, resource_id, account_id):
+        grant_start_from = datetime.datetime.now(timezone.utc) + timedelta(minutes=1)
+        grant_valid_until = grant_start_from + timedelta(hours=1)
+        self.service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
 
     def add_thumbsup(self, message):
         if self._bot.mode == "slack":

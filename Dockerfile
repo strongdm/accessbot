@@ -1,6 +1,7 @@
 FROM continuumio/miniconda3
 
 # Edit the values below for your organization -- leave quotes, omit brackets
+# TODO Remove environment variables from Dockerfile
 ENV SLACK_TOKEN="[SLACK TOKEN HERE]"
 ENV SDM_API_ACCESS_KEY="[SDM TOKEN HERE]"
 ENV SDM_API_SECRET_KEY="[SDM SECRET HERE]"

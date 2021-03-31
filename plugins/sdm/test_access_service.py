@@ -15,17 +15,6 @@ grant_start_from = datetime.datetime.now(timezone.utc) + timedelta(minutes=1)
 grant_valid_until = grant_start_from + timedelta(hours=1)
 
 
-class Test_help:
-    @pytest.fixture(autouse=True)
-    def before_each(self):
-        self.service = AccessService(MagicMock())
-        yield 
-
-    def test_returns_help_message(self):
-        help_message = self.service.help()
-        assert "access to resource-name" in help_message
-
-
 class Test_get_resource_by_name:
     @pytest.fixture(autouse=True)
     def before_each(self):
