@@ -7,7 +7,6 @@ conda create --prefix venv
 conda install --prefix venv pip
 conda activate venv/
 pip install -r requirements/dev.txt
-pip install errbot -U
 ```
 
 ## Variables configuration
