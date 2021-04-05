@@ -20,17 +20,12 @@ class AccessHelper:
 
         resource_name = re.sub("^access to (.+)$", "\\1", match.string)
         admin_slack_id =  bot.build_identifier(self.props.admin())
-
-        # TODO Default value introduced for testing - mock and remove check
-        sender_nick = "" if message.frm.nick is None else str(message.frm.nick)
-        sender_email = "" if message.frm.email is None else str(message.frm.email)
-
         try:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
-            sdm_account = self.access_service.get_account_by_email(sender_email)
+            sdm_account = self.access_service.get_account_by_email(self.get_sender_email(message))
 
-            yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins!"
-            bot.send(admin_slack_id, r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + r"\`! Enter 'yes' to approve.")
+            yield f"Thanks @{self.get_sender_nick(message)}, that is a valid request. Let me check with the team admins!"
+            bot.send(admin_slack_id, r"Hey I have an access request from USER \`" + self.get_sender_nick(message) + r"\` for RESOURCE \`" + resource_name + r"\`! Enter 'yes' to approve.")
             self.wait_before_check()
             if not bot.approved:
                 bot.send(admin_slack_id, "Request timed out, user will be denied access!")
@@ -39,9 +34,19 @@ class AccessHelper:
 
             self.grant_1hour_access(sdm_resource.id, sdm_account.id)
             self.add_thumbsup(bot, message)
-            yield f"@{sender_nick} : Granting {sender_email} access to '{resource_name}' for 1 hour"
+            yield f"@{self.get_sender_nick(message)} : Granting {self.get_sender_email(message)} access to '{resource_name}' for 1 hour"
         except Exception as ex:
-            yield str(ex)
+            yield str(ex)   
+
+    def get_sender_nick(self, message):
+        if self.props.slack_sender_override():
+            return self.props.slack_sender_nick()
+        return '' if message.frm.nick is None else str(message.frm.nick)
+
+    def get_sender_email(self, message):
+        if self.props.slack_sender_override():
+            return self.props.slack_sender_email()
+        return '' if message.frm.email is None else str(message.frm.email)
         
     def wait_before_check(self):
         time.sleep(self.props.admin_timeout())
