@@ -31,10 +31,12 @@ class Properties:
         return self._slack_token
 
 
-props = Properties(
+_INSTANCE = Properties(
     os.getenv("SDM_ADMIN_TIMEOUT", "30"),
     os.getenv("SDM_ADMIN"), 
     os.getenv("SDM_API_ACCESS_KEY"),
     os.getenv("SDM_API_SECRET_KEY"),
     os.getenv("SLACK_TOKEN")
-)
+) 
+def get():
+    return _INSTANCE

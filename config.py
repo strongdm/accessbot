@@ -1,7 +1,8 @@
-import logging, os
+import logging, os, sys
 
 sys.path.append('plugins/sdm')
-from properties import props
+import properties
+props = properties.get()
 
 BACKEND = 'Slack'  
 
