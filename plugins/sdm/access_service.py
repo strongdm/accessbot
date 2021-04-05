@@ -1,4 +1,3 @@
-import sdm_client
 import strongdm
 
 class AccessService:
@@ -44,11 +43,3 @@ class AccessService:
             self.client.account_grants.create(sdm_grant)
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex))
-
-
-_INSTANCE = None
-def get_instance():
-    global _INSTANCE
-    if not _INSTANCE:
-        _INSTANCE = AccessService(sdm_client.get_instance())
-    return _INSTANCE

@@ -78,5 +78,6 @@ def get_props_fake():
         # https://github.com/errbotio/errbot/blob/master/errbot/config-template.py
         admin = "gbin@localhost", 
         sdm_api_access_key = "access-key",
-        sdm_api_secret_key = "secret-key"
+        sdm_api_secret_key = "secret-key",
+        slack_token = "slack-token"
     )

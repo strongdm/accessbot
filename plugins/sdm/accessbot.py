@@ -1,14 +1,19 @@
 from errbot import BotPlugin, botcmd, arg_botcmd, webhook, re_botcmd
 import datetime, re, time
 from datetime import timezone, timedelta
+import strongdm
 
-import access_service
+from access_service import AccessService
 from bot_support import help_message
-import properties
+from properties import props
 
-class Grantbot(BotPlugin):
-    service = access_service.get_instance()
-    props = properties.get()
+def create_access_service():
+    client = strongdm.Client(props.sdm_api_access_key(), props.sdm_api_secret_key())
+    return AccessService(client)
+    
+class AccessBot(BotPlugin):
+    service = create_access_service()
+    props = props
 
     def callback_message(self, mess):
         # TODO Make this check case insensitive 
@@ -55,7 +60,6 @@ class Grantbot(BotPlugin):
         except Exception as ex:
             yield str(ex)
         
-
     def wait_before_check(self):
         time.sleep(self.props.admin_timeout())
 
@@ -67,3 +71,5 @@ class Grantbot(BotPlugin):
     def add_thumbsup(self, message):
         if self._bot.mode == "slack":
             self._bot.add_reaction(message, "thumbsup")
+
+
