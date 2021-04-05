@@ -8,7 +8,7 @@ class Properties:
         sdm_api_access_key, 
         sdm_api_secret_key
     ):
-        self._admin_timeout = admin_timeout
+        self._admin_timeout = int(admin_timeout)
         self._admin = admin
         self._sdm_api_access_key = sdm_api_access_key
         self._sdm_api_secret_key = sdm_api_secret_key
@@ -31,7 +31,7 @@ def get():
     global _INSTANCE
     if not _INSTANCE:
         _INSTANCE = Properties(
-                        int(os.getenv("SDM_ADMIN_TIMEOUT", "30")),
+                        os.getenv("SDM_ADMIN_TIMEOUT", "30"),
                         os.getenv("SDM_ADMIN"), 
                         os.getenv("SDM_API_ACCESS_KEY"),
                         os.getenv("SDM_API_SECRET_KEY")

@@ -5,7 +5,7 @@ The installation of grpcio can be challenging, for that reason you might want to
 ```
 conda create --prefix venv
 conda install --prefix venv pip
-conda activate venv
+conda activate venv/
 pip install -r requirements/dev.txt
 pip install errbot -U
 ```

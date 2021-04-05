@@ -19,7 +19,7 @@ def test_access_command_grant_approved(testbot):
         'service': get_service_mock(), 
         'props': get_props_fake()
     }
-    testbot.inject_mocks('GrantBot', mock_dict)
+    testbot.inject_mocks('AccessBot', mock_dict)
     testbot.push_message("access to Xxx")
     testbot.push_message("yes")
     assert "valid request" in testbot.pop_message()
@@ -31,7 +31,7 @@ def test_access_command_grant_timed_out(testbot):
         'service': get_service_mock(), 
         'props': get_props_fake()
     }
-    testbot.inject_mocks('GrantBot', mock_dict)
+    testbot.inject_mocks('AccessBot', mock_dict)
     testbot.push_message("access to Xxx")
     assert "valid request" in testbot.pop_message()
     assert "access request" in testbot.pop_message()
@@ -43,7 +43,7 @@ def test_access_command_grant_not_approved(testbot):
         'service': get_service_mock(), 
         'props': get_props_fake()
     }
-    testbot.inject_mocks('GrantBot', mock_dict)
+    testbot.inject_mocks('AccessBot', mock_dict)
     testbot.push_message("access to Xxx")
     testbot.push_message("no") # Anything but yes
     assert "valid request" in testbot.pop_message()

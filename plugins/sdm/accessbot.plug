@@ -1,6 +1,6 @@
 [Core]
-name = GrantBot
-module = grantbot
+name = AccessBot
+module = accessbot
 
 [Documentation]
 description = Grants access to strongDM resources
