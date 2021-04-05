@@ -23,8 +23,7 @@ class AccessHelper:
 
         # TODO Default value introduced for testing - mock and remove check
         sender_nick = "" if message.frm.nick is None else str(message.frm.nick)
-        #sender_email = "" if message.frm.email is None else str(message.frm.email)
-        sender_email = "rodolfo+me@strongdm.com"
+        sender_email = "" if message.frm.email is None else str(message.frm.email)
 
         try:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
