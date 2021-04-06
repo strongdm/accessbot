@@ -15,12 +15,9 @@ class AccessHelper:
         self.props = props
         self.access_service = create_access_service(props)
 
-    def execute(self, bot, message, match):
-        # TODO Fix possible race conditions introduced by this flag
-        bot.approved = False
-
-        resource_name = re.sub("^access to (.+)$", "\\1", match.string)
-        admin_id = bot.build_identifier(self.props.admin())
+    def execute(self, admin_id, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn, enter_access_request_fn, 
+            remove_access_request_fn, message, match_string):
+        resource_name = re.sub("^access to (.+)$", "\\1", match_string)
         sender_nick = self._get_sender_nick(message)
         sender_email = self._get_sender_email(message)
 
@@ -28,17 +25,17 @@ class AccessHelper:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
             sdm_account = self.access_service.get_account_by_email(sender_email)
 
-            access_request_id = self._enter_access_request(bot)
-            yield from self._notify_access_request_entered(bot.send, admin_id, sender_nick, resource_name, access_request_id)
+            access_request_id = self.generate_access_request_id()
+            enter_access_request_fn(access_request_id)
+            yield from self._notify_access_request_entered(send_fn, admin_id, sender_nick, resource_name, access_request_id)
             self._wait_before_check()
-            # TODO Modify check and remove from access_requests_status if timed out
-            # Remove bot.approved flag
-            if not bot.approved:
-                yield from self._notify_access_request_denied(bot.send, admin_id)
+            if not is_access_request_granted_fn(access_request_id):
+                yield from self._notify_access_request_denied(send_fn, admin_id)
+                remove_access_request_fn(access_request_id)
                 return
 
             self._grant_1hour_access(sdm_resource.id, sdm_account.id)
-            self._add_thumbsup_reaction(bot, message)
+            add_thumbsup_reaction_fn(message)
             yield from self._notify_access_request_granted(sender_nick, sender_email, resource_name)
         except Exception as ex:
             yield str(ex)  
@@ -53,10 +50,8 @@ class AccessHelper:
             return self.props.sender_email()
         return '' if message.frm.email is None else str(message.frm.email)
 
-    def _enter_access_request(self, bot):
-        access_request_id = shortuuid.ShortUUID().random(length=4)
-        bot.access_requests_status[access_request_id] = 'PENDING'
-        return access_request_id
+    def generate_access_request_id(self):
+        return shortuuid.ShortUUID().random(length=4)
 
     def _notify_access_request_entered(self, send_fn, admin_id, sender_nick, resource_name, access_request_id):
         yield f"Thanks @{sender_nick}, that is a valid request. " + r"Let me check with the team admins! Your access request id is \`" + access_request_id + r"\`"
@@ -77,7 +72,3 @@ class AccessHelper:
         grant_start_from = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=1)
         grant_valid_until = grant_start_from + datetime.timedelta(hours=1)
         self.access_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
-
-    def _add_thumbsup_reaction(self, bot, message):
-        if bot._bot.mode == "slack":
-            bot._bot.add_reaction(message, "thumbsup")

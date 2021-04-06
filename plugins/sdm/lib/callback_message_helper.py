@@ -3,12 +3,10 @@ import re
 ACCESS_REQUEST_GRANT_REGEX = "^yes ([a-z0-9]+)$"
 
 class CallbackMessageHelper:
-    def execute(self, admin_id, message):
-        # TODO Move this logic to a helper method?
-        # - Use a callback_helper 
+    def execute(self, admin_id, grant_access_request_fn, message):
         if self._is_valid_access_request_grant(admin_id, message):
             access_request_id = self._get_access_request_id(message)
-            bot.access_requests_status[access_request_id] = 'APPROVED'
+            grant_access_request_fn(access_request_id)
 
     def _is_valid_access_request_grant(self, admin_id, message):
         message_from_admin = message.frm == admin_id
