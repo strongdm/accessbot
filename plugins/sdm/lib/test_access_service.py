@@ -4,8 +4,7 @@ import pytest
 import strongdm
 from unittest.mock import MagicMock
 
-from access_service import AccessService
-from properties import Properties
+from .access_service import AccessService
 
 resource_id = 1
 resource_name = "myresource"

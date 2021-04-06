@@ -3,3 +3,4 @@ strongdm
 datetime
 errbot
 slackclient
+shortuuid

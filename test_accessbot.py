@@ -5,48 +5,51 @@ import time
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
-from access_helper import AccessHelper
+from lib import AccessHelper
 import properties 
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
+
+access_request_id = "12ab"
 
 def test_help_command(testbot):
     testbot.push_message("help")
     assert "access to resource-name" in testbot.pop_message()
 
 @pytest.fixture
-def mocked_bot(testbot):
-    mock_dict = {'access_helper': create_access_helper()}
+def mocked_testbot(testbot):
+    mock_dict = {'get_access_helper': MagicMock(return_value = create_access_helper())}
     testbot.inject_mocks('AccessBot', mock_dict)
     return testbot
 
-def test_access_command_grant_approved(mocked_bot):
-    mocked_bot.push_message("access to Xxx")
-    mocked_bot.push_message("yes")
-    assert "valid request" in mocked_bot.pop_message()
-    assert "access request" in mocked_bot.pop_message()
-    assert "Granting" in mocked_bot.pop_message()
+def test_access_command_grant_approved(mocked_testbot):
+    mocked_testbot.push_message("access to Xxx")
+    mocked_testbot.push_message(f"yes {access_request_id}")
+    assert "valid request" in mocked_testbot.pop_message()
+    assert "access request" in mocked_testbot.pop_message()
+    assert "Granting" in mocked_testbot.pop_message()
 
-def test_access_command_grant_timed_out(mocked_bot):
-    mocked_bot.push_message("access to Xxx")
-    assert "valid request" in mocked_bot.pop_message()
-    assert "access request" in mocked_bot.pop_message()
-    assert "timed out" in mocked_bot.pop_message()
-    assert "not approved" in mocked_bot.pop_message()
+def test_access_command_grant_timed_out(mocked_testbot):
+    mocked_testbot.push_message("access to Xxx")
+    assert "valid request" in mocked_testbot.pop_message()
+    assert "access request" in mocked_testbot.pop_message()
+    assert "timed out" in mocked_testbot.pop_message()
+    assert "not approved" in mocked_testbot.pop_message()
 
-def test_access_command_grant_not_approved(mocked_bot):
-    mocked_bot.push_message("access to Xxx")
-    mocked_bot.push_message("no") # Anything but yes
-    assert "valid request" in mocked_bot.pop_message()
-    assert "access request" in mocked_bot.pop_message()
-    assert "timed out" in mocked_bot.pop_message()
-    assert "not approved" in mocked_bot.pop_message()
+def test_access_command_grant_not_approved(mocked_testbot):
+    mocked_testbot.push_message("access to Xxx")
+    mocked_testbot.push_message("no") # Anything but yes
+    assert "valid request" in mocked_testbot.pop_message()
+    assert "access request" in mocked_testbot.pop_message()
+    assert "timed out" in mocked_testbot.pop_message()
+    assert "not approved" in mocked_testbot.pop_message()
 
 
 def create_access_helper():
     access_helper = AccessHelper(properties.get())
     access_helper.access_service = create_account_service_mock()
+    access_helper.generate_access_request_id = MagicMock(return_value = access_request_id)
     return access_helper
 
 def create_account_service_mock():

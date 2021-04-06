@@ -3,40 +3,52 @@ import os
 class Properties:
     def __init__(
         self, 
-        admin_timeout, 
-        admin, 
-        sdm_api_access_key, 
-        sdm_api_secret_key,
-        slack_token
+        admin,
+        admin_timeout,
+        api_access_key, 
+        api_secret_key,
+        sender_override,
+        sender_nick,
+        sender_email
     ):
-        self._admin_timeout = int(admin_timeout)
         self._admin = admin
-        self._sdm_api_access_key = sdm_api_access_key
-        self._sdm_api_secret_key = sdm_api_secret_key
-        self._slack_token = slack_token
-
-    def admin_timeout(self):
-        return self._admin_timeout
+        self._admin_timeout = int(admin_timeout)
+        self._api_access_key = api_access_key
+        self._api_secret_key = api_secret_key
+        self._sender_override = True if str(sender_override).lower() == 'true' else False
+        self._sender_nick = sender_nick
+        self._sender_email = sender_email
 
     def admin(self):
         return self._admin
 
-    def sdm_api_access_key(self):
-        return self._sdm_api_access_key
+    def admin_timeout(self):
+        return self._admin_timeout
 
-    def sdm_api_secret_key(self):
-        return self._sdm_api_secret_key
+    def api_access_key(self):
+        return self._api_access_key
 
-    def slack_token(self):
-        return self._slack_token
+    def api_secret_key(self):
+        return self._api_secret_key
+
+    def sender_override(self):
+        return self._sender_override
+
+    def sender_nick(self):
+        return self._sender_nick
+
+    def sender_email(self):
+        return self._sender_email
 
 
 _INSTANCE = Properties(
+    os.getenv("SDM_ADMIN"),
     os.getenv("SDM_ADMIN_TIMEOUT", "30"),
-    os.getenv("SDM_ADMIN"), 
     os.getenv("SDM_API_ACCESS_KEY"),
     os.getenv("SDM_API_SECRET_KEY"),
-    os.getenv("SLACK_TOKEN")
+    os.getenv("SDM_SENDER_OVERRIDE", ""),
+    os.getenv("SDM_SENDER_NICK"),
+    os.getenv("SDM_SENDER_EMAIL")
 ) 
 def get():
     return _INSTANCE
