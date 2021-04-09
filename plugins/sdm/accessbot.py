@@ -2,7 +2,7 @@ from errbot import BotPlugin, botcmd, arg_botcmd, webhook, re_botcmd
 import re
 import strongdm
 
-from lib import AccessHelper, callback_message_helper, help_helper
+from lib import AccessHelper, CallbackMessageHelper, help_helper
 import properties 
 
 class AccessBot(BotPlugin):
@@ -12,11 +12,7 @@ class AccessBot(BotPlugin):
         """
         Callback for handling all messages
         """
-        self.get_callback_message_helper().execute(
-            admin_id = self.build_identifier(properties.get().admin()),
-            grant_access_request_fn = self.grant_access_request,
-            message = message
-        )
+        self.get_callback_message_helper().execute(message)
             
     @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
     def help(self, message, match):
@@ -48,7 +44,10 @@ class AccessBot(BotPlugin):
         return help_helper
 
     def get_callback_message_helper(self):
-        return callback_message_helper
+        return CallbackMessageHelper(
+            admin_id = self.build_identifier(properties.get().admin()),
+            grant_access_request_fn = self.grant_access_request
+        )
 
     def is_access_request_granted(self, access_request_id):
         return self.__access_requests_status[access_request_id] == 'APPROVED'
