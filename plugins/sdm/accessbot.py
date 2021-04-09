@@ -2,7 +2,7 @@ from errbot import BotPlugin, botcmd, arg_botcmd, webhook, re_botcmd
 import re
 import strongdm
 
-from lib import AccessHelper, CallbackMessageHelper, help_helper
+from lib import AccessHelper, CallbackMessageHelper, HelpHelper
 import properties 
 
 class AccessBot(BotPlugin):
@@ -41,7 +41,7 @@ class AccessBot(BotPlugin):
         )
 
     def get_help_helper(self):
-        return help_helper
+        return HelpHelper()
 
     def get_callback_message_helper(self):
         return CallbackMessageHelper(
