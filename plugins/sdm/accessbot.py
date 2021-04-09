@@ -34,10 +34,10 @@ class AccessBot(BotPlugin):
             props = props, 
             admin_id = self.build_identifier(props.admin()),
             send_fn = self.send,
-            is_access_request_granted_fn = self.__is_access_request_granted,
-            add_thumbsup_reaction_fn = self.__add_thumbsup_reaction,
-            enter_access_request_fn = self.__enter_access_request,
-            remove_access_request_fn = self.__remove_access_request
+            is_access_request_granted_fn = self.is_access_request_granted,
+            add_thumbsup_reaction_fn = self.add_thumbsup_reaction,
+            enter_access_request_fn = self.enter_access_request,
+            remove_access_request_fn = self.remove_access_request
         )
 
     def get_help_helper(self):
