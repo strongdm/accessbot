@@ -19,7 +19,8 @@ def test_help_command(testbot):
 
 @pytest.fixture
 def mocked_testbot(testbot):
-    mock_dict = {'get_access_helper': MagicMock(return_value = create_access_helper())}
+    accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
+    mock_dict = {'get_access_helper': MagicMock(return_value = create_access_helper(accessbot))}
     testbot.inject_mocks('AccessBot', mock_dict)
     return testbot
 
@@ -46,8 +47,17 @@ def test_access_command_grant_not_approved(mocked_testbot):
     assert "not approved" in mocked_testbot.pop_message()
 
 
-def create_access_helper():
-    access_helper = AccessHelper(properties.get())
+def create_access_helper(accessbot):
+    props = properties.get()
+    access_helper = AccessHelper(
+        props = props, 
+        admin_id = accessbot.build_identifier(props.admin()),
+        send_fn = accessbot.send,
+        is_access_request_granted_fn = accessbot.is_access_request_granted,
+        add_thumbsup_reaction_fn = accessbot.add_thumbsup_reaction,
+        enter_access_request_fn = accessbot.enter_access_request,
+        remove_access_request_fn = accessbot.remove_access_request    
+    )
     access_helper.access_service = create_account_service_mock()
     access_helper.generate_access_request_id = MagicMock(return_value = access_request_id)
     return access_helper
