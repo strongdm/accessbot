@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  accessbot:
+    build: .
+    environment:
+      - SLACK_TOKEN=slack-token
+      - SDM_ADMIN=@slack-handle
+      - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
+      - SDM_API_ACCESS_KEY=sdm-api-acess-key
+      - SDM_API_SECRET_KEY=sdm-api-secret-key
