@@ -11,10 +11,10 @@ def create_access_service(props):
     return AccessService(client)
 
 class AccessHelper:
-    def __init__(self, props, admin_id, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn, 
+    def __init__(self, props, admin_ids, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn, 
             enter_access_request_fn, remove_access_request_fn):
         self.__props = props
-        self.__admin_id  = admin_id
+        self.__admin_ids  = admin_ids
         self.__send = send_fn
         self.__is_access_request_granted = is_access_request_granted_fn
         self.__add_thumbsup_reaction = add_thumbsup_reaction_fn
@@ -68,13 +68,17 @@ class AccessHelper:
         yield from self.__notify_access_request_denied()
         return False
 
+    def __notify_admins(self, message):
+        for admin_id in self.__admin_ids:
+            self.__send(admin_id, message)
+
     def __notify_access_request_entered(self, sender_nick, resource_name, access_request_id):
         yield f"Thanks @{sender_nick}, that is a valid request. " + r"Let me check with the team admins! Your access request id is \`" + access_request_id + r"\`"
-        self.__send(self.__admin_id, r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + 
+        self.__notify_admins(r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + 
             r"\`! To approve, enter: **yes " + access_request_id + r"**")
 
     def __notify_access_request_denied(self):
-        self.__send(self.__admin_id, "Request timed out, user access will be denied!")
+        self.__notify_admins("Request timed out, user access will be denied!")
         yield "Sorry, not approved! Please contact your SDM admin directly."
 
     def __notify_access_request_granted(self, sender_nick, sender_email, resource_name):

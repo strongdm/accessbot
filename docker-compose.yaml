@@ -4,7 +4,7 @@ services:
     build: .
     environment:
       - SLACK_TOKEN=slack-token
-      - SDM_ADMIN=@slack-handle
+      - SDM_ADMINS="@slack-handle1 @slack-handle2" # use space for config multiple slack handles 
       - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
       - SDM_API_ACCESS_KEY=sdm-api-acess-key
       - SDM_API_SECRET_KEY=sdm-api-secret-key
