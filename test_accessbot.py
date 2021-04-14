@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
 from lib import AccessHelper
-from properties import Properties, get as get_default_properties
+from properties import Properties
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -15,47 +15,74 @@ def test_help_command(testbot):
     testbot.push_message("help")
     assert "access to resource-name" in testbot.pop_message()
 
-@pytest.fixture
-def mocked_testbot(testbot):
+class Test_manual_approval:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        props = create_properties()
+        return inject_props(testbot, props)
+
+    def test_access_command_grant_approved(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_timed_out(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "timed out" in mocked_testbot.pop_message()
+        assert "not approved" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_not_approved(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message("no") # Anything but yes
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "timed out" in mocked_testbot.pop_message()
+        assert "not approved" in mocked_testbot.pop_message()
+
+class Test_automatic_approval:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        props = create_properties()
+        props.auto_approve_all = MagicMock(return_value = True)
+        return inject_props(testbot, props)
+
+    def test_access_command_grant_auto_approved_for_all(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        assert "Granting" in mocked_testbot.pop_message()
+
+class Test_multiple_admins:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        props = create_properties()
+        props.admins = MagicMock(return_value = ["gbin@localhost",  "user1"])
+        return inject_props(testbot, props)
+
+    def test_access_command_grant_multiple_admins(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+
+def inject_props(testbot, props):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
-    mock_dict = {'get_access_helper': MagicMock(return_value = create_access_helper(accessbot))}
+    mock_dict = {
+        'get_access_helper': MagicMock(return_value = create_access_helper(accessbot, props)),
+        'get_properties': MagicMock(return_value = props)
+    }
     testbot.inject_mocks('AccessBot', mock_dict)
     return testbot
 
-def test_access_command_grant_approved(mocked_testbot):
-    mocked_testbot.push_message("access to Xxx")
-    mocked_testbot.push_message(f"yes {access_request_id}")
-    assert "valid request" in mocked_testbot.pop_message()
-    assert "access request" in mocked_testbot.pop_message()
-    assert "Granting" in mocked_testbot.pop_message()
-
-def test_access_command_grant_timed_out(mocked_testbot):
-    mocked_testbot.push_message("access to Xxx")
-    assert "valid request" in mocked_testbot.pop_message()
-    assert "access request" in mocked_testbot.pop_message()
-    assert "timed out" in mocked_testbot.pop_message()
-    assert "not approved" in mocked_testbot.pop_message()
-
-def test_access_command_grant_not_approved(mocked_testbot):
-    mocked_testbot.push_message("access to Xxx")
-    mocked_testbot.push_message("no") # Anything but yes
-    assert "valid request" in mocked_testbot.pop_message()
-    assert "access request" in mocked_testbot.pop_message()
-    assert "timed out" in mocked_testbot.pop_message()
-    assert "not approved" in mocked_testbot.pop_message()
-
-def test_access_command_grant_auto_approved_for_all(testbot):
-    accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
-    mock_dict = {'get_access_helper': MagicMock(return_value = create_access_helper(accessbot, get_props_with_auto_approve_all()))}
-    testbot.inject_mocks('AccessBot', mock_dict)
-    testbot.push_message("access to Xxx")
-    assert "Granting" in testbot.pop_message()
-
-
-def create_access_helper(accessbot, props = get_default_properties()):
+def create_access_helper(accessbot, props):
     access_helper = AccessHelper(
-        props = props, 
-        admin_id = accessbot.build_identifier(props.admin()),
+        props = props,
+        admin_ids = accessbot.get_admin_ids(props.admins()),
         send_fn = accessbot.send,
         is_access_request_granted_fn = accessbot.is_access_request_granted,
         add_thumbsup_reaction_fn = accessbot.add_thumbsup_reaction,
@@ -85,14 +112,14 @@ def create_mock_account():
     mock_account.name = "myaccount@test.com"
     return mock_account
 
-def get_props_with_auto_approve_all():
+def create_properties():
     return Properties(
-        admin = "gbin@localhost",
+        admins = "gbin@localhost",
         admin_timeout = 1,
         api_access_key = "api-access_key",
         api_secret_key = "c2VjcmV0LWtleQ==",
         sender_override = True,
         sender_nick = "testuser",
         sender_email = "testuser@localhost",
-        auto_approve_all = True
+        auto_approve_all = False
     )

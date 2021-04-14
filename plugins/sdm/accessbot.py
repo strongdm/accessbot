@@ -3,7 +3,7 @@ import re
 import strongdm
 
 from lib import AccessHelper, CallbackMessageHelper, HelpHelper
-import properties 
+import properties
 
 class AccessBot(BotPlugin):
     __access_requests_status = {}
@@ -28,11 +28,13 @@ class AccessBot(BotPlugin):
         """
         yield from self.get_access_helper().execute(message, match.string)
 
+    def get_properties(self):
+        return properties.get()
+
     def get_access_helper(self):
-        props = properties.get()
         return AccessHelper(
-            props = props, 
-            admin_id = self.build_identifier(props.admin()),
+            props = self.get_properties(), 
+            admin_ids = self.get_admin_ids(self.get_properties().admins()),
             send_fn = self.send,
             is_access_request_granted_fn = self.is_access_request_granted,
             add_thumbsup_reaction_fn = self.add_thumbsup_reaction,
@@ -45,9 +47,12 @@ class AccessBot(BotPlugin):
 
     def get_callback_message_helper(self):
         return CallbackMessageHelper(
-            admin_id = self.build_identifier(properties.get().admin()),
+            admin_ids = self.get_admin_ids(self.get_properties().admins()),
             grant_access_request_fn = self.grant_access_request
         )
+
+    def get_admin_ids(self, admins):
+        return [self.build_identifier(admin) for admin in admins]
 
     def is_access_request_granted(self, access_request_id):
         return self.__access_requests_status[access_request_id] == 'APPROVED'
