@@ -15,7 +15,7 @@ def test_help_command(testbot):
     testbot.push_message("help")
     assert "access to resource-name" in testbot.pop_message()
 
-class Test_manual_approval:
+class Test_default_flow: # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         props = create_properties()
@@ -43,7 +43,7 @@ class Test_manual_approval:
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
 
-class Test_automatic_approval:
+class Test_automatic_approval_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         props = create_properties()
@@ -54,7 +54,7 @@ class Test_automatic_approval:
         mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
 
-class Test_multiple_admins:
+class Test_multiple_admins_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         props = create_properties()
