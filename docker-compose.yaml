@@ -8,3 +8,4 @@ services:
       - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
       - SDM_API_ACCESS_KEY=sdm-api-acess-key
       - SDM_API_SECRET_KEY=sdm-api-secret-key
+      - SDM_AUTO_APPROVE_ALL=false # optional, default = false

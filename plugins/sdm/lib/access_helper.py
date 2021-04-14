@@ -31,14 +31,9 @@ class AccessHelper:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
             sdm_account = self.access_service.get_account_by_email(sender_email)
 
-            access_request_id = self.generate_access_request_id()
-            self.__enter_access_request(access_request_id)
-            yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
-            self.__wait_before_check()
-            if not self.__is_access_request_granted(access_request_id):
-                yield from self.__notify_access_request_denied()
-                self.__remove_access_request(access_request_id)
-                return
+            if not self.__props.auto_approve_all():
+                request_approved = yield from self.__ask_for_and_validate_approval(sender_nick, resource_name)
+                if not request_approved: return
 
             self.__grant_1hour_access(sdm_resource.id, sdm_account.id)
             self.__add_thumbsup_reaction(message)
@@ -58,6 +53,20 @@ class AccessHelper:
         if self.__props.sender_override():
             return self.__props.sender_email()
         return '' if message.frm.email is None else str(message.frm.email)
+
+    def __ask_for_and_validate_approval(self, sender_nick, resource_name):
+        access_request_id = self.generate_access_request_id()
+        self.__enter_access_request(access_request_id)
+        yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
+        
+        self.__wait_before_check() 
+
+        is_access_request_granted = self.__is_access_request_granted(access_request_id)
+        self.__remove_access_request(access_request_id)
+        if is_access_request_granted: 
+            return True
+        yield from self.__notify_access_request_denied()
+        return False
 
     def __notify_access_request_entered(self, sender_nick, resource_name, access_request_id):
         yield f"Thanks @{sender_nick}, that is a valid request. " + r"Let me check with the team admins! Your access request id is \`" + access_request_id + r"\`"
