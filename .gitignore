@@ -6,3 +6,4 @@ errbot.log
 .vscode/
 unset-env.sh
 docker-compose copy.yaml
+.DS_Store
