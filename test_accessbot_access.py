@@ -11,10 +11,6 @@ extra_plugin_dir = 'plugins/sdm'
 
 access_request_id = "12ab"
 
-def test_help_command(testbot):
-    testbot.push_message("help")
-    assert "access to resource-name" in testbot.pop_message()
-
 class Test_default_flow: # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -80,7 +76,7 @@ def inject_props(testbot, props):
     return testbot
 
 def create_access_helper(accessbot, props):
-    access_helper = AccessHelper(
+    helper = AccessHelper(
         props = props,
         admin_ids = accessbot.get_admin_ids(props.admins()),
         send_fn = accessbot.send,
@@ -89,9 +85,9 @@ def create_access_helper(accessbot, props):
         enter_access_request_fn = accessbot.enter_access_request,
         remove_access_request_fn = accessbot.remove_access_request    
     )
-    access_helper.access_service = create_account_service_mock()
-    access_helper.generate_access_request_id = MagicMock(return_value = access_request_id)
-    return access_helper
+    helper.access_service = create_account_service_mock()
+    helper.generate_access_request_id = MagicMock(return_value = access_request_id)
+    return helper
 
 def create_account_service_mock():
     service_mock = MagicMock()

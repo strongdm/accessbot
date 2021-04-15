@@ -1,10 +1,10 @@
-from errbot import BotPlugin, botcmd, arg_botcmd, webhook, re_botcmd
 import re
-import strongdm
+from errbot import BotPlugin, re_botcmd
 
-from lib import AccessHelper, CallbackMessageHelper, HelpHelper
+from lib import AccessHelper, CallbackMessageHelper, HelpHelper, ShowResourcesHelper
 import properties
 
+# pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __access_requests_status = {}
 
@@ -13,14 +13,7 @@ class AccessBot(BotPlugin):
         Callback for handling all messages
         """
         self.get_callback_message_helper().execute(message)
-            
-    @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
-    def help(self, message, match):
-        """
-        Command for showing help
-        """
-        yield from self.get_help_helper().execute()
-
+           
     @re_botcmd(pattern=r"^access to (.+)$", prefixed=False, flags=re.IGNORECASE)
     def access(self, message, match):
         """
@@ -28,8 +21,32 @@ class AccessBot(BotPlugin):
         """
         yield from self.get_access_helper().execute(message, match.string)
 
-    def get_properties(self):
+    #pylint: disable=unused-argument
+    @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
+    def help(self, message, match):
+        """
+        Command for showing help
+        """
+        yield from self.get_help_helper().execute()
+
+    #pylint: disable=unused-argument
+    @re_botcmd(pattern=r"^show available resources", prefixed=False, flags=re.IGNORECASE)
+    def show_resources(self, message, match):
+        """
+        Command for showing available resources
+        """
+        yield from self.get_show_resources_helper().execute()
+
+
+    @staticmethod
+    def get_properties():
         return properties.get()
+
+    def get_callback_message_helper(self):
+        return CallbackMessageHelper(
+            admin_ids = self.get_admin_ids(self.get_properties().admins()),
+            grant_access_request_fn = self.grant_access_request
+        )
 
     def get_access_helper(self):
         return AccessHelper(
@@ -42,14 +59,12 @@ class AccessBot(BotPlugin):
             remove_access_request_fn = self.remove_access_request
         )
 
-    def get_help_helper(self):
+    @staticmethod
+    def get_help_helper():
         return HelpHelper()
 
-    def get_callback_message_helper(self):
-        return CallbackMessageHelper(
-            admin_ids = self.get_admin_ids(self.get_properties().admins()),
-            grant_access_request_fn = self.grant_access_request
-        )
+    def get_show_resources_helper(self):
+        return ShowResourcesHelper(self.get_properties())
 
     def get_admin_ids(self, admins):
         return [self.build_identifier(admin) for admin in admins]

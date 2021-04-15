@@ -4,6 +4,7 @@ NAME:
 
 COMMANDS:
     access to resource-name       - Grant access to a resource (using the requester's email address)
+    show available resources      - Show all available resources
 """
 
 class HelpHelper:
