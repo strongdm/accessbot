@@ -1,14 +1,9 @@
 import datetime
 import re
-import shortuuid
-import strongdm
 import time
+import shortuuid
 
-from .access_service import AccessService
-
-def create_access_service(props):
-    client = strongdm.Client(props.api_access_key(), props.api_secret_key())
-    return AccessService(client)
+from .access_service import create_access_service
 
 class AccessHelper:
     def __init__(self, props, admin_ids, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn, 
