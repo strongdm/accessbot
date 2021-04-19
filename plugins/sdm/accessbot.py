@@ -44,6 +44,7 @@ class AccessBot(BotPlugin):
 
     def get_callback_message_helper(self):
         return CallbackMessageHelper(
+            log = self.log,
             admin_ids = self.get_admin_ids(self.get_properties().admins()),
             grant_access_request_fn = self.grant_access_request
         )
