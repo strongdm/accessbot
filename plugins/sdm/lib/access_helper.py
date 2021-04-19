@@ -25,8 +25,11 @@ class AccessHelper:
 
         try:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
-            sdm_account = self.access_service.get_account_by_email(sender_email)
+            if self.__is_hidden_resource(sdm_resource):
+                yield "Invalid resource name"
+                return
 
+            sdm_account = self.access_service.get_account_by_email(sender_email)
             if self.__needs_manual_approval(sdm_resource):
                 request_approved = yield from self.__ask_for_and_validate_approval(sender_nick, resource_name)
                 if not request_approved:
@@ -49,6 +52,9 @@ class AccessHelper:
     def __get_sender_email(self, message):
         override = self.__props.sender_email_override()
         return override if override else str(message.frm.email)
+
+    def __is_hidden_resource(self, sdm_resource):
+        return self.__props.hide_resource_tag() is not None and self.__props.hide_resource_tag() in sdm_resource.tags
 
     def __needs_manual_approval(self, sdm_resource):
         tagged_resource = self.__props.auto_approve_tag() is not None and self.__props.auto_approve_tag() in sdm_resource.tags

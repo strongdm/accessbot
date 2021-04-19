@@ -20,6 +20,7 @@ export SDM_ADMIN=@admin1 # if multiple, use: @admin1 @admin2
 #export SDM_SENDER_EMAIL_OVERRIDE=sender-email # valid strongDM email
 #export SDM_AUTO_APPROVE_ALL=true # default: false
 #export SDM_AUTO_APPROVE_TAG=auto-approve
+#export SDM_HIDE_RESOURCE_TAG=hide-resource
 ```
 
 ## Initialize errbot
