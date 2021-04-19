@@ -4,3 +4,4 @@
 pytest
 pytest-mock
 pytest-env
+pylint
