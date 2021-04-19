@@ -19,4 +19,3 @@ class CallbackMessageHelper:
 
     def __get_access_request_id(self, message):
         return re.sub(ACCESS_REQUEST_GRANT_REGEX, "\\1", message.body, flags=re.I)
-
