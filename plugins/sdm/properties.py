@@ -10,7 +10,8 @@ class Properties:
         sender_nick_override,
         sender_email_override,
         auto_approve_all,
-        auto_approve_tag
+        auto_approve_tag,
+        hide_resource_tag
     ):
         self.__admins = admins.split(" ")
         self.__admin_timeout = int(admin_timeout)
@@ -20,6 +21,7 @@ class Properties:
         self.__sender_email_override = sender_email_override
         self.__auto_approve_all = str(auto_approve_all).lower() == 'true'
         self.__auto_approve_tag = auto_approve_tag
+        self.__hide_resource_tag = hide_resource_tag
 
     def admins(self):
         return self.__admins
@@ -45,6 +47,9 @@ class Properties:
     def auto_approve_tag(self):
         return self.__auto_approve_tag
 
+    def hide_resource_tag(self):
+        return self.__hide_resource_tag
+
 
 _INSTANCE = Properties(
     os.getenv("SDM_ADMINS", ""),
@@ -54,7 +59,8 @@ _INSTANCE = Properties(
     os.getenv("SDM_SENDER_NICK_OVERRIDE"),
     os.getenv("SDM_SENDER_EMAIL_OVERRIDE"),
     os.getenv("SDM_AUTO_APPROVE_ALL"),
-    os.getenv("SDM_AUTO_APPROVE_TAG")
+    os.getenv("SDM_AUTO_APPROVE_TAG"),
+    os.getenv("SDM_HIDE_RESOURCE_TAG")
 ) 
 def get():
     return _INSTANCE

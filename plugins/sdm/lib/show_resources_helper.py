@@ -13,6 +13,9 @@ class ShowResourcesHelper:
         sdm_resources = self.access_service.get_all_resources()
         for sdm_resource in sorted(sdm_resources, key = _get_key):
             auto_approve = self.__props.auto_approve_tag() is not None and self.__props.auto_approve_tag() in sdm_resource.tags
+            hide_resource = self.__props.hide_resource_tag() is not None and self.__props.hide_resource_tag() in sdm_resource.tags
+            if hide_resource:
+                continue
             if auto_approve:
                 resources += f"* **{sdm_resource.name} (type: {type(sdm_resource).__name__}, auto-approve)**\n"
             else:
