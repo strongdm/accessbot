@@ -43,9 +43,9 @@ class AccessService:
                 start_from = start_from,
                 valid_until = valid_until
             )
-            # TODO Check response 
             self.client.account_grants.create(sdm_grant)
         except Exception as ex:
+            # TODO Log resource_id and account_id?
             raise Exception("Grant failed: " + str(ex)) from ex
 
     def get_all_resources(self):
