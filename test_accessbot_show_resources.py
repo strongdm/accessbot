@@ -3,9 +3,9 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
+from test_accessbot_common import create_properties
 sys.path.append('plugins/sdm')
 from lib import ShowResourcesHelper
-import properties
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -13,7 +13,7 @@ extra_plugin_dir = 'plugins/sdm'
 class Test_show_resources:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = properties.get()
+        props = create_properties()
         mock_dict = {
             'get_show_resources_helper': MagicMock(return_value = create_show_resources_helper(props)),
             'get_properties': MagicMock(return_value = props)
@@ -30,7 +30,7 @@ class Test_show_resources:
 class Test_show_not_hidden_resources:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = properties.get()
+        props = create_properties()
         props.hide_resource_tag = MagicMock(return_value = 'hidden-resource')
         resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'hidden-resource': True}) ]
         mock_dict = {
@@ -65,4 +65,3 @@ def create_access_service_mock(resources):
     service_mock = MagicMock()
     service_mock.get_all_resources = MagicMock(return_value = resources)
     return service_mock
-

@@ -3,9 +3,9 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
+from test_accessbot_common import create_properties
 sys.path.append('plugins/sdm')
 from lib import AccessHelper
-from properties import Properties
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -138,16 +138,3 @@ def create_mock_account():
     mock_account.id = 1
     mock_account.name = "myaccount@test.com"
     return mock_account
-
-def create_properties():
-    return Properties(
-        admins = "gbin@localhost",
-        admin_timeout = 2,
-        api_access_key = "api-access_key",
-        api_secret_key = "c2VjcmV0LWtleQ==",
-        sender_nick_override = "testuser",
-        sender_email_override = "testuser@localhost",
-        auto_approve_all = False,
-        auto_approve_tag = None,
-        hide_resource_tag = None
-    )
