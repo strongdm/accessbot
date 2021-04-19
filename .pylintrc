@@ -3,3 +3,6 @@ init-hook='import sys; sys.path.append("plugins/sdm")'
 
 [MESSAGES CONTROL]
 disable=missing-function-docstring,missing-module-docstring,missing-class-docstring,too-few-public-methods
+
+[FORMAT]
+max-line-length=240

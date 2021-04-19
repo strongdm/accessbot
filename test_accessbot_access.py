@@ -114,8 +114,7 @@ def create_properties():
         admin_timeout = 1,
         api_access_key = "api-access_key",
         api_secret_key = "c2VjcmV0LWtleQ==",
-        sender_override = True,
-        sender_nick = "testuser",
-        sender_email = "testuser@localhost",
+        sender_nick_override = "testuser",
+        sender_email_override = "testuser@localhost",
         auto_approve_all = False
     )
