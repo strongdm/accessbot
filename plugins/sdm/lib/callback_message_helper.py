@@ -15,9 +15,10 @@ class CallbackMessageHelper:
 
     def __is_valid_access_request_grant(self, message):
         message_from_admin = message.frm in self.__admin_ids
-        valid_grant_pattern = re.match(ACCESS_REQUEST_GRANT_REGEX, message.body, flags=re.I)
+        valid_grant_pattern = re.match(ACCESS_REQUEST_GRANT_REGEX, message.body, flags=re.I) is not None
         is_valid_access_request_grant = message_from_admin and valid_grant_pattern
-        self.__log.error(f"message_body: {message.body} sender id: {message.frm} admin_ids: {self.__admin_ids} is_valid_access_request_grant: {is_valid_access_request_grant}")
+        admin_ids = [a.person for a in self.__admin_ids]
+        self.__log.info(f"************** sender_id: {message.frm} sender_message: {message.body}  admin _ids: {admin_ids} is_valid_approval_pattern: {is_valid_access_request_grant}")
         return is_valid_access_request_grant
 
     def __get_access_request_id(self, message):

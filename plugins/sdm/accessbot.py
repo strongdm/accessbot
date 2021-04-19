@@ -74,6 +74,10 @@ class AccessBot(BotPlugin):
         return self.__access_requests_status[access_request_id] == 'APPROVED'
 
     def grant_access_request(self, access_request_id):
+        if access_request_id in self.__access_requests_status:
+            self.log.info("************** invalid request id = %s", access_request_id)
+            return
+        self.log.info("************** approving valid request id = %s", access_request_id)
         self.__access_requests_status[access_request_id] = 'APPROVED'
 
     def enter_access_request(self, access_request_id):
