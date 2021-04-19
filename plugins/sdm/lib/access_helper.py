@@ -72,15 +72,16 @@ class AccessHelper:
             self.__send(admin_id, message)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, access_request_id):
-        yield f"Thanks @{sender_nick}, that is a valid request. " + r"Let me check with the team admins! Your access request id is \`" + access_request_id + r"\`"
-        self.__notify_admins(r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + 
-            r"\`! To approve, enter: **yes " + access_request_id + r"**")
+        team_admins = ", ".join(self.__props.admins())
+        yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your access request id is \`" + access_request_id + r"\`"
+        self.__notify_admins(r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + r"\`! To approve, enter: **yes " + access_request_id + r"**")
 
     def __notify_access_request_denied(self):
         self.__notify_admins("Request timed out, user access will be denied!")
-        yield "Sorry, not approved! Please contact your SDM admin directly."
+        yield "Sorry, not approved! Please contact any of the team admins directly."
 
-    def __notify_access_request_granted(self, sender_nick, sender_email, resource_name):
+    @staticmethod
+    def __notify_access_request_granted(sender_nick, sender_email, resource_name):
         yield f"@{sender_nick}: Granting {sender_email} access to '{resource_name}' for 1 hour"
 
     def __grant_1hour_access(self, resource_id, account_id):
