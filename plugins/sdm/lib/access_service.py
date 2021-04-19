@@ -40,7 +40,7 @@ class AccessService:
             sdm_grant = strongdm.AccountGrant(
                 resource_id = resource_id,
                 account_id = account_id,
-                start_from = start_from, 
+                start_from = start_from,
                 valid_until = valid_until
             )
             # TODO Check response 

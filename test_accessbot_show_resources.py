@@ -43,3 +43,4 @@ def create_access_service_mock():
 class DummyResource:
     def __init__(self, name):
         self.name = name
+        self.tags = {}

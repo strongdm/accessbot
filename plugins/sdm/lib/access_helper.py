@@ -6,7 +6,7 @@ import shortuuid
 from .access_service import create_access_service
 
 class AccessHelper:
-    def __init__(self, props, admin_ids, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn, 
+    def __init__(self, props, admin_ids, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn,
             enter_access_request_fn, remove_access_request_fn):
         self.__props = props
         self.__admin_ids  = admin_ids
@@ -27,9 +27,9 @@ class AccessHelper:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
             sdm_account = self.access_service.get_account_by_email(sender_email)
 
-            if not self.__props.auto_approve_all():
+            if self.__needs_manual_approval(sdm_resource):
                 request_approved = yield from self.__ask_for_and_validate_approval(sender_nick, resource_name)
-                if not request_approved: 
+                if not request_approved:
                     return
 
             self.__grant_1hour_access(sdm_resource.id, sdm_account.id)
@@ -49,6 +49,10 @@ class AccessHelper:
     def __get_sender_email(self, message):
         override = self.__props.sender_email_override()
         return override if override else str(message.frm.email)
+
+    def __needs_manual_approval(self, sdm_resource):
+        tagged_resource = self.__props.auto_approve_tag() is not None and self.__props.auto_approve_tag() in sdm_resource.tags
+        return not self.__props.auto_approve_all() and not tagged_resource
 
     def __ask_for_and_validate_approval(self, sender_nick, resource_name):
         access_request_id = self.generate_access_request_id()

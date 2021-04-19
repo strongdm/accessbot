@@ -15,11 +15,11 @@ export SLACK_TOKEN=slack-token
 export SDM_API_ACCESS_KEY=api-access-key
 export SDM_API_SECRET_KEY=api-secret-key
 export SDM_ADMIN=@admin1 # if multiple, use: @admin1 @admin2
-# Optional
 #export SDM_ADMIN_TIMEOUT=timeout-in-seconds
 #export SDM_SENDER_NICK_OVERRIDE=sender-nick
 #export SDM_SENDER_EMAIL_OVERRIDE=sender-email # valid strongDM email
 #export SDM_AUTO_APPROVE_ALL=true # default: false
+#export SDM_AUTO_APPROVE_TAG=auto-approve
 ```
 
 ## Initialize errbot
