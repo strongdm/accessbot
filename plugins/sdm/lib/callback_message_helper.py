@@ -1,6 +1,6 @@
 import re
 
-ACCESS_REQUEST_GRANT_REGEX = "^yes ([a-z0-9]+)$"
+ACCESS_REQUEST_GRANT_REGEX = "^.{0,2}yes ([a-z0-9]+).{0,2}$"
 
 class CallbackMessageHelper:
     def __init__(self, bot):
