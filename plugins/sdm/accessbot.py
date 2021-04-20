@@ -43,11 +43,7 @@ class AccessBot(BotPlugin):
         return properties.get()
 
     def get_callback_message_helper(self):
-        return CallbackMessageHelper(
-            log = self.log,
-            admin_ids = self.get_admin_ids(self.get_properties().admins()),
-            grant_access_request_fn = self.grant_access_request
-        )
+        return CallbackMessageHelper(self, self.get_properties())
 
     def get_access_helper(self):
         return AccessHelper(
