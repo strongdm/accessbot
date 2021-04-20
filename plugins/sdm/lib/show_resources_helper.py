@@ -4,9 +4,9 @@ def _get_key(sdm_resource):
     return sdm_resource.name
 
 class ShowResourcesHelper:
-    def __init__(self, props):
-        self.__props = props
-        self.access_service = create_access_service(props)
+    def __init__(self, bot):
+        self.__props = bot.get_properties()
+        self.access_service = create_access_service(bot.get_properties(), bot.log)
 
     def execute(self):
         resources = "Available resources:\n\n"

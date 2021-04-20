@@ -18,7 +18,7 @@ class CallbackMessageHelper:
         is_valid_access_request = message_from_admin and valid_grant_pattern
         admin_ids = [a.person for a in self.__admin_ids]
         self.__bot.log.debug(
-            "************** sender_id: %s sender_message: %s admin _ids: %s is_valid_access_request: %r",
+            "************** CallbackMessageHelper.__is_valid_access_request sender_id: %s sender_message: %s admin _ids: %s valid_access_request: %r",
             message.frm, message.body, admin_ids, is_valid_access_request
         )
         return is_valid_access_request

@@ -21,7 +21,7 @@ def client():
 
 @pytest.fixture()
 def service(client):
-    return AccessService(client)
+    return AccessService(client, MagicMock())
 
 class Test_get_resource_by_name:
     def test_when_resource_exists_returns_resource(self, client, service):

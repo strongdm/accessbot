@@ -53,7 +53,7 @@ class AccessBot(BotPlugin):
         return HelpHelper()
 
     def get_show_resources_helper(self):
-        return ShowResourcesHelper(self.get_properties())
+        return ShowResourcesHelper(self)
 
     def get_admin_ids(self, admins):
         return [self.build_identifier(admin) for admin in admins]
@@ -63,10 +63,10 @@ class AccessBot(BotPlugin):
 
     def grant_access_request(self, access_request_id):
         if not access_request_id in self.__access_requests_status:
-            self.log.debug("************** invalid request id = %s", access_request_id)
+            self.log.debug("************** AccessBot.grant_access_request invalid request id = %s", access_request_id)
             return
         self.__access_requests_status[access_request_id] = 'APPROVED'
-        self.log.debug("************** approved request id = %s", access_request_id)
+        self.log.debug("************** AccessBot.grant_access_request approved request id = %s", access_request_id)
 
     def enter_access_request(self, access_request_id):
         self.__access_requests_status[access_request_id] = 'PENDING'

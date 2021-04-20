@@ -10,7 +10,7 @@ class AccessHelper:
         self.__bot = bot
         self.__props = bot.get_properties()
         self.__admin_ids = bot.get_admin_ids(bot.get_properties().admins())
-        self.access_service = create_access_service(bot.get_properties())
+        self.access_service = create_access_service(bot.get_properties(), bot.log)
 
     # pylint: disable=broad-except
     def execute(self, message, match_string):
