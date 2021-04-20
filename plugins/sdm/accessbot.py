@@ -58,15 +58,14 @@ class AccessBot(BotPlugin):
     def get_admin_ids(self, admins):
         return [self.build_identifier(admin) for admin in admins]
 
-    def is_access_request_granted(self, access_request_id):
+    def is_access_request_approved(self, access_request_id):
         return self.__access_requests_status[access_request_id] == 'APPROVED'
 
-    def grant_access_request(self, access_request_id):
-        if not access_request_id in self.__access_requests_status:
-            self.log.debug("************** AccessBot.grant_access_request invalid request id = %s", access_request_id)
-            return
+    def is_valid_access_request_id(self, access_request_id):
+        return access_request_id in self.__access_requests_status
+
+    def approve_access_request(self, access_request_id):
         self.__access_requests_status[access_request_id] = 'APPROVED'
-        self.log.debug("************** AccessBot.grant_access_request approved request id = %s", access_request_id)
 
     def enter_access_request(self, access_request_id):
         self.__access_requests_status[access_request_id] = 'PENDING'
