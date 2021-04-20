@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name
 import pytest
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from test_accessbot_common import create_properties
 sys.path.append('plugins/sdm')
@@ -99,25 +99,17 @@ class Test_hide_resource_tag:
 def inject_props(testbot, props, tags = {}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     mock_dict = {
-        'get_access_helper': MagicMock(return_value = create_access_helper(accessbot, props, tags)),
-        'get_properties': MagicMock(return_value = props)
+        'get_access_helper': MagicMock(return_value = create_access_helper(accessbot, props, tags))
     }
     testbot.inject_mocks('AccessBot', mock_dict)
     return testbot
 
 def create_access_helper(accessbot, props, tags):
-    helper = AccessHelper(
-        props = props,
-        admin_ids = accessbot.get_admin_ids(props.admins()),
-        send_fn = accessbot.send,
-        is_access_request_granted_fn = accessbot.is_access_request_granted,
-        add_thumbsup_reaction_fn = accessbot.add_thumbsup_reaction,
-        enter_access_request_fn = accessbot.enter_access_request,
-        remove_access_request_fn = accessbot.remove_access_request
-    )
-    helper.access_service = create_access_service_mock(tags)
-    helper.generate_access_request_id = MagicMock(return_value = access_request_id)
-    return helper
+    with patch.object(accessbot, 'get_properties', return_value = props):
+        helper = AccessHelper(accessbot)
+        helper.access_service = create_access_service_mock(tags)
+        helper.generate_access_request_id = MagicMock(return_value = access_request_id)
+        return helper
 
 def create_access_service_mock(tags):
     service_mock = MagicMock()

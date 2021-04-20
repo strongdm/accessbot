@@ -6,16 +6,11 @@ import shortuuid
 from .access_service import create_access_service
 
 class AccessHelper:
-    def __init__(self, props, admin_ids, send_fn, is_access_request_granted_fn, add_thumbsup_reaction_fn,
-            enter_access_request_fn, remove_access_request_fn):
-        self.__props = props
-        self.__admin_ids  = admin_ids
-        self.__send = send_fn
-        self.__is_access_request_granted = is_access_request_granted_fn
-        self.__add_thumbsup_reaction = add_thumbsup_reaction_fn
-        self.__enter_access_request = enter_access_request_fn
-        self.__remove_access_request = remove_access_request_fn
-        self.access_service = create_access_service(props)
+    def __init__(self, bot):
+        self.__bot = bot
+        self.__props = bot.get_properties()
+        self.__admin_ids = bot.get_admin_ids(bot.get_properties().admins())
+        self.access_service = create_access_service(bot.get_properties())
 
     # pylint: disable=broad-except
     def execute(self, message, match_string):
@@ -36,7 +31,7 @@ class AccessHelper:
                     return
 
             self.__grant_1hour_access(sdm_resource.id, sdm_account.id)
-            self.__add_thumbsup_reaction(message)
+            self.__bot.add_thumbsup_reaction(message)
             yield from self.__notify_access_request_granted(sender_nick, sender_email, resource_name)
         except Exception as ex:
             yield str(ex)
@@ -62,16 +57,16 @@ class AccessHelper:
 
     def __ask_for_and_validate_approval(self, sender_nick, resource_name):
         access_request_id = self.generate_access_request_id()
-        self.__enter_access_request(access_request_id)
+        self.__bot.enter_access_request(access_request_id)
         yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
 
         for _ in range(self.__props.admin_timeout()):
             time.sleep(1)
-            is_access_request_granted = self.__is_access_request_granted(access_request_id)
+            is_access_request_granted = self.__bot.is_access_request_granted(access_request_id)
             if is_access_request_granted:
                 break
 
-        self.__remove_access_request(access_request_id)
+        self.__bot.remove_access_request(access_request_id)
         if is_access_request_granted:
             return True
         yield from self.__notify_access_request_denied()
@@ -79,7 +74,7 @@ class AccessHelper:
 
     def __notify_admins(self, message):
         for admin_id in self.__admin_ids:
-            self.__send(admin_id, message)
+            self.__bot.send(admin_id, message)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, access_request_id):
         team_admins = ", ".join(self.__props.admins())

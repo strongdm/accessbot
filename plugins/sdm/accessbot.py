@@ -43,18 +43,10 @@ class AccessBot(BotPlugin):
         return properties.get()
 
     def get_callback_message_helper(self):
-        return CallbackMessageHelper(self, self.get_properties())
+        return CallbackMessageHelper(self)
 
     def get_access_helper(self):
-        return AccessHelper(
-            props = self.get_properties(), 
-            admin_ids = self.get_admin_ids(self.get_properties().admins()),
-            send_fn = self.send,
-            is_access_request_granted_fn = self.is_access_request_granted,
-            add_thumbsup_reaction_fn = self.add_thumbsup_reaction,
-            enter_access_request_fn = self.enter_access_request,
-            remove_access_request_fn = self.remove_access_request
-        )
+        return AccessHelper(self)
 
     @staticmethod
     def get_help_helper():
@@ -71,10 +63,10 @@ class AccessBot(BotPlugin):
 
     def grant_access_request(self, access_request_id):
         if not access_request_id in self.__access_requests_status:
-            self.log.info("************** invalid request id = %s", access_request_id)
+            self.log.debug("************** invalid request id = %s", access_request_id)
             return
         self.__access_requests_status[access_request_id] = 'APPROVED'
-        self.log.info("************** approved request id = %s", access_request_id)
+        self.log.debug("************** approved request id = %s", access_request_id)
 
     def enter_access_request(self, access_request_id):
         self.__access_requests_status[access_request_id] = 'PENDING'
