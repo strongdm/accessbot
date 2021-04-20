@@ -20,30 +20,30 @@ class AccessHelper:
         sender_email = self.__get_sender_email(message)
 
         self.__bot.log.info(
-            "**** %s AccessHelper.execute new access request for resource_name: %s sender_nick: %s sender_email: %s",
+            "**SDM** %s AccessHelper.execute new access request for resource_name: %s sender_nick: %s sender_email: %s",
             execution_id, resource_name, sender_nick, sender_email
         )
         try:
             sdm_resource = self.access_service.get_resource_by_name(resource_name)
             if self.__is_hidden_resource(sdm_resource):
-                self.__bot.log.debug("**** %s AccessHelper.execute hidden resource", execution_id)
+                self.__bot.log.debug("**SDM** %s AccessHelper.execute hidden resource", execution_id)
                 yield "Invalid resource name"
                 return
 
             sdm_account = self.access_service.get_account_by_email(sender_email)
             if self.__needs_manual_approval(sdm_resource):
-                self.__bot.log.debug("**** %s AccessHelper.execute needs manual approval", execution_id)
+                self.__bot.log.debug("**SDM** %s AccessHelper.execute needs manual approval", execution_id)
                 request_approved = yield from self.__ask_for_and_validate_approval(sender_nick, resource_name)
                 if not request_approved:
-                    self.__bot.log.debug("**** %s AccessHelper.execute request not approved", execution_id)
+                    self.__bot.log.debug("**SDM** %s AccessHelper.execute request not approved", execution_id)
                     return
 
             self.__grant_1hour_access(sdm_resource.id, sdm_account.id)
             self.__bot.add_thumbsup_reaction(message)
             yield from self.__notify_access_request_granted(sender_nick, sender_email, resource_name)
-            self.__bot.log.info("**** %s AccessHelper.execute access request granted", execution_id)
+            self.__bot.log.info("**SDM** %s AccessHelper.execute access request granted", execution_id)
         except Exception as ex:
-            self.__bot.log.error("**** %s AccessHelper.execute access request failed %s", execution_id, str(resource_name))
+            self.__bot.log.error("**SDM** %s AccessHelper.execute access request failed %s", execution_id, str(resource_name))
             yield str(ex)
 
     @staticmethod
