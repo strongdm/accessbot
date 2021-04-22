@@ -1,7 +1,7 @@
 # Local environment
 
 ## Environment configuration
-The installation of grpcio can be challenging, for that reason you might want to use [conda](https://docs.conda.io/en/latest/). In that case, just go though the following steps
+The installation of grpcio can be challenging, for that reason you might want to use [conda](https://docs.conda.io/en/latest/). In that case, just go through the following steps
 ```
 conda create --prefix venv
 conda install --prefix venv pip
