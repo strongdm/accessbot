@@ -1,6 +1,7 @@
 FROM continuumio/miniconda3
 
 ENV ERRBOT_DIR=/errbot
+ENV SDM_DOCKERIZED=true
 
 RUN mkdir -p $ERRBOT_DIR
 
