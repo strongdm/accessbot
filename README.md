@@ -54,7 +54,7 @@ You can find detailed instructions for the main available commands:
 A list of typical issues and resolutions can be found [here](docs/TROUBLESHOOTING.md).
 
 ## Contributing
-Refer to the [contributing](CONTRIBUTING.md) guidelines or dump part of the information here.
+In case you want to contribute to the project, please check our [guidelines](CONTRIBUTING.md).
 
 ## Support
-Refer to the [support](SUPPORT.md) guidelines or dump part of the information here.
+In case you need support, please check our [support](CONTRIBUTING.md) document.
