@@ -5,9 +5,11 @@ services:
     environment:
       - SLACK_TOKEN=slack-token
       - SDM_ADMINS=@slack-handle1 @slack-handle2 # use space for configuring multiple slack handles 
-      - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
       - SDM_API_ACCESS_KEY=sdm-api-acess-key
       - SDM_API_SECRET_KEY=sdm-api-secret-key
+
+      - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
       - SDM_AUTO_APPROVE_ALL=false # optional, default = false
       - SDM_AUTO_APPROVE_TAG=auto-approve # optional, default = None
       - SDM_HIDE_RESOURCE_TAG=hide-resource # optional, default = None
+      - LOG_LEVEL=INFO # optional, default = INFO
