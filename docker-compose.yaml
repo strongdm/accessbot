@@ -12,8 +12,8 @@ services:
       - SDM_API_SECRET_KEY=sdm-api-secret-key
 
       # Optional variables
-      - SDM_ADMIN_TIMEOUT=30 # optional, default = 30
-      - SDM_AUTO_APPROVE_ALL=false # optional, default = false
-      - SDM_AUTO_APPROVE_TAG=auto-approve # optional, default = None
-      - SDM_HIDE_RESOURCE_TAG=hide-resource # optional, default = None
-      - LOG_LEVEL=INFO # optional, default = INFO
+      - SDM_ADMIN_TIMEOUT=30
+      - SDM_AUTO_APPROVE_ALL=false
+      - SDM_AUTO_APPROVE_TAG=auto-approve
+      - SDM_HIDE_RESOURCE_TAG=hide-resource
+      - LOG_LEVEL=INFO
