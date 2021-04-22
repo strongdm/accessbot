@@ -1,32 +1,60 @@
-This is a Docker setup for strongDM with errBot! To use it:
+# AccessBot
 
-1. [Register a new "bot"] (https://api.slack.com/bot-users#installing-bot) in your Slack workspace. This will generate a Slack bot token.
-2. Grant the bot permissions to send direct messages to all users, or at least communicate in a given channel, and to your admin user.
-1. Clone this repo, or unpack the zip file provided.
-2. Edit the DOCKERFILE and add Slack token, SDM API keys, Slack admin user handle, and timeout, optionally.
-3. Build the image from the Dockerfile, set image tag.
-4. Deploy the container with: `docker run -dit --rm --name grantbot <image tag>`
-5. Container should start errbot automagically. If not, use `docker exec` to get in and run `errbot`.
-5. There is an error log at `/errbot/errbot.log`.
-6. In Slack, invite your bot (e.g. @grantbot) into your test channel.
-7. Run !status to make sure you're connected.
-8. Run `access to <resource>` to grant access to the calling user.
-9. This will send a message to the defined admin user.
-10. If the admin replies "yes" within TIMEOUT seconds, user will receive approval message.
-11. Otherwise, request times out and both admin and user receive message to that effect.
+AccessBot is a chatbot that manages access to strongDM (SDM) resources, initially via Slack
 
----
+## Table of Contents
+* [Installation](#installation)
+* [Getting Started](#getting-started)
+* [Contributing](#contributing)
+* [Support](#support)
 
-V2:
-- Removed command prefix (!)
-- Successful grant gives same message 'chatops' used
-- Fixed bug with spaces in resource name
-- Script now pulls email from Slack user, rather than calculating it from Slack username
-(6 Jan 2021)
+## Installation
+In order to install AccessBot you need to provide -at least- the following required variables:
+* **SLACK_TOKEN**. Slack Bot User OAuth Token
+* **SDM_ADMINS**. List of Slack admins, although it's not required, this users are usually SDM admins too  
+* **SDM_API_ACCESS_KEY**. SDM API Access Key
+* **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
----
+Detailed instructions about how to configure Slack and SDM for AccessBot can be found here:
+* [Configure Slack](docs/CONFIGURE_SLACK.md)
+* [Configure SDM](docs/CONFIGURE_SDM.md)
 
-V3:
-- Moved most variables into DOCKERFILE.
-- Added approval step for all requests.
-(19 March 2021)
+For starting the bot enter all required variables in [docker-compose.yaml](docker-compose.yaml) and execute:
+```
+./docker-start.sh
+```
+
+The bot would start running in the background. In order to check logs.
+```
+docker logs accessbot_accessbot_1
+```
+
+If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+
+## Getting Started
+Once AccessBot is up and running, you can add it as an app or to a channel and start using it!
+
+First, check the bot and Slack interconnectivity state:
+
+![image](https://user-images.githubusercontent.com/313803/115704509-bf39da80-a36b-11eb-8bc1-07f2958679d0.png)
+
+You would expect to see no error in your logs (see command above) and the message **Yes I am alive**. If that's the case, enter any of the available commands:
+* `help`. Show available commands help
+* `show available resources`. Show all available resources
+* `access to resource-name`. Grant access to a resource (using the requester's email address)
+
+For example:
+
+![image](https://user-images.githubusercontent.com/313803/115705178-864e3580-a36c-11eb-8696-f100ad70d55c.png)
+
+You can find detailed instructions for the main available commands:
+* [Show Resources](docs/COMMAND_SHOW_RESOURCES.md)
+* [Access](docs/COMMAND_ACCESS.md)
+
+A list of typical issues and resolutions can be found [here](docs/TROUBLESHOOTING.md).
+
+## Contributing
+Refer to the [contributing](CONTRIBUTING.md) guidelines or dump part of the information here.
+
+## Support
+Refer to the [support](SUPPORT.md) guidelines or dump part of the information here.
