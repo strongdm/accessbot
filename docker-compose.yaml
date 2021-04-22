@@ -4,8 +4,6 @@ services:
     build: .
     environment:
       # IMPORTANT: Do not enclose values in double or single quotes 
-      # For Docker Compose, this: MY_VAR="my value"
-      # Is the same in bash, as: MY_BAR='"my value"'
 
       # Required variables
       - SLACK_TOKEN=slack-token
