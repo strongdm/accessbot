@@ -7,4 +7,4 @@ with -at least- the following permissions:
 * **grant:write**
 * **user:list**
 
-** Use the API Key ID and SECRET as SDM_ACCESS_KEY and SDM_SECRET_KEY respectively** 
+**Use the API Key ID and SECRET as SDM_ACCESS_KEY and SDM_SECRET_KEY respectively** 
