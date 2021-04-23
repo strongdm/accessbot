@@ -1,6 +1,6 @@
 import os
 
-CORE_PLUGING=('ACLs')
+CORE_PLUGINS=('ACLs', 'Utils', 'Health')
 BACKEND = 'Slack'
 
 BOT_DATA_DIR = 'data'
