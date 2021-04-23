@@ -51,6 +51,15 @@ You can find detailed instructions for the main available commands:
 * [Show Resources](docs/COMMAND_SHOW_RESOURCES.md)
 * [Access](docs/COMMAND_ACCESS.md)
 
+## Optional configuration
+
+1. Set `SDM_AUTO_APPROVE_ALL=true` to disable approval entirely.
+2. Use the strongDM CLI or SDK to add the following tags to individual resources:
+      - `SDM_AUTO_APPROVE_TAG=auto-approve` -- automatic approval for this resource
+      - `SDM_HIDE_RESOURCE_TAG=hide-resource` -- resource is not displayed via `show` command; any access request auto-fails
+
+## Troubleshooting
+
 A list of typical issues and resolutions can be found [here](docs/TROUBLESHOOTING.md).
 
 ## Contributing
