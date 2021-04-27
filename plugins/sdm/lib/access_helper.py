@@ -13,9 +13,8 @@ class AccessHelper:
         self.access_service = create_access_service(bot.get_properties(), bot.log)
 
     # pylint: disable=broad-except
-    def execute(self, message, match_string):
+    def execute(self, message, resource_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
-        resource_name = re.sub("^access to (.+)$", "\\1", match_string)
         sender_nick = self.__get_sender_nick(message)
         sender_email = self.__get_sender_email(message)
 
