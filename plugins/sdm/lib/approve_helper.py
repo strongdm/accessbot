@@ -10,6 +10,8 @@ class ApproveHelper:
 
         if not self.__bot.is_valid_access_request_id(access_request_id):
             self.__bot.log.debug("**SDM** %s ApproveHelper.execute invalid access request id: %s", execution_id, access_request_id)
-            return
+            yield f"Invalid access request id = {access_request_id}"
+
         self.__bot.approve_access_request(access_request_id)
         self.__bot.log.info("**SDM** %s ApproveHelper.execute approving access to request id: %s", execution_id, access_request_id)
+        yield

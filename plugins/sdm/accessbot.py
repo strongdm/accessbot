@@ -1,7 +1,7 @@
 import re
 from errbot import BotPlugin, re_botcmd
 
-from lib import AccessHelper, ApproveHelper, HelpHelper, ShowResourcesHelper
+from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
 import properties
 
 ACCESS_REGEX = r"^access to (.+)$"
@@ -11,35 +11,27 @@ APPROVE_REGEX = r"^.{0,2}yes ([a-z0-9]+).{0,2}$"
 class AccessBot(BotPlugin):
     __access_requests_status = {}
 
-    @re_botcmd(pattern=ACCESS_REGEX, prefixed=False, flags=re.IGNORECASE)
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
     def access(self, message, match):
         """
-        Command which grants access to the named SDM resource.
+        Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string)
         yield from self.get_access_helper().execute(message, resource_name)
 
-    @re_botcmd(pattern=APPROVE_REGEX, prefixed=False, flags=re.IGNORECASE)
+    @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
         """
-        Command which grants access to the named SDM resource.
+        Approve access to a resource
         """
-        access_request_id = re.sub(APPROVE_REGEX, "\\1", match.string)
-        self.get_approve_helper().execute(access_request_id)
+        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string, flags=re.IGNORECASE)
+        yield from self.get_approve_helper().execute(access_request_id)
 
     #pylint: disable=unused-argument
-    @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
-    def help(self, message, match):
-        """
-        Command for showing help
-        """
-        yield from self.get_help_helper().execute()
-
-    #pylint: disable=unused-argument
-    @re_botcmd(pattern=r"^show available resources", prefixed=False, flags=re.IGNORECASE)
+    @re_botcmd(pattern=r"^show available resources", flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
     def show_resources(self, message, match):
         """
-        Command for showing available resources
+        Show all available resources
         """
         yield from self.get_show_resources_helper().execute()
 
@@ -52,10 +44,6 @@ class AccessBot(BotPlugin):
 
     def get_approve_helper(self):
         return ApproveHelper(self)
-
-    @staticmethod
-    def get_help_helper():
-        return HelpHelper()
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)

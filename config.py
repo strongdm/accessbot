@@ -1,6 +1,6 @@
 import os
 
-CORE_PLUGINS=('ACLs', 'Utils', 'Health')
+CORE_PLUGINS=('ACLs', 'Utils', 'Health', 'Help')
 BACKEND = 'Slack'
 
 BOT_DATA_DIR = 'data'
@@ -16,11 +16,13 @@ BOT_IDENTITY = {
 }
 
 ACCESS_CONTROLS = {
-    'AccessBot:access': { 'allowusers': ('*') },
-    'AccessBot:approve': { 'allowusers': BOT_ADMINS },
-    'AccessBot:help': { 'allowusers': ('*') },
-    'AccessBot:show_resources': { 'allowusers': ('*') },
-    'status': { 'allowusers': ('*') },
+    'AccessBot:*': { 'allowusers': ('*') },
+    'help': { 'allowusers': ('*') },
     'whoami': { 'allowusers': ('*') },
     '*': { 'allowusers': BOT_ADMINS },
 }
+
+BOT_PREFIX = ''
+HIDE_RESTRICTED_COMMANDS = True
+HIDE_RESTRICTED_ACCESS = True
+DIVERT_TO_PRIVATE = ('help', 'AccessBot:approve')
