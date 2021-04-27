@@ -53,6 +53,13 @@ class Test_default_flow: # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+    def test_access_command_grant_approved_italicized_yes_message(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"_yes {access_request_id}_")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
 class Test_automatic_approval_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):

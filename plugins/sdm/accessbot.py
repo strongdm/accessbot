@@ -1,25 +1,31 @@
 import re
 from errbot import BotPlugin, re_botcmd
 
-from lib import AccessHelper, CallbackMessageHelper, HelpHelper, ShowResourcesHelper
+from lib import AccessHelper, ApproveHelper, HelpHelper, ShowResourcesHelper
 import properties
+
+ACCESS_REGEX = r"^access to (.+)$"
+APPROVE_REGEX = r"^.{0,2}yes ([a-z0-9]+).{0,2}$"
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __access_requests_status = {}
 
-    def callback_message(self, message):
-        """
-        Callback for handling all messages
-        """
-        self.get_callback_message_helper().execute(message)
-           
-    @re_botcmd(pattern=r"^access to (.+)$", prefixed=False, flags=re.IGNORECASE)
+    @re_botcmd(pattern=ACCESS_REGEX, prefixed=False, flags=re.IGNORECASE)
     def access(self, message, match):
         """
         Command which grants access to the named SDM resource.
         """
-        yield from self.get_access_helper().execute(message, match.string)
+        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string)
+        yield from self.get_access_helper().execute(message, resource_name)
+
+    @re_botcmd(pattern=APPROVE_REGEX, prefixed=False, flags=re.IGNORECASE)
+    def approve(self, _, match):
+        """
+        Command which grants access to the named SDM resource.
+        """
+        access_request_id = re.sub(APPROVE_REGEX, "\\1", match.string)
+        self.get_approve_helper().execute(access_request_id)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=r"^help", prefixed=False, flags=re.IGNORECASE)
@@ -37,16 +43,15 @@ class AccessBot(BotPlugin):
         """
         yield from self.get_show_resources_helper().execute()
 
-
     @staticmethod
     def get_properties():
         return properties.get()
 
-    def get_callback_message_helper(self):
-        return CallbackMessageHelper(self)
-
     def get_access_helper(self):
         return AccessHelper(self)
+
+    def get_approve_helper(self):
+        return ApproveHelper(self)
 
     @staticmethod
     def get_help_helper():

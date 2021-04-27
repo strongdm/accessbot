@@ -16,7 +16,10 @@ BOT_IDENTITY = {
 }
 
 ACCESS_CONTROLS = {
-    'AccessBot:*': { 'allowusers': ('*') },
+    'AccessBot:access': { 'allowusers': ('*') },
+    'AccessBot:approve': { 'allowusers': BOT_ADMINS },
+    'AccessBot:help': { 'allowusers': ('*') },
+    'AccessBot:show_resources': { 'allowusers': ('*') },
     'status': { 'allowusers': ('*') },
     'whoami': { 'allowusers': ('*') },
     '*': { 'allowusers': BOT_ADMINS },
