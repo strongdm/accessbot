@@ -46,6 +46,13 @@ class Test_default_flow: # manual approval
         assert "timed out" in mocked_testbot_short_timeout.pop_message()
         assert "not approved" in mocked_testbot_short_timeout.pop_message()
 
+    def test_access_command_grant_approved_bolded_yes_message(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"**yes {access_request_id}**")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
 class Test_automatic_approval_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
