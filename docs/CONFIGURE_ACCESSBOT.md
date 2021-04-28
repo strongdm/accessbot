@@ -13,6 +13,7 @@ There are multiple variables you could use for configuring AccessBot.
 * **SDM_DOCKERIZED**. Logging type. Default = true (_when using docker_), meaning logs go to STDOUT
 
 ## Bot configuration
+The following variables can be changed at runtime via slack -by an SDM_ADMIN- using the `plugin config AccessBot` command:
 * **SDM_ADMIN_TIMEOUT**. Timeout for a request to be manually approved. Default = 30 sec
 * **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Default = None (_useful for testing_)
 * **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Default = None (_useful for testing_)
@@ -20,9 +21,11 @@ There are multiple variables you could use for configuring AccessBot.
 * **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. Default = None
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. Default = None
 
-**This set of variables can be changed at runtime via slack -by an SDM_ADMIN- using the `plugin config AccessBot` command**
+See image below for more information:
+
+![image](img/bot-config.gif)
 
 ### Known issues
 * When using `plugin config` from a Mac, you would need to disable: 
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
-* While waiting for manual approvals, any admin command (e.g. `plugin config`) will hang until the `ADMIN_TIMEOUT` expires
+* While waiting for manual approvals, any admin command (e.g. `plugin config`) will hang until the `ADMIN_TIMEOUT` expires ([issue #45](https://github.com/strongdm/accessbot/issues/45))
