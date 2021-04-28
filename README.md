@@ -47,7 +47,7 @@ You would expect to see no error in your logs (see command above) and the messag
 
 For example:
 
-![image](https://user-images.githubusercontent.com/313803/115705178-864e3580-a36c-11eb-8696-f100ad70d55c.png)
+![image](https://user-images.githubusercontent.com/313803/116425430-94a3c200-a842-11eb-925d-854213d17301.png)
 
 You can find detailed instructions for the main available commands:
 * [Show Resources](docs/COMMAND_SHOW_RESOURCES.md)
