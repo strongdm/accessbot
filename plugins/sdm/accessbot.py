@@ -6,13 +6,15 @@ from errbot import BotPlugin, re_botcmd
 import config_template
 from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
 
-ACCESS_REGEX = r"^access to (.+)$"
-APPROVE_REGEX = r"^.{0,2}yes ([a-z0-9]+).{0,2}$"
+ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
+APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
+SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     # Intentionally not using errbot persistence
     # See: https://errbot.readthedocs.io/en/latest/user_guide/plugin_development/persistence.html
+    # A scheduled clean-up mechanism for stale access requests needs to be implemented first
     __access_requests_status = {}
 
     def get_configuration_template(self):
@@ -33,7 +35,7 @@ class AccessBot(BotPlugin):
         """
         Grant access to a resource (using the requester's email address)
         """
-        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string)
+        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
         yield from self.get_access_helper().execute(message, resource_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
@@ -41,11 +43,11 @@ class AccessBot(BotPlugin):
         """
         Approve access to a resource
         """
-        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string, flags=re.IGNORECASE)
+        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
         yield from self.get_approve_helper().execute(access_request_id)
 
     #pylint: disable=unused-argument
-    @re_botcmd(pattern=r"^show available resources", flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
+    @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
     def show_resources(self, message, match):
         """
         Show all available resources
