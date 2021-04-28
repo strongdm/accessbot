@@ -38,9 +38,11 @@ Once AccessBot is up and running, you can add it as an app or to a channel and s
 
 First, check the bot and Slack interconnectivity state:
 
-![image](https://user-images.githubusercontent.com/313803/115704509-bf39da80-a36b-11eb-8bc1-07f2958679d0.png)
+![image](docs/img/health-check.gif)
 
-You would expect to see no error in your logs (see command above) and the message **Yes I am alive**. If that's the case, enter any of the available commands:
+You would expect to see no error in your logs and the messages **Yes I am alive** and plugin available.
+
+If that's the case, enter any of the following commands:
 * `help`. Show available commands help
 * `show available resources`. Show all available resources ([instructions](docs/COMMAND_SHOW_RESOURCES.md))
 * `access to resource-name`. Grant access to a resource ([instructions](docs/COMMAND_ACCESS.md))
