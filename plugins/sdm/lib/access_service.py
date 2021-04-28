@@ -1,7 +1,7 @@
 import strongdm
 
-def create_access_service(props, log):
-    client = strongdm.Client(props.api_access_key(), props.api_secret_key())
+def create_access_service(api_access_key, api_secret_key, log):
+    client = strongdm.Client(api_access_key, api_secret_key)
     return AccessService(client, log)
 
 class AccessService:

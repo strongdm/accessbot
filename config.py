@@ -1,6 +1,6 @@
 import os
 
-CORE_PLUGINS=('ACLs', 'Utils', 'Health', 'Help')
+CORE_PLUGINS=('ACLs', 'Health', 'Help', 'Plugins', 'Utils')
 BACKEND = 'Slack'
 
 BOT_DATA_DIR = 'data'
