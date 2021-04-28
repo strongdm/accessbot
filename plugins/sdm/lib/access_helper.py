@@ -1,5 +1,4 @@
 import datetime
-import re
 import time
 import shortuuid
 
@@ -8,9 +7,8 @@ from .access_service import create_access_service
 class AccessHelper:
     def __init__(self, bot):
         self.__bot = bot
-        self.__props = bot.get_properties()
-        self.__admin_ids = bot.get_admin_ids(bot.get_properties().admins())
-        self.access_service = create_access_service(bot.get_properties(), bot.log)
+        self.__admin_ids = bot.get_admin_ids()
+        self.access_service = create_access_service(bot.get_api_access_key(), bot.get_api_secret_key(), bot.log)
 
     # pylint: disable=broad-except
     def execute(self, message, resource_name):
@@ -50,26 +48,26 @@ class AccessHelper:
         return shortuuid.ShortUUID().random(length=4)
 
     def __get_sender_nick(self, message):
-        override = self.__props.sender_nick_override()
+        override = self.__bot.config['SENDER_NICK_OVERRIDE']
         return override if override else str(message.frm.nick)
 
     def __get_sender_email(self, message):
-        override = self.__props.sender_email_override()
+        override = self.__bot.config['SENDER_EMAIL_OVERRIDE']
         return override if override else str(message.frm.email)
 
     def __is_hidden_resource(self, sdm_resource):
-        return self.__props.hide_resource_tag() is not None and self.__props.hide_resource_tag() in sdm_resource.tags
+        return self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
 
     def __needs_manual_approval(self, sdm_resource):
-        tagged_resource = self.__props.auto_approve_tag() is not None and self.__props.auto_approve_tag() in sdm_resource.tags
-        return not self.__props.auto_approve_all() and not tagged_resource
+        tagged_resource = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
+        return not self.__bot.config['AUTO_APPROVE_ALL'] and not tagged_resource
 
     def __ask_for_and_validate_approval(self, sender_nick, resource_name):
         access_request_id = self.generate_access_request_id()
         self.__bot.enter_access_request(access_request_id)
         yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
 
-        for _ in range(self.__props.admin_timeout()):
+        for _ in range(self.__bot.config['ADMIN_TIMEOUT']):
             time.sleep(1)
             is_access_request_approved = self.__bot.is_access_request_approved(access_request_id)
             if is_access_request_approved:
@@ -86,7 +84,7 @@ class AccessHelper:
             self.__bot.send(admin_id, message)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, access_request_id):
-        team_admins = ", ".join(self.__props.admins())
+        team_admins = ", ".join(self.__bot.get_admins())
         yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your access request id is \`" + access_request_id + r"\`"
         self.__notify_admins(r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + r"\`! To approve, enter: **yes " + access_request_id + r"**")
 

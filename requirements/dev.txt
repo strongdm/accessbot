@@ -3,5 +3,4 @@
 -r common.txt
 pytest
 pytest-mock
-pytest-env
 pylint

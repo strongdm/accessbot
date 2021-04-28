@@ -1,15 +1,32 @@
+import os
 import re
+from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
+import config_template
 from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
-import properties
 
 ACCESS_REGEX = r"^access to (.+)$"
 APPROVE_REGEX = r"^.{0,2}yes ([a-z0-9]+).{0,2}$"
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
+    # Intentionally not using errbot persistence
+    # See: https://errbot.readthedocs.io/en/latest/user_guide/plugin_development/persistence.html
     __access_requests_status = {}
+
+    def get_configuration_template(self):
+        return config_template.get()
+
+    def configure(self, configuration):
+        if configuration is not None and configuration != {}:
+            config = dict(chain(config_template.get().items(), configuration.items()))
+        else:
+            config = config_template.get()
+        super(AccessBot, self).configure(config)
+
+    def check_configuration(self, configuration):
+        pass
 
     @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
     def access(self, message, match):
@@ -36,8 +53,16 @@ class AccessBot(BotPlugin):
         yield from self.get_show_resources_helper().execute()
 
     @staticmethod
-    def get_properties():
-        return properties.get()
+    def get_admins():
+        return os.getenv("SDM_ADMINS", "").split(" ")
+ 
+    @staticmethod
+    def get_api_access_key():
+        return os.getenv("SDM_API_ACCESS_KEY")
+
+    @staticmethod
+    def get_api_secret_key():
+        return os.getenv("SDM_API_SECRET_KEY")
 
     def get_access_helper(self):
         return AccessHelper(self)
@@ -48,8 +73,8 @@ class AccessBot(BotPlugin):
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
 
-    def get_admin_ids(self, admins):
-        return [self.build_identifier(admin) for admin in admins]
+    def get_admin_ids(self):
+        return [self.build_identifier(admin) for admin in self.get_admins()]
 
     def is_access_request_approved(self, access_request_id):
         return self.__access_requests_status[access_request_id] == 'APPROVED'

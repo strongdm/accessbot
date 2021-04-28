@@ -1,9 +1,9 @@
 # pylint: disable=invalid-name
-import pytest
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+import pytest
 
-from test_accessbot_common import create_properties
+from test_common import create_config
 sys.path.append('plugins/sdm')
 from lib import AccessHelper
 
@@ -15,14 +15,14 @@ access_request_id = "12ab"
 class Test_default_flow: # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = create_properties()
-        return inject_props(testbot, props)
+        config = create_config()
+        return inject_config(testbot, config)
 
     @pytest.fixture
     def mocked_testbot_short_timeout(self, testbot):
-        props = create_properties()
-        props.admin_timeout = MagicMock(return_value = 1)
-        return inject_props(testbot, props)
+        config = create_config()
+        config['ADMIN_TIMEOUT'] = 1
+        return inject_config(testbot, config)
 
     def test_access_command_grant_approved(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -46,14 +46,14 @@ class Test_default_flow: # manual approval
         assert "timed out" in mocked_testbot_short_timeout.pop_message()
         assert "not approved" in mocked_testbot_short_timeout.pop_message()
 
-    def test_access_command_grant_approved_bolded_yes_message(self, mocked_testbot):
+    def test_access_command_grant_bolded_yes_message(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"**yes {access_request_id}**")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
-    def test_access_command_grant_approved_italicized_yes_message(self, mocked_testbot):
+    def test_access_command_grant_italicized_yes_message(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"_yes {access_request_id}_")
         assert "valid request" in mocked_testbot.pop_message()
@@ -63,9 +63,9 @@ class Test_default_flow: # manual approval
 class Test_automatic_approval_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = create_properties()
-        props.auto_approve_all = MagicMock(return_value = True)
-        return inject_props(testbot, props)
+        config = create_config()
+        config['AUTO_APPROVE_ALL'] = True
+        return inject_config(testbot, config)
 
     def test_access_command_grant_auto_approved_for_all(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -74,9 +74,8 @@ class Test_automatic_approval_flow:
 class Test_multiple_admins_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = create_properties()
-        props.admins = MagicMock(return_value = ["gbin@localhost",  "user1"])
-        return inject_props(testbot, props)
+        config = create_config()
+        return inject_config(testbot, config, admins = ["gbin@localhost",  "user1"])
 
     def test_access_command_grant_multiple_admins(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -89,9 +88,9 @@ class Test_multiple_admins_flow:
 class Test_auto_approve_tag:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = create_properties()
-        props.auto_approve_tag = MagicMock(return_value = "auto-approve")
-        return inject_props(testbot, props, tags = {'auto-approve': True})
+        config = create_config()
+        config['AUTO_APPROVE_TAG'] = "auto-approve"
+        return inject_config(testbot, config, tags = {'auto-approve': True})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -100,9 +99,9 @@ class Test_auto_approve_tag:
 class Test_hide_resource_tag:
     @pytest.fixture
     def mocked_testbot(self, testbot):
-        props = create_properties()
-        props.hide_resource_tag = MagicMock(return_value = "hide-resource")
-        return inject_props(testbot, props, tags = {'hide-resource': True})
+        config = create_config()
+        config['HIDE_RESOURCE_TAG'] = "hide-resource"
+        return inject_config(testbot, config, tags = {'hide-resource': True})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -110,20 +109,20 @@ class Test_hide_resource_tag:
 
 
 # pylint: disable=dangerous-default-value
-def inject_props(testbot, props, tags = {}):
+def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
-    mock_dict = {
-        'get_access_helper': MagicMock(return_value = create_access_helper(accessbot, props, tags))
-    }
-    testbot.inject_mocks('AccessBot', mock_dict)
+    accessbot.config = config
+    accessbot.get_admins = MagicMock(return_value = admins)
+    accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
+    accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
+    accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot, tags))
     return testbot
 
-def create_access_helper(accessbot, props, tags):
-    with patch.object(accessbot, 'get_properties', return_value = props):
-        helper = AccessHelper(accessbot)
-        helper.access_service = create_access_service_mock(tags)
-        helper.generate_access_request_id = MagicMock(return_value = access_request_id)
-        return helper
+def create_access_helper(accessbot, tags):
+    helper = AccessHelper(accessbot)
+    helper.access_service = create_access_service_mock(tags)
+    helper.generate_access_request_id = MagicMock(return_value = access_request_id)
+    return helper
 
 def create_access_service_mock(tags):
     service_mock = MagicMock()

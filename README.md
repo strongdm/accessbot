@@ -15,6 +15,8 @@ In order to install AccessBot you need to provide -at least- the following requi
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
+For a full list of configuration variables please read: [Configure AccessBot](docs/CONFIGURE_ACCESSBOT.md)
+
 Detailed instructions about how to configure Slack and SDM for AccessBot can be found here:
 * [Configure Slack](docs/CONFIGURE_SLACK.md)
 * [Configure SDM](docs/CONFIGURE_SDM.md)

@@ -5,15 +5,15 @@ def _get_key(sdm_resource):
 
 class ShowResourcesHelper:
     def __init__(self, bot):
-        self.__props = bot.get_properties()
-        self.access_service = create_access_service(bot.get_properties(), bot.log)
+        self.__bot = bot
+        self.access_service = create_access_service(bot.get_api_access_key(), bot.get_api_secret_key(), bot.log)
 
     def execute(self):
         resources = "Available resources:\n\n"
         sdm_resources = self.access_service.get_all_resources()
         for sdm_resource in sorted(sdm_resources, key = _get_key):
-            auto_approve = self.__props.auto_approve_tag() is not None and self.__props.auto_approve_tag() in sdm_resource.tags
-            hide_resource = self.__props.hide_resource_tag() is not None and self.__props.hide_resource_tag() in sdm_resource.tags
+            auto_approve = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
+            hide_resource = self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
             if hide_resource:
                 continue
             if auto_approve:
