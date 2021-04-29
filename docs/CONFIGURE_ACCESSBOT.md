@@ -25,6 +25,10 @@ See image below for more information:
 
 ![image](img/bot-config.gif)
 
+### Some tricks
+* Use `plugin config AccessBot {}` for setting config to initial state
+* Use `plugin info AccessBot` for showing all configurations
+
 ### Known issues
 * When using `plugin config` from a Mac, you would need to disable: 
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
