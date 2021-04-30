@@ -44,19 +44,21 @@ You would expect to see no error in your logs and the messages **Yes I am alive*
 
 If that's the case, enter any of the following commands:
 * `help`. Show available commands help
-* `show available resources`. Show all available resources ([instructions](docs/COMMAND_SHOW_RESOURCES.md))
-* `access to resource-name`. Grant access to a resource ([instructions](docs/COMMAND_ACCESS.md))
+* `show available resources`. Show all available resources
+* `access to resource-name`. Grant access to a resource
 
 For example:
 
 ![image](docs/img/main-commands-tutorial.gif)
 
-## Optional configuration
+## Optional access configuration
 
 1. Set `SDM_AUTO_APPROVE_ALL=true` to disable approval entirely.
 2. Use the strongDM CLI or SDK to add the following tags to individual resources:
       - `SDM_AUTO_APPROVE_TAG=auto-approve` -- automatic approval for this resource
       - `SDM_HIDE_RESOURCE_TAG=hide-resource` -- resource is not displayed via `show` command; any access request auto-fails
+
+For more information, please refer to the [detailed guide for access configuration](docs/ACCESS_CONFIGURATION.md).
 
 ## Troubleshooting
 
