@@ -1,5 +1,4 @@
 # Access configuration
-
 You can use the “access to resource-name” command for obtaining 1 hour access to a specific resource.
 
 The default configuration relies on a “manual approval” workflow, which delegates access request approvals to the bot admins (`SDM_ADMINS`).
@@ -16,7 +15,6 @@ Besides the “manual approval” workflow, you can configure:
 * Hide tagged resources (`SDM_HIDE_RESOURCE_TAG`). Remove tagged resources from the list of available resources. Hidden resources will not be shown when executing: _show available resources_
 
 ## Possible workflows
-
 Different workflows (permutations) can be configured using the flags mentioned above - adjustable at runtime via [plugin config](docs/CONFIGURE_ACCESSBOT.md).
 * Manually approve all resources. Default workflow
 * Manually approve all resources, but auto approve a subset: `SDM_AUTO_APPROVE_TAG`
@@ -24,3 +22,23 @@ Different workflows (permutations) can be configured using the flags mentioned a
 * Manually approve all resources, but auto approve some and exclude others: `SDM_AUTO_APPROVE_TAG` + `SDM_HIDE_RESOURCE_TAG`
 * Auto approve all: `SDM_AUTO_APPROVE_ALL`
 * Auto approve all, but exclude a subset: `SDM_AUTO_APPROVE_ALL` + `SDM_HIDE_RESOURCE_TAG`
+
+## Using tags
+Following some sample commands you can use for configuring tags (e.g. `SDM_AUTO_APPROVE_TAG=auto-approve`):
+```
+$ sdm admin datasources list -e
+Datasource ID           Name                 Type          ...         Tags
+rs-4c29d3006066e7ef     snowflake-test-1     snowflake     ...
+rs-3b4d153c6066effe     snowflake-test-2     snowflake     ...
+$ sdm admin datasources update snowflake --id rs-4c29d3006066e7ef --tags 'auto-approve=true'
+changed 1 out of 1 matching datasource
+$ sdm admin datasources list -e
+Datasource ID           Name                 Type          ...         Tags
+rs-4c29d3006066e7ef     snowflake-test-1     snowflake     ...         **auto-approve=true**
+rs-3b4d153c6066effe     snowflake-test-2     snowflake     ...
+$ sdm admin datasources list --filter 'tags:auto-approve=true' -e
+Datasource ID           Name                 Type          ...         Tags
+rs-4c29d3006066e7ef     snowflake-test-1     snowflake     ...         **auto-approve=true**
+```
+
+For further information please refer to the [strongDM docs about tags](https://www.strongdm.com/docs/automation/getting-started/tags).
