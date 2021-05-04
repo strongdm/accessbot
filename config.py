@@ -26,4 +26,4 @@ ACCESS_CONTROLS = {
 BOT_PREFIX = ''
 HIDE_RESTRICTED_COMMANDS = True
 HIDE_RESTRICTED_ACCESS = True
-DIVERT_TO_PRIVATE = ('help', 'AccessBot:approve')
+#DIVERT_TO_PRIVATE = ('help', 'AccessBot:approve')
