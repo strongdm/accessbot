@@ -10,6 +10,7 @@ from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
+ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL = 60 # seconds
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
@@ -19,16 +20,15 @@ class AccessBot(BotPlugin):
     __access_requests = {}
 
     def access_requests_cleaner(self):
-        def is_stale(ar_id):
-            elapsed_time = (time.time() - self.__access_requests[ar_id]['timestamp']) / 60
-            return elapsed_time > self.config['ADMIN_TIMEOUT']
-        stale_access_requests = [ar_id for ar_id in self.__access_requests if is_stale(ar_id)]
-        for ar_id in stale_access_requests: 
-            self.__access_requests.pop(id, None)
+        ars = self.__access_requests
+        for ar_id in list(ars.keys()):
+            elapsed_time = (time.time() - ars[ar_id]['timestamp']) / 60
+            if elapsed_time > self.config['ADMIN_TIMEOUT']:
+                ars.pop(ar_id, None)
 
     def activate(self):
         super().activate()
-        self.start_poller(60, self.access_requests_cleaner)
+        self.start_poller(ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL, self.access_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -110,6 +110,9 @@ class AccessBot(BotPlugin):
 
     def remove_access_request(self, access_request_id):
         self.__access_requests.pop(access_request_id, None)
+
+    def get_access_requests(self):
+        return self.__access_requests
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":
