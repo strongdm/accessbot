@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
@@ -15,7 +16,19 @@ class AccessBot(BotPlugin):
     # Intentionally not using errbot persistence
     # See: https://errbot.readthedocs.io/en/latest/user_guide/plugin_development/persistence.html
     # A scheduled clean-up mechanism for stale access requests needs to be implemented first
-    __access_requests_status = {}
+    __access_requests = {}
+
+    def access_requests_cleaner(self):
+        def is_stale(ar_id):
+            elapsed_time = (time.time() - self.__access_requests[ar_id]['timestamp']) / 60
+            return elapsed_time > self.config['ADMIN_TIMEOUT']
+        stale_access_requests = [ar_id for ar_id in self.__access_requests if is_stale(ar_id)]
+        for ar_id in stale_access_requests: 
+            self.__access_requests.pop(id, None)
+
+    def activate(self):
+        super().activate()
+        self.start_poller(60, self.access_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -79,19 +92,24 @@ class AccessBot(BotPlugin):
         return [self.build_identifier(admin) for admin in self.get_admins()]
 
     def is_access_request_approved(self, access_request_id):
-        return self.__access_requests_status[access_request_id] == 'APPROVED'
+        return self.__access_requests[access_request_id] and \
+            self.__access_requests[access_request_id]['status'] == 'APPROVED'
 
     def is_valid_access_request_id(self, access_request_id):
-        return access_request_id in self.__access_requests_status
+        return access_request_id in self.__access_requests
 
     def approve_access_request(self, access_request_id):
-        self.__access_requests_status[access_request_id] = 'APPROVED'
+        self.__access_requests[access_request_id]['status'] = 'APPROVED'
 
-    def enter_access_request(self, access_request_id):
-        self.__access_requests_status[access_request_id] = 'PENDING'
+    def enter_access_request(self, message, access_request_id):
+        self.__access_requests[access_request_id] = {
+            'status': 'PENDING',
+            'timestamp': time.time(),
+            'message': message
+        }
 
     def remove_access_request(self, access_request_id):
-        self.__access_requests_status.pop(access_request_id, None)
+        self.__access_requests.pop(access_request_id, None)
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":

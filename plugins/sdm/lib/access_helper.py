@@ -30,7 +30,7 @@ class AccessHelper:
             sdm_account = self.access_service.get_account_by_email(sender_email)
             if self.__needs_manual_approval(sdm_resource):
                 self.__bot.log.debug("##SDM## %s AccessHelper.execute needs manual approval", execution_id)
-                request_approved = yield from self.__ask_for_and_validate_approval(sender_nick, resource_name)
+                request_approved = yield from self.__ask_for_and_validate_approval(message, sender_nick, resource_name)
                 if not request_approved:
                     self.__bot.log.debug("##SDM## %s AccessHelper.execute request not approved", execution_id)
                     return
@@ -62,9 +62,9 @@ class AccessHelper:
         tagged_resource = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
         return not self.__bot.config['AUTO_APPROVE_ALL'] and not tagged_resource
 
-    def __ask_for_and_validate_approval(self, sender_nick, resource_name):
+    def __ask_for_and_validate_approval(self, message, sender_nick, resource_name):
         access_request_id = self.generate_access_request_id()
-        self.__bot.enter_access_request(access_request_id)
+        self.__bot.enter_access_request(message, access_request_id)
         yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
 
         for _ in range(self.__bot.config['ADMIN_TIMEOUT']):
