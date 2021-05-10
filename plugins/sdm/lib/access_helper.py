@@ -40,7 +40,7 @@ class AccessHelper:
             yield from self.__notify_access_request_granted(sender_nick, sender_email, resource_name)
             self.__bot.log.info("##SDM## %s AccessHelper.execute access request granted", execution_id)
         except Exception as ex:
-            self.__bot.log.error("##SDM## %s AccessHelper.execute access request failed %s", execution_id, str(resource_name))
+            self.__bot.log.error("##SDM## %s AccessHelper.execute access request failed %s", execution_id, str(ex))
             yield str(ex)
 
     @staticmethod
@@ -67,6 +67,7 @@ class AccessHelper:
         self.__bot.enter_access_request(message, access_request_id)
         yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
 
+        # TODO Move logic to approve command
         for _ in range(self.__bot.config['ADMIN_TIMEOUT']):
             time.sleep(1)
             is_access_request_approved = self.__bot.is_access_request_approved(access_request_id)

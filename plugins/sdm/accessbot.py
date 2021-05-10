@@ -14,20 +14,19 @@ ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL = 60 # seconds
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
-    # Intentionally not using errbot persistence
-    # See: https://errbot.readthedocs.io/en/latest/user_guide/plugin_development/persistence.html
-    # A scheduled clean-up mechanism for stale access requests needs to be implemented first
-    __access_requests = {}
-
     def access_requests_cleaner(self):
-        ars = self.__access_requests
-        for ar_id in list(ars.keys()):
-            elapsed_time = (time.time() - ars[ar_id]['timestamp']) / 60
+        """
+        Stale access requests cleaner
+        """
+        for ar_id in list(self['access_requests'].keys()):
+            elapsed_time = time.time() - self['access_requests'][ar_id]['timestamp']
             if elapsed_time > self.config['ADMIN_TIMEOUT']:
-                ars.pop(ar_id, None)
+                self.log.info("##SDM## Cleaning access requests, stale access_request_id = %s", ar_id)
+                self.remove_access_request(ar_id)
 
     def activate(self):
         super().activate()
+        self['access_requests'] = {}
         self.start_poller(ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL, self.access_requests_cleaner)
 
     def get_configuration_template(self):
@@ -92,27 +91,27 @@ class AccessBot(BotPlugin):
         return [self.build_identifier(admin) for admin in self.get_admins()]
 
     def is_access_request_approved(self, access_request_id):
-        return self.__access_requests[access_request_id] and \
-            self.__access_requests[access_request_id]['status'] == 'APPROVED'
+        return self['access_requests'].get(access_request_id, None) is not None \
+            and self['access_requests'][access_request_id]['status'] == 'APPROVED'
 
     def is_valid_access_request_id(self, access_request_id):
-        return access_request_id in self.__access_requests
+        return access_request_id in self['access_requests']
 
     def approve_access_request(self, access_request_id):
-        self.__access_requests[access_request_id]['status'] = 'APPROVED'
+        with self.mutable('access_requests') as access_requests:
+            access_requests[access_request_id].update(status = 'APPROVED')
 
     def enter_access_request(self, message, access_request_id):
-        self.__access_requests[access_request_id] = {
-            'status': 'PENDING',
-            'timestamp': time.time(),
-            'message': message
-        }
+        with self.mutable('access_requests') as access_requests:
+            access_requests[access_request_id] = {
+                'status': 'PENDING',
+                'timestamp': time.time(),
+                'message': message
+            }
 
     def remove_access_request(self, access_request_id):
-        self.__access_requests.pop(access_request_id, None)
-
-    def get_access_requests(self):
-        return self.__access_requests
+        with self.mutable('access_requests') as access_requests:
+            access_requests.pop(access_request_id, None)
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":
