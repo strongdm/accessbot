@@ -1,21 +1,25 @@
 import os
 import re
+import time
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
+from lib import AccessHelper, create_access_service, \
+    ApproveHelper, PollerHelper, ShowResourcesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
+FIVE_SECONDS = 5
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
-    # Intentionally not using errbot persistence
-    # See: https://errbot.readthedocs.io/en/latest/user_guide/plugin_development/persistence.html
-    # A scheduled clean-up mechanism for stale access requests needs to be implemented first
-    __access_requests_status = {}
+    __access_requests = {}
+
+    def activate(self):
+        super().activate()
+        self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_access_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -66,11 +70,17 @@ class AccessBot(BotPlugin):
     def get_api_secret_key():
         return os.getenv("SDM_API_SECRET_KEY")
 
+    def get_access_service(self):
+        return create_access_service(self.get_api_access_key(), self.get_api_secret_key(), self.log)
+
     def get_access_helper(self):
         return AccessHelper(self)
 
     def get_approve_helper(self):
         return ApproveHelper(self)
+
+    def get_poller_helper(self):
+        return PollerHelper(self)
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
@@ -78,21 +88,36 @@ class AccessBot(BotPlugin):
     def get_admin_ids(self):
         return [self.build_identifier(admin) for admin in self.get_admins()]
 
-    def is_access_request_approved(self, access_request_id):
-        return self.__access_requests_status[access_request_id] == 'APPROVED'
-
     def is_valid_access_request_id(self, access_request_id):
-        return access_request_id in self.__access_requests_status
+        return access_request_id in self.__access_requests
 
-    def approve_access_request(self, access_request_id):
-        self.__access_requests_status[access_request_id] = 'APPROVED'
-
-    def enter_access_request(self, access_request_id):
-        self.__access_requests_status[access_request_id] = 'PENDING'
+    def enter_access_request(self, access_request_id, message, sdm_resource, sdm_account):
+        self.__access_requests[access_request_id] = {
+            'id': access_request_id,
+            'status': 'PENDING',
+            'timestamp': time.time(),
+            'message': message, # cannot be persisted in errbot state
+            'sdm_resource': sdm_resource,
+            'sdm_account': sdm_account
+        }
 
     def remove_access_request(self, access_request_id):
-        self.__access_requests_status.pop(access_request_id, None)
+        self.__access_requests.pop(access_request_id, None)
+
+    def get_access_request(self, access_request_id):
+        return self.__access_requests[access_request_id]
+
+    def get_access_request_ids(self):
+        return list(self.__access_requests.keys())
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":
             self._bot.add_reaction(message, "thumbsup")
+
+    def get_sender_nick(self, message):
+        override = self.config['SENDER_NICK_OVERRIDE']
+        return override if override else str(message.frm.nick)
+
+    def get_sender_email(self, message):
+        override = self.config['SENDER_EMAIL_OVERRIDE']
+        return override if override else str(message.frm.email)
