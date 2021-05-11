@@ -10,14 +10,14 @@ from lib import AccessHelper, ApproveHelper, PollerHelper, ShowResourcesHelper
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
-ONE_MINUTE = 60
+FIVE_SECONDS = 5
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     def activate(self):
         super().activate()
         self['access_requests'] = {}
-        self.start_poller(ONE_MINUTE, self.get_poller_helper().stale_access_requests_cleaner)
+        self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_access_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -105,6 +105,12 @@ class AccessBot(BotPlugin):
     def remove_access_request(self, access_request_id):
         with self.mutable('access_requests') as access_requests:
             access_requests.pop(access_request_id, None)
+
+    def get_access_request(self, access_request_id):
+        return self['access_requests'][access_request_id]
+
+    def get_access_request_ids(self):
+        return list(self['access_requests'].keys())
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":
