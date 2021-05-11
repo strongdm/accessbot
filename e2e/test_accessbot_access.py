@@ -2,11 +2,10 @@
 import sys
 from unittest.mock import MagicMock
 import pytest
-import time
 
 from test_common import create_config
 sys.path.append('plugins/sdm')
-from lib import AccessHelper, PollerHelper
+from lib import AccessHelper, ApproveHelper, PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -26,22 +25,18 @@ class Test_default_flow: # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
-    @pytest.mark.skip(reason="need to remove time.sleep from access_helper before")
     def test_access_command_grant_timed_out(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        # time.sleep(2)
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
 
-    @pytest.mark.skip(reason="need to remove time.sleep from access_helper before")
     def test_access_command_grant_not_approved(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message("no") # Anything but yes
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        # time.sleep(1)
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
 
@@ -76,6 +71,7 @@ class Test_automatic_approval_flow:
     def test_access_command_grant_auto_approved_for_all(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
+
 
 class Test_multiple_admins_flow:
     @pytest.fixture
@@ -122,14 +118,18 @@ def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}):
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot, tags))
+    accessbot.get_access_service = MagicMock(return_value = create_access_service_mock(tags))
+    accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot))
+    accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
 
-def create_access_helper(accessbot, tags):
+def create_access_helper(accessbot):
     helper = AccessHelper(accessbot)
-    helper.access_service = create_access_service_mock(tags)
     helper.generate_access_request_id = MagicMock(return_value = access_request_id)
     return helper
+
+def create_approve_helper(accessbot):
+    return ApproveHelper(accessbot)
 
 def create_access_service_mock(tags):
     service_mock = MagicMock()

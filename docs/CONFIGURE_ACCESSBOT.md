@@ -32,4 +32,3 @@ See image below for more information:
 ### Known issues
 * When using `plugin config` from a Mac, you would need to disable: 
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
-* While waiting for manual approvals, any admin command (e.g. `plugin config`) will hang until the `ADMIN_TIMEOUT` expires ([issue #45](https://github.com/strongdm/accessbot/issues/45))
