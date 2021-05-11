@@ -5,29 +5,19 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from lib import AccessHelper, ApproveHelper, ShowResourcesHelper
+from lib import AccessHelper, ApproveHelper, PollerHelper, ShowResourcesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
-ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL = 60 # seconds
+ONE_MINUTE = 60
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
-    def access_requests_cleaner(self):
-        """
-        Stale access requests cleaner
-        """
-        for ar_id in list(self['access_requests'].keys()):
-            elapsed_time = time.time() - self['access_requests'][ar_id]['timestamp']
-            if elapsed_time > self.config['ADMIN_TIMEOUT']:
-                self.log.info("##SDM## Cleaning access requests, stale access_request_id = %s", ar_id)
-                self.remove_access_request(ar_id)
-
     def activate(self):
         super().activate()
         self['access_requests'] = {}
-        self.start_poller(ACCESS_REQUESTS_CLEANER_POLLER_INTERVAL, self.access_requests_cleaner)
+        self.start_poller(ONE_MINUTE, self.get_poller_helper().stale_access_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -83,6 +73,9 @@ class AccessBot(BotPlugin):
 
     def get_approve_helper(self):
         return ApproveHelper(self)
+
+    def get_poller_helper(self):
+        return PollerHelper(self)
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
