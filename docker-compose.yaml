@@ -16,4 +16,5 @@ services:
       - SDM_AUTO_APPROVE_ALL=false
       - SDM_AUTO_APPROVE_TAG=auto-approve
       - SDM_HIDE_RESOURCE_TAG=hide-resource
+      - SDM_GRANT_TIMEOUT=60
       - LOG_LEVEL=INFO

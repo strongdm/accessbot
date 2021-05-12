@@ -14,12 +14,13 @@ There are multiple variables you could use for configuring AccessBot.
 
 ## Bot configuration
 The following variables can be changed at runtime via slack -by an SDM_ADMIN- using the `plugin config AccessBot` command:
-* **SDM_ADMIN_TIMEOUT**. Timeout for a request to be manually approved. Default = 30 sec
+* **SDM_ADMIN_TIMEOUT**. Timeout in seconds for a request to be manually approved. Default = 30 sec
 * **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Default = None (_useful for testing_)
 * **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Default = None (_useful for testing_)
 * **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
 * **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. Default = None
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. Default = None
+* **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 
 See image below for more information:
 

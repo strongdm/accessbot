@@ -1,6 +1,7 @@
 # pylint: disable=invalid-name
+import datetime
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from test_common import create_config
@@ -10,6 +11,10 @@ from lib import AccessHelper, ApproveHelper, PollerHelper
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
 
+resource_id = 1
+resource_name = "myresource"
+account_id = 1
+account_name = "myaccount@test.com"
 access_request_id = "12ab"
 
 class Test_default_flow: # manual approval
@@ -109,6 +114,32 @@ class Test_hide_resource_tag:
         mocked_testbot.push_message("access to Xxx")
         assert "Invalid" in mocked_testbot.pop_message()
 
+class Test_grant_timeout:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['GRANT_TIMEOUT'] = 1
+        return inject_config(testbot, config)
+
+    class NewDate(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2021, 5, 12)
+
+    def test_access_command_grant_with_custom_timeout(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        grant_temporary_access_mock = accessbot.get_access_service().grant_temporary_access
+        with patch('datetime.datetime', new = self.NewDate):
+            mocked_testbot.push_message("access to Xxx")
+            mocked_testbot.push_message(f"yes {access_request_id}")
+            assert "valid request" in mocked_testbot.pop_message()
+            assert "access request" in mocked_testbot.pop_message()
+            assert "Granting" in mocked_testbot.pop_message()
+
+            start_from = datetime.datetime(2021, 5, 12, 0, 0)
+            valid_until = datetime.datetime(2021, 5, 12, 0, 1)
+            grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
+
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}):
@@ -140,13 +171,13 @@ def create_access_service_mock(tags):
 
 def create_mock_resource(tags):
     mock_resource = MagicMock()
-    mock_resource.id = 1
-    mock_resource.name = "myresource"
+    mock_resource.id = resource_id
+    mock_resource.name = resource_name
     mock_resource.tags = tags
     return mock_resource
 
 def create_mock_account():
     mock_account = MagicMock()
-    mock_account.id = 1
-    mock_account.name = "myaccount@test.com"
+    mock_account.id = account_id
+    mock_account.name = account_name
     return mock_account
