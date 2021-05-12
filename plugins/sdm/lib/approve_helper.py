@@ -26,7 +26,7 @@ class ApproveHelper:
         yield from self.__notify_access_request_granted(access_request['message'], access_request['sdm_resource'].name)
 
     def __grant_1hour_access(self, resource_id, account_id):
-        grant_start_from = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=1)
+        grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(hours=1)
         self.__access_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
 
