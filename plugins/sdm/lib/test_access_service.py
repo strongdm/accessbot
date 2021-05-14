@@ -9,7 +9,7 @@ import strongdm
 from .access_service import AccessService
 
 resource_id = 1
-resource_name = "myresource"
+resource_name = "resource1"
 account_id = 55
 account_email = "myaccount@test.com"
 grant_start_from = datetime.datetime.now(timezone.utc) + timedelta(minutes=1)
@@ -82,7 +82,7 @@ class Test_grant_temporary_access:
         assert dir(expected_sdm_grant) == dir(actual_sdm_grant)
 
     def test_when_grant_is_not_possible(self, client, service):
-        error_message = "Grant is not possible" # TODO Validate if it raises an exception
+        error_message = "Grant is not possible"
         client.account_grants.create = MagicMock(side_effect = Exception(error_message))
         with pytest.raises(Exception) as ex:
             service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
@@ -108,6 +108,35 @@ class Test_get_all_resources:
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
+class Test_get_all_resources_by_role:
+    def test_returns_resources(self, client, service):
+        mock_role = MagicMock()
+        mock_role.id = 111
+        mock_role.name = "role_name"
+        role_iter = iter([mock_role])
+        client.role.list = MagicMock(return_value = role_iter)
+
+        mock_role_grant1 = MagicMock()
+        mock_role_grant1.resource_id = 1
+        mock_role_grant2 = MagicMock()
+        mock_role_grant2.resource_id = 2
+        role_grants_iter = iter([mock_role_grant1, mock_role_grant2])
+        client.role_grants.list = MagicMock(return_value = role_grants_iter)
+
+        client.resources.list = MagicMock(return_value = [None])
+
+        resources = service.get_all_resources_by_role("role_name")
+        client.role.list.assert_called_with(("name:role_name"))
+        client.role_grants.list.assert_called_with("role_id:111")
+        client.resources.list.assert_called_with("id:1,id:2")
+        assert len(resources) == 0 # discard None
+
+    def test_when_role_does_not_exist(self, client, service):
+        client.role.list = MagicMock(return_value = iter([]))
+        with pytest.raises(Exception) as ex:
+            service.get_all_resources_by_role("role_name")
+        client.role.list.assert_called_with(("name:role_name"))
+        assert str(ex.value) != ""
 
 def get_resource_list_iter():
     mock_resource = MagicMock()
