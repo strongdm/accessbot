@@ -6,5 +6,6 @@ with -at least- the following permissions:
 * **grant:read**
 * **grant:write**
 * **user:list**
+* **role:list** (only when using _CONTROL_RESOURCES_ROLE_NAME_)
 
 **Use the API Key ID and SECRET as SDM_ACCESS_KEY and SDM_SECRET_KEY respectively** 
