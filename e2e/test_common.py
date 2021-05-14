@@ -10,3 +10,8 @@ def create_config():
         'GRANT_TIMEOUT': 60,
         'CONTROL_RESOURCES_ROLE_NAME': None
     }
+
+class DummyResource:
+    def __init__(self, name, tags):
+        self.name = name
+        self.tags = tags

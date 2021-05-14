@@ -3,7 +3,7 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
-from test_common import create_config
+from test_common import create_config, DummyResource
 sys.path.append('plugins/sdm')
 from lib import ShowResourcesHelper
 
@@ -50,11 +50,6 @@ class Test_show_resources_by_role:
         assert "Aaa in role (type: DummyResource)" in message
         assert "Bbb in role (type: DummyResource)" in message
 
-
-class DummyResource:
-    def __init__(self, name, tags):
-        self.name = name
-        self.tags = tags
 
 def default_dummy_resources():
     return [ DummyResource("Bbb", {}), DummyResource("Aaa", {}) ]

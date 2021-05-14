@@ -17,7 +17,8 @@ class AccessHelper:
             execution_id, resource_name, sender_nick, sender_email
         )
         try:
-            sdm_resource = self.__access_service.get_resource_by_name(resource_name)
+            sdm_resource = self.__get_resource(resource_name, execution_id)
+            # TODO Move condition to get_resource
             if self.__is_hidden_resource(sdm_resource):
                 self.__bot.log.debug("##SDM## %s AccessHelper.execute hidden resource", execution_id)
                 yield "Invalid resource name"
@@ -40,6 +41,15 @@ class AccessHelper:
     @staticmethod
     def generate_access_request_id():
         return shortuuid.ShortUUID().random(length=4)
+
+    def __get_resource(self, resource_name, execution_id):
+        role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
+        if role_name is not None:
+            sdm_resources_by_role = self.__access_service.get_all_resources_by_role(role_name)
+            if not any(r.name == resource_name for r in sdm_resources_by_role):
+                self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource resource %s not in role %s", execution_id, resource_name, role_name)
+                raise Exception("Invalid resource")
+        return self.__access_service.get_resource_by_name(resource_name)
 
     def __is_hidden_resource(self, sdm_resource):
         return self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
