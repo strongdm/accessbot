@@ -12,9 +12,4 @@ services:
       - SDM_API_SECRET_KEY=sdm-api-secret-key
 
       # Optional variables
-      - SDM_ADMIN_TIMEOUT=30
-      - SDM_AUTO_APPROVE_ALL=false
-      - SDM_AUTO_APPROVE_TAG=auto-approve
-      - SDM_HIDE_RESOURCE_TAG=hide-resource
-      - SDM_GRANT_TIMEOUT=60
-      - LOG_LEVEL=INFO
+      # See: docs/CONFIGURE_ACCESSBOT.md

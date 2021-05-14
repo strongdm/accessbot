@@ -10,14 +10,22 @@ class ShowResourcesHelper:
 
     def execute(self):
         resources = "Available resources:\n\n"
-        sdm_resources = self.access_service.get_all_resources()
+        sdm_resources = self.get_resources()
         for sdm_resource in sorted(sdm_resources, key = _get_key):
-            auto_approve = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
             hide_resource = self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
             if hide_resource:
                 continue
-            if auto_approve:
-                resources += f"* **{sdm_resource.name} (type: {type(sdm_resource).__name__}, auto-approve)**\n"
-            else:
-                resources += f"* {sdm_resource.name} (type: {type(sdm_resource).__name__})\n"
+            resources += self.get_resource_line(sdm_resource)
         yield resources
+
+    def get_resources(self):
+        role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
+        if role_name is not None:
+            return self.access_service.get_all_resources_by_role(role_name)
+        return self.access_service.get_all_resources()
+
+    def get_resource_line(self, sdm_resource):
+        auto_approve = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
+        if auto_approve:
+            return f"* **{sdm_resource.name} (type: {type(sdm_resource).__name__}, auto-approve)**\n"
+        return f"* {sdm_resource.name} (type: {type(sdm_resource).__name__})\n"

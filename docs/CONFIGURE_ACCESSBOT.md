@@ -21,6 +21,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. Default = None
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. Default = None
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
+* **CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
 
 See image below for more information:
 
