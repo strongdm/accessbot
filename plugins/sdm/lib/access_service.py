@@ -60,6 +60,6 @@ class AccessService:
         """
         self.__log.debug("##SDM## AccessService.get_all_resources")
         try:
-            return list(self.__client.resources.list(''))
+            return [resource for resource in self.__client.resources.list('') if resource is not None]
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex

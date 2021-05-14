@@ -96,6 +96,18 @@ class Test_get_all_resources:
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
+    def test_drop_none_resources(self, client, service): # useful for beta resources
+        mock_resource = MagicMock()
+        mock_resource.id = resource_id
+        mock_resource.name = resource_name
+        resource_list_iter = iter([mock_resource, None])
+
+        client.resources.list = MagicMock(return_value = resource_list_iter)
+        sdm_resources = service.get_all_resources()
+        assert len(sdm_resources) == 1
+        assert sdm_resources[0].id == resource_id
+        assert sdm_resources[0].name == resource_name
+
 
 def get_resource_list_iter():
     mock_resource = MagicMock()
