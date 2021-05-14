@@ -18,20 +18,12 @@ class AccessHelper:
         )
         try:
             sdm_resource = self.__get_resource(resource_name, execution_id)
-            # TODO Move condition to get_resource
-            if self.__is_hidden_resource(sdm_resource):
-                self.__bot.log.debug("##SDM## %s AccessHelper.execute hidden resource", execution_id)
-                yield "Invalid resource name"
-                return
-
             sdm_account = self.__access_service.get_account_by_email(sender_email)
             access_request_id = self.__create_access_request(message, sdm_resource, sdm_account)
-
             if self.__needs_manual_approval(sdm_resource):
                 yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
                 self.__bot.log.debug("##SDM## %s AccessHelper.execute needs manual approval", execution_id)
                 return
-
             self.__bot.log.info("##SDM## %s AccessHelper.execute granting access", execution_id)
             yield from self.__bot.get_approve_helper().approve(access_request_id)
         except Exception as ex:
@@ -44,15 +36,21 @@ class AccessHelper:
 
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
-        if role_name is not None:
-            sdm_resources_by_role = self.__access_service.get_all_resources_by_role(role_name)
-            if not any(r.name == resource_name for r in sdm_resources_by_role):
-                self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource resource %s not in role %s", execution_id, resource_name, role_name)
-                raise Exception("Invalid resource")
-        return self.__access_service.get_resource_by_name(resource_name)
+        if role_name and not self.__is_resource_in_role(resource_name, role_name):
+            self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource resource not in role %s", execution_id, role_name)
+            raise Exception("Invalid resource")
+        sdm_resource = self.__access_service.get_resource_by_name(resource_name)
+        if self.__is_hidden_resource(sdm_resource):
+            self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource hidden resource", execution_id)
+            raise Exception("Invalid resource name")
+        return sdm_resource
+
+    def __is_resource_in_role(self, resource_name, role_name):
+        sdm_resources_by_role = self.__access_service.get_all_resources_by_role(role_name)
+        return any(r.name == resource_name for r in sdm_resources_by_role)
 
     def __is_hidden_resource(self, sdm_resource):
-        return self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
+        return self.__bot.config['HIDE_RESOURCE_TAG'] and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
 
     def __create_access_request(self, message, sdm_resource, sdm_account):
         access_request_id = self.generate_access_request_id()

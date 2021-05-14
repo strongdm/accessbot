@@ -70,7 +70,7 @@ class AccessService:
         """
         self.__log.debug("##SDM## AccessService.get_all_resources_by_role_name role_name: %s", role_name)
         try:
-            sdm_role = next(self.__client.role.list(f"name:{role_name}"), None)
+            sdm_role = next(self.__client.roles.list(f"name:{role_name}"), None)
             if not sdm_role:
                 raise Exception(f"Role not available: {role_name}")
             sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))

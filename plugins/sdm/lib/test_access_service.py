@@ -114,7 +114,7 @@ class Test_get_all_resources_by_role:
         mock_role.id = 111
         mock_role.name = "role_name"
         role_iter = iter([mock_role])
-        client.role.list = MagicMock(return_value = role_iter)
+        client.roles.list = MagicMock(return_value = role_iter)
 
         mock_role_grant1 = MagicMock()
         mock_role_grant1.resource_id = 1
@@ -126,16 +126,16 @@ class Test_get_all_resources_by_role:
         client.resources.list = MagicMock(return_value = [None])
 
         resources = service.get_all_resources_by_role("role_name")
-        client.role.list.assert_called_with(("name:role_name"))
+        client.roles.list.assert_called_with(("name:role_name"))
         client.role_grants.list.assert_called_with("role_id:111")
         client.resources.list.assert_called_with("id:1,id:2")
         assert len(resources) == 0 # discard None
 
     def test_when_role_does_not_exist(self, client, service):
-        client.role.list = MagicMock(return_value = iter([]))
+        client.roles.list = MagicMock(return_value = iter([]))
         with pytest.raises(Exception) as ex:
             service.get_all_resources_by_role("role_name")
-        client.role.list.assert_called_with(("name:role_name"))
+        client.roles.list.assert_called_with(("name:role_name"))
         assert str(ex.value) != ""
 
 def get_resource_list_iter():

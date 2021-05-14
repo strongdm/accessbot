@@ -6,7 +6,7 @@ def _get_key(sdm_resource):
 class ShowResourcesHelper:
     def __init__(self, bot):
         self.__bot = bot
-        self.__access_service = create_access_service(bot.get_api_access_key(), bot.get_api_secret_key(), bot.log)
+        self.__access_service = bot.get_access_service()
 
     def execute(self):
         resources = "Available resources:\n\n"

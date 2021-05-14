@@ -61,13 +61,9 @@ def inject_mocks(testbot, config, resources = default_dummy_resources(), resourc
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_show_resources_helper = MagicMock(return_value = create_show_resources_helper(accessbot, resources, resources_by_role))
+    accessbot.get_access_service = MagicMock(return_value = create_access_service_mock(resources, resources_by_role))
+    accessbot.get_show_resources_helper = MagicMock(return_value = ShowResourcesHelper(accessbot))
     return testbot
-
-def create_show_resources_helper(accessbot, resources, resources_by_role):
-    helper = ShowResourcesHelper(accessbot)
-    helper.access_service = create_access_service_mock(resources, resources_by_role)
-    return helper
 
 def create_access_service_mock(resources, resources_by_role):
     service_mock = MagicMock()
