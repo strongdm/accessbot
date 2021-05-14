@@ -60,6 +60,25 @@ class AccessService:
         """
         self.__log.debug("##SDM## AccessService.get_all_resources")
         try:
-            return [resource for resource in self.__client.resources.list('') if resource is not None]
+            return self.remove_none_values(self.__client.resources.list(''))
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
+
+    def get_all_resources_by_role(self, role_name):
+        """
+        Return all resources by role name
+        """
+        self.__log.debug("##SDM## AccessService.get_all_resources_by_role_name role_name: %s", role_name)
+        try:
+            sdm_role = next(self.__client.roles.list(f"name:{role_name}"), None)
+            if not sdm_role:
+                raise Exception(f"Role not available: {role_name}")
+            sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
+            resouces_filter = ",".join([f"id:{rg.resource_id}" for rg in sdm_role_grants])
+            return self.remove_none_values(self.__client.resources.list(resouces_filter))
+        except Exception as ex:
+            raise Exception("List resources by role failed: " + str(ex)) from ex
+
+    @staticmethod
+    def remove_none_values(elements):
+        return [e for e in elements if e is not None]

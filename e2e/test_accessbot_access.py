@@ -4,7 +4,7 @@ import sys
 from unittest.mock import MagicMock, Mock, patch
 import pytest
 
-from test_common import create_config
+from test_common import create_config, DummyResource
 sys.path.append('plugins/sdm')
 from lib import AccessHelper, ApproveHelper, PollerHelper
 
@@ -110,7 +110,7 @@ class Test_hide_resource_tag:
         config['HIDE_RESOURCE_TAG'] = "hide-resource"
         return inject_config(testbot, config, tags = {'hide-resource': True})
 
-    def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
+    def test_access_command_fail_for_tagged_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         assert "Invalid" in mocked_testbot.pop_message()
 
@@ -140,16 +140,35 @@ class Test_grant_timeout:
             valid_until = datetime.datetime(2021, 5, 12, 0, 1)
             grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
+class Test_resources_by_role:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['CONTROL_RESOURCES_ROLE_NAME'] = 'myrole'
+        resources_by_role = [DummyResource("Xxx", {})]
+        return inject_config(testbot, config, resources_by_role = resources_by_role)
+
+    def test_access_command_grant_for_valid_resource(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_fail_for_invalid_resource(self, mocked_testbot):
+        mocked_testbot.push_message("access to Yyy")
+        assert "Invalid" in mocked_testbot.pop_message()
+
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}):
+def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.start_poller(0.5, PollerHelper(accessbot).stale_access_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_access_service = MagicMock(return_value = create_access_service_mock(tags))
+    accessbot.get_access_service = MagicMock(return_value = create_access_service_mock(tags, resources_by_role))
     accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -162,11 +181,12 @@ def create_access_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_access_service_mock(tags):
+def create_access_service_mock(tags, resources_by_role):
     service_mock = MagicMock()
     service_mock.get_resource_by_name = MagicMock(return_value = create_mock_resource(tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())
     service_mock.grant_temporary_access = MagicMock()
+    service_mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
     return service_mock
 
 def create_mock_resource(tags):

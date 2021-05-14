@@ -8,6 +8,7 @@ _INSTANCE = {
     'AUTO_APPROVE_TAG': os.getenv("SDM_AUTO_APPROVE_TAG"),
     'HIDE_RESOURCE_TAG': os.getenv("SDM_HIDE_RESOURCE_TAG"),
     'GRANT_TIMEOUT': int(os.getenv("SDM_GRANT_TIMEOUT", "60")),
+    'CONTROL_RESOURCES_ROLE_NAME': os.getenv("CONTROL_RESOURCES_ROLE_NAME")
 }
 
 def get():
