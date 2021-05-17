@@ -1,10 +1,10 @@
 # Configure AccessBot
 
-There are multiple variables you could use for configuring AccessBot.
+There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
 * **SLACK_TOKEN**. Slack Bot User OAuth Token
-* **SDM_ADMINS**. List of Slack admins, although it's not required, this users are usually SDM admins too
+* **SDM_ADMINS**. List of Slack admins. Although it's not required, these users are often SDM admins, too
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
@@ -32,5 +32,5 @@ See image below for more information:
 * Use `plugin info AccessBot` for showing all configurations
 
 ### Known issues
-* When using `plugin config` from a Mac, you would need to disable: 
+* When using `plugin config` from a Mac, you will need to disable: 
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
