@@ -1,30 +1,30 @@
 import shortuuid
 
-class AccessHelper:
+class GrantHelper:
     def __init__(self, bot):
         self.__bot = bot
         self.__admin_ids = bot.get_admin_ids()
         self.__sdm_service = bot.get_sdm_service()
 
     # pylint: disable=broad-except
-    def grant_resource(self, message, resource_name):
+    def access_resource(self, message, resource_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
-        self.__bot.log.info("##SDM## %s AccessHelper.grant_resource new access request for resource_name: %s", execution_id, resource_name)
+        self.__bot.log.info("##SDM## %s GrantHelper.access_resource new access request for resource_name: %s", execution_id, resource_name)
         try:
             sdm_resource = self.__get_resource(resource_name, execution_id)
             yield from self.__grant(message, sdm_resource, execution_id)
         except Exception as ex:
-            self.__bot.log.error("##SDM## %s AccessHelper.grant_resource access request failed %s", execution_id, str(ex))
+            self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
 
-    def grant_role(self, message, role_name):
+    def assign_role(self, message, role_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
-        self.__bot.log.info("##SDM## %s AccessHelper.grant_role new access request for role_name: %s", execution_id, role_name)
+        self.__bot.log.info("##SDM## %s GrantHelper.assign_role new access request for role_name: %s", execution_id, role_name)
         try:
             sdm_role = self.__get_role(role_name)
             yield from self.__grant(message, sdm_role, execution_id)
         except Exception as ex:
-            self.__bot.log.error("##SDM## %s AccessHelper.grant_role access request failed %s", execution_id, str(ex))
+            self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
 
     @staticmethod
@@ -34,24 +34,24 @@ class AccessHelper:
     def __grant(self, message, sdm_object, execution_id):
         sender_nick = self.__bot.get_sender_nick(message)
         sender_email = self.__bot.get_sender_email(message)
-        self.__bot.log.info("##SDM## %s AccessHelper.__grant sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
+        self.__bot.log.info("##SDM## %s GrantHelper.__grant sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
         sdm_account = self.__sdm_service.get_account_by_email(sender_email)
         access_request_id = self.__create_access_request(message, sdm_object, sdm_account)
         if self.__needs_manual_approval(sdm_object):
             yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, access_request_id)
-            self.__bot.log.debug("##SDM## %s AccessHelper.__grant needs manual approval", execution_id)
+            self.__bot.log.debug("##SDM## %s GrantHelper.__grant needs manual approval", execution_id)
             return
-        self.__bot.log.info("##SDM## %s AccessHelper.__grant granting access", execution_id)
+        self.__bot.log.info("##SDM## %s GrantHelper.__grant granting access", execution_id)
         yield from self.__bot.get_approve_helper().approve(access_request_id)
 
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
         if role_name and not self.__is_resource_in_role(resource_name, role_name):
-            self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource resource not in role %s", execution_id, role_name)
+            self.__bot.log.debug("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
             raise Exception("Invalid resource")
         sdm_resource = self.__sdm_service.get_resource_by_name(resource_name)
         if self.__is_hidden_resource(sdm_resource):
-            self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource hidden resource", execution_id)
+            self.__bot.log.debug("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
             raise Exception("Invalid resource name")
         return sdm_resource
 

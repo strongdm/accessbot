@@ -5,7 +5,7 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from lib import AccessHelper, ApproveHelper, create_sdm_service, \
+from lib import ApproveHelper, create_sdm_service, GrantHelper, \
     PollerHelper, ShowResourcesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
@@ -41,7 +41,7 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_access_helper().grant_resource(message, resource_name)
+        yield from self.get_grant_helper().access_resource(message, resource_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
@@ -57,7 +57,7 @@ class AccessBot(BotPlugin):
         Assign role to a user (using the requester's email address)
         """
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_access_helper().grant_role(message, role_name)
+        yield from self.get_grant_helper().assign_role(message, role_name)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
@@ -82,8 +82,8 @@ class AccessBot(BotPlugin):
     def get_sdm_service(self):
         return create_sdm_service(self.get_api_access_key(), self.get_api_secret_key(), self.log)
 
-    def get_access_helper(self):
-        return AccessHelper(self)
+    def get_grant_helper(self):
+        return GrantHelper(self)
 
     def get_approve_helper(self):
         return ApproveHelper(self)

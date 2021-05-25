@@ -6,7 +6,7 @@ import pytest
 
 from test_common import create_config, DummyResource
 sys.path.append('plugins/sdm')
-from lib import AccessHelper, ApproveHelper, PollerHelper
+from lib import ApproveHelper, GrantHelper, PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -169,12 +169,12 @@ def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resou
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role))
-    accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot))
+    accessbot.get_grant_helper = MagicMock(return_value = create_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
 
-def create_access_helper(accessbot):
-    helper = AccessHelper(accessbot)
+def create_grant_helper(accessbot):
+    helper = GrantHelper(accessbot)
     helper.generate_access_request_id = MagicMock(return_value = access_request_id)
     return helper
 
