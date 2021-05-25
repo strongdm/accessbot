@@ -4,7 +4,7 @@ class AccessHelper:
     def __init__(self, bot):
         self.__bot = bot
         self.__admin_ids = bot.get_admin_ids()
-        self.__access_service = bot.get_access_service()
+        self.__sdm_service = bot.get_sdm_service()
 
     # pylint: disable=broad-except
     def grant_resource(self, message, resource_name):
@@ -35,7 +35,7 @@ class AccessHelper:
         sender_nick = self.__bot.get_sender_nick(message)
         sender_email = self.__bot.get_sender_email(message)
         self.__bot.log.info("##SDM## %s AccessHelper.__grant sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
-        sdm_account = self.__access_service.get_account_by_email(sender_email)
+        sdm_account = self.__sdm_service.get_account_by_email(sender_email)
         access_request_id = self.__create_access_request(message, sdm_object, sdm_account)
         if self.__needs_manual_approval(sdm_object):
             yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, access_request_id)
@@ -49,17 +49,17 @@ class AccessHelper:
         if role_name and not self.__is_resource_in_role(resource_name, role_name):
             self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource resource not in role %s", execution_id, role_name)
             raise Exception("Invalid resource")
-        sdm_resource = self.__access_service.get_resource_by_name(resource_name)
+        sdm_resource = self.__sdm_service.get_resource_by_name(resource_name)
         if self.__is_hidden_resource(sdm_resource):
             self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource hidden resource", execution_id)
             raise Exception("Invalid resource name")
         return sdm_resource
 
     def __get_role(self, role_name):
-        return self.__access_service.get_role_by_name(role_name)
+        return self.__sdm_service.get_role_by_name(role_name)
 
     def __is_resource_in_role(self, resource_name, role_name):
-        sdm_resources_by_role = self.__access_service.get_all_resources_by_role(role_name)
+        sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
         return any(r.name == resource_name for r in sdm_resources_by_role)
 
     def __is_hidden_resource(self, sdm_resource):

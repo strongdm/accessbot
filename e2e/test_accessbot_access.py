@@ -128,7 +128,7 @@ class Test_grant_timeout:
 
     def test_access_command_grant_with_custom_timeout(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        grant_temporary_access_mock = accessbot.get_access_service().grant_temporary_access
+        grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
             mocked_testbot.push_message("access to Xxx")
             mocked_testbot.push_message(f"yes {access_request_id}")
@@ -168,7 +168,7 @@ def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resou
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_access_service = MagicMock(return_value = create_access_service_mock(tags, resources_by_role))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role))
     accessbot.get_access_helper = MagicMock(return_value = create_access_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -181,7 +181,7 @@ def create_access_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_access_service_mock(tags, resources_by_role):
+def create_sdm_service_mock(tags, resources_by_role):
     service_mock = MagicMock()
     service_mock.get_resource_by_name = MagicMock(return_value = create_mock_resource(tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())

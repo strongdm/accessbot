@@ -5,7 +5,7 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from lib import AccessHelper, create_access_service, ApproveHelper, \
+from lib import AccessHelper, ApproveHelper, create_sdm_service, \
     PollerHelper, ShowResourcesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
@@ -79,8 +79,8 @@ class AccessBot(BotPlugin):
     def get_api_secret_key():
         return os.getenv("SDM_API_SECRET_KEY")
 
-    def get_access_service(self):
-        return create_access_service(self.get_api_access_key(), self.get_api_secret_key(), self.log)
+    def get_sdm_service(self):
+        return create_sdm_service(self.get_api_access_key(), self.get_api_secret_key(), self.log)
 
     def get_access_helper(self):
         return AccessHelper(self)

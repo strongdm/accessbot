@@ -1,10 +1,10 @@
 import strongdm
 
-def create_access_service(api_access_key, api_secret_key, log):
+def create_sdm_service(api_access_key, api_secret_key, log):
     client = strongdm.Client(api_access_key, api_secret_key)
-    return AccessService(client, log)
+    return SdmService(client, log)
 
-class AccessService:
+class SdmService:
     def __init__(self, client, log):
         self.__client = client
         self.__log = log
@@ -14,7 +14,7 @@ class AccessService:
         Return a SDM resouce by name
         """
         try:
-            self.__log.debug("##SDM## AccessService.get_resource_by_name name: %s", name)
+            self.__log.debug("##SDM## SdmService.get_resource_by_name name: %s", name)
             sdm_resources = list(self.__client.resources.list('name:"{}"'.format(name)))
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
@@ -27,7 +27,7 @@ class AccessService:
         Return a SDM account by email
         """
         try:
-            self.__log.debug("##SDM## AccessService.get_account_by_email email: %s", email)
+            self.__log.debug("##SDM## SdmService.get_account_by_email email: %s", email)
             sdm_accounts = list(self.__client.accounts.list('email:{}'.format(email)))
         except Exception as ex:
             raise Exception("List accounts failed: " + str(ex)) from ex
@@ -41,7 +41,7 @@ class AccessService:
         """
         try:
             self.__log.debug(
-                "##SDM## AccessService.grant_temporary_access resource_id: %s account_id: %s start_from: %s valid_until: %s",
+                "##SDM## SdmService.grant_temporary_access resource_id: %s account_id: %s start_from: %s valid_until: %s",
                 resource_id, account_id, str(start_from), str(valid_until)
             )
             sdm_grant = strongdm.AccountGrant(
@@ -58,7 +58,7 @@ class AccessService:
         """
         Return all resources
         """
-        self.__log.debug("##SDM## AccessService.get_all_resources")
+        self.__log.debug("##SDM## SdmService.get_all_resources")
         try:
             return self.remove_none_values(self.__client.resources.list(''))
         except Exception as ex:
@@ -68,7 +68,7 @@ class AccessService:
         """
         Return all resources by role name
         """
-        self.__log.debug("##SDM## AccessService.get_all_resources_by_role_name role_name: %s", role_name)
+        self.__log.debug("##SDM## SdmService.get_all_resources_by_role_name role_name: %s", role_name)
         try:
             sdm_role = self.get_role_by_name(role_name)
             sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
@@ -82,7 +82,7 @@ class AccessService:
         Return a SDM role by name
         """
         try:
-            self.__log.debug("##SDM## AccessService.get_role_by_name name: %s", name)
+            self.__log.debug("##SDM## SdmService.get_role_by_name name: %s", name)
             sdm_roles = list(self.__client.roles.list('name:"{}"'.format(name)))
         except Exception as ex:
             raise Exception("List roles failed: " + str(ex)) from ex

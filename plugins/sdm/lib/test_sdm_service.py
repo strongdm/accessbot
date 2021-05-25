@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 import strongdm
 
-from .access_service import AccessService
+from .sdm_service import SdmService
 
 resource_id = 1
 resource_name = "resource1"
@@ -23,7 +23,7 @@ def client():
 
 @pytest.fixture()
 def service(client):
-    return AccessService(client, MagicMock())
+    return SdmService(client, MagicMock())
 
 class Test_get_resource_by_name:
     def test_when_resource_exists_returns_resource(self, client, service):

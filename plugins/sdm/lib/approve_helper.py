@@ -4,7 +4,7 @@ import shortuuid
 class ApproveHelper:
     def __init__(self, bot):
         self.__bot = bot
-        self.__access_service = bot.get_access_service()
+        self.__sdm_service = bot.get_sdm_service()
 
     def execute(self, access_request_id):
         execution_id = shortuuid.ShortUUID().random(length=6)
@@ -28,7 +28,7 @@ class ApproveHelper:
     def __grant_temporal_access(self, resource_id, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(minutes = self.__bot.config['GRANT_TIMEOUT'])
-        self.__access_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
+        self.__sdm_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
 
     def __notify_access_request_granted(self, message, resource_name):
         sender_email = self.__bot.get_sender_email(message)
