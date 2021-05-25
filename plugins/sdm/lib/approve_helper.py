@@ -20,10 +20,10 @@ class ApproveHelper:
 
     def approve(self, access_request_id):
         access_request = self.__bot.get_grant_request(access_request_id)
-        self.__grant_temporal_access(access_request['sdm_resource'].id, access_request['sdm_account'].id)
+        self.__grant_temporal_access(access_request['sdm_object'].id, access_request['sdm_account'].id)
         self.__bot.add_thumbsup_reaction(access_request['message'])
         self.__bot.remove_grant_request(access_request_id)
-        yield from self.__notify_access_request_granted(access_request['message'], access_request['sdm_resource'].name)
+        yield from self.__notify_access_request_granted(access_request['message'], access_request['sdm_object'].name)
 
     def __grant_temporal_access(self, resource_id, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)

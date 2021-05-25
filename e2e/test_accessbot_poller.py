@@ -21,7 +21,7 @@ class Test_stale_access_requests_cleaner:
         accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config = config
         sender_id = accessbot.build_identifier(config['SENDER_EMAIL_OVERRIDE'])
-        accessbot.enter_grant_request(access_request_id, Message(frm = sender_id), MagicMock(), MagicMock())
+        accessbot.enter_grant_request(access_request_id, Message(frm = sender_id), MagicMock(), MagicMock(), MagicMock())
         assert access_request_id in accessbot.get_grant_request_ids()
         accessbot.start_poller(0.5, PollerHelper(accessbot).stale_access_requests_cleaner)
 

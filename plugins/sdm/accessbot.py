@@ -5,6 +5,7 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
+from grant_request_type import GrantRequestType
 from lib import ApproveHelper, create_sdm_service, GrantHelper, \
     PollerHelper, ShowResourcesHelper
 
@@ -101,14 +102,15 @@ class AccessBot(BotPlugin):
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
 
-    def enter_grant_request(self, request_id, message, sdm_resource, sdm_account):
+    def enter_grant_request(self, request_id, message, sdm_object, sdm_account, grant_request_type):
         self.__grant_requests[request_id] = {
             'id': request_id,
-            'status': 'PENDING',
+            'status': 'PENDING', # TODO Remove?
             'timestamp': time.time(),
             'message': message, # cannot be persisted in errbot state
-            'sdm_resource': sdm_resource,
-            'sdm_account': sdm_account
+            'sdm_object': sdm_object,
+            'sdm_account': sdm_account,
+            'type': grant_request_type.name
         }
 
     def remove_grant_request(self, request_id):

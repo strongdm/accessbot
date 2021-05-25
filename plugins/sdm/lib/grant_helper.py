@@ -1,10 +1,6 @@
 import shortuuid
 
-from enum import Enum
-
-class GrantRequestType(Enum):
-    ACCESS_RESOURCE = 0
-    ASSIGN_ROLE = 1
+from grant_request_type import GrantRequestType
 
 class GrantHelper:
     def __init__(self, bot):
@@ -81,12 +77,9 @@ class GrantHelper:
     def __is_hidden_resource(self, sdm_resource):
         return self.__bot.config['HIDE_RESOURCE_TAG'] and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
 
-    def __create_grant_request(self, message, sdm_resource, sdm_account, grant_request_type):
+    def __create_grant_request(self, message, sdm_object, sdm_account, grant_request_type):
         request_id = self.generate_access_request_id() # TODO Change method name to generate_grant_request_id
-        if grant_request_type == GrantRequestType.ASSIGN_ROLE:
-            self.__bot.enter_assign_role_request(request_id, message, sdm_resource, sdm_account)
-        else:
-            self.__bot.enter_grant_request(request_id, message, sdm_resource, sdm_account)
+        self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
         return request_id
 
     def __needs_manual_approval(self, sdm_resource):
