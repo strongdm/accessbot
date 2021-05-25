@@ -16,10 +16,11 @@ FIVE_SECONDS = 5
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
-    __access_requests = {}
+    __grant_requests = {}
 
     def activate(self):
         super().activate()
+        # TODO Change name to stale_grant_requests_cleaner
         self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_access_requests_cleaner)
 
     def get_configuration_template(self):
@@ -36,7 +37,7 @@ class AccessBot(BotPlugin):
         pass
 
     @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
-    def access(self, message, match):
+    def access_resource(self, message, match):
         """
         Grant access to a resource (using the requester's email address)
         """
@@ -46,7 +47,7 @@ class AccessBot(BotPlugin):
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
         """
-        Approve access to a resource
+        Approve a grant (resource or role)
         """
         access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
         yield from self.get_approve_helper().execute(access_request_id)
@@ -97,12 +98,12 @@ class AccessBot(BotPlugin):
     def get_admin_ids(self):
         return [self.build_identifier(admin) for admin in self.get_admins()]
 
-    def is_valid_access_request_id(self, access_request_id):
-        return access_request_id in self.__access_requests
+    def is_valid_grant_request_id(self, request_id):
+        return request_id in self.__grant_requests
 
-    def enter_access_request(self, access_request_id, message, sdm_resource, sdm_account):
-        self.__access_requests[access_request_id] = {
-            'id': access_request_id,
+    def enter_grant_request(self, request_id, message, sdm_resource, sdm_account):
+        self.__grant_requests[request_id] = {
+            'id': request_id,
             'status': 'PENDING',
             'timestamp': time.time(),
             'message': message, # cannot be persisted in errbot state
@@ -110,14 +111,14 @@ class AccessBot(BotPlugin):
             'sdm_account': sdm_account
         }
 
-    def remove_access_request(self, access_request_id):
-        self.__access_requests.pop(access_request_id, None)
+    def remove_grant_request(self, request_id):
+        self.__grant_requests.pop(request_id, None)
 
-    def get_access_request(self, access_request_id):
-        return self.__access_requests[access_request_id]
+    def get_grant_request(self, request_id):
+        return self.__grant_requests[request_id]
 
-    def get_access_request_ids(self):
-        return list(self.__access_requests.keys())
+    def get_grant_request_ids(self):
+        return list(self.__grant_requests.keys())
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode == "slack":

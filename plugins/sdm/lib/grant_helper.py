@@ -86,7 +86,7 @@ class GrantHelper:
         if grant_request_type == GrantRequestType.ASSIGN_ROLE:
             self.__bot.enter_assign_role_request(request_id, message, sdm_resource, sdm_account)
         else:
-            self.__bot.enter_access_request(request_id, message, sdm_resource, sdm_account)
+            self.__bot.enter_grant_request(request_id, message, sdm_resource, sdm_account)
         return request_id
 
     def __needs_manual_approval(self, sdm_resource):
