@@ -7,32 +7,35 @@ class AccessHelper:
         self.__access_service = bot.get_access_service()
 
     # pylint: disable=broad-except
-    def execute(self, message, resource_name):
+    def resource(self, message, resource_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
-        sender_nick = self.__bot.get_sender_nick(message)
-        sender_email = self.__bot.get_sender_email(message)
-
-        self.__bot.log.info(
-            "##SDM## %s AccessHelper.execute new access request for resource_name: %s sender_nick: %s sender_email: %s",
-            execution_id, resource_name, sender_nick, sender_email
-        )
+        self.__bot.log.info("##SDM## %s AccessHelper.resource new access request for resource_name: %s", execution_id, resource_name)
         try:
             sdm_resource = self.__get_resource(resource_name, execution_id)
-            sdm_account = self.__access_service.get_account_by_email(sender_email)
-            access_request_id = self.__create_access_request(message, sdm_resource, sdm_account)
-            if self.__needs_manual_approval(sdm_resource):
-                yield from self.__notify_access_request_entered(sender_nick, resource_name, access_request_id)
-                self.__bot.log.debug("##SDM## %s AccessHelper.execute needs manual approval", execution_id)
-                return
-            self.__bot.log.info("##SDM## %s AccessHelper.execute granting access", execution_id)
-            yield from self.__bot.get_approve_helper().approve(access_request_id)
+            yield from self.__grant(message, sdm_resource, execution_id)
         except Exception as ex:
-            self.__bot.log.error("##SDM## %s AccessHelper.execute access request failed %s", execution_id, str(ex))
+            self.__bot.log.error("##SDM## %s AccessHelper.resource access request failed %s", execution_id, str(ex))
             yield str(ex)
+
+    def role(self, message, role_name):
+        yield
 
     @staticmethod
     def generate_access_request_id():
         return shortuuid.ShortUUID().random(length=4)
+
+    def __grant(self, message, sdm_object, execution_id):
+        sender_nick = self.__bot.get_sender_nick(message)
+        sender_email = self.__bot.get_sender_email(message)
+        self.__bot.log.info("##SDM## %s AccessHelper.__grant sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
+        sdm_account = self.__access_service.get_account_by_email(sender_email)
+        access_request_id = self.__create_access_request(message, sdm_object, sdm_account)
+        if self.__needs_manual_approval(sdm_object):
+            yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, access_request_id)
+            self.__bot.log.debug("##SDM## %s AccessHelper.__grant needs manual approval", execution_id)
+            return
+        self.__bot.log.info("##SDM## %s AccessHelper.__grant granting access", execution_id)
+        yield from self.__bot.get_approve_helper().approve(access_request_id)
 
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
