@@ -41,7 +41,7 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_access_helper().resource(message, resource_name)
+        yield from self.get_access_helper().grant_resource(message, resource_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
@@ -57,7 +57,7 @@ class AccessBot(BotPlugin):
         Assign role to a user (using the requester's email address)
         """
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_access_helper().role(message, role_name)
+        yield from self.get_access_helper().grant_role(message, role_name)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")

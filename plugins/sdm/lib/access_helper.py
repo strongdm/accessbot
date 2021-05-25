@@ -7,18 +7,25 @@ class AccessHelper:
         self.__access_service = bot.get_access_service()
 
     # pylint: disable=broad-except
-    def resource(self, message, resource_name):
+    def grant_resource(self, message, resource_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
-        self.__bot.log.info("##SDM## %s AccessHelper.resource new access request for resource_name: %s", execution_id, resource_name)
+        self.__bot.log.info("##SDM## %s AccessHelper.grant_resource new access request for resource_name: %s", execution_id, resource_name)
         try:
             sdm_resource = self.__get_resource(resource_name, execution_id)
             yield from self.__grant(message, sdm_resource, execution_id)
         except Exception as ex:
-            self.__bot.log.error("##SDM## %s AccessHelper.resource access request failed %s", execution_id, str(ex))
+            self.__bot.log.error("##SDM## %s AccessHelper.grant_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
 
-    def role(self, message, role_name):
-        yield
+    def grant_role(self, message, role_name):
+        execution_id = shortuuid.ShortUUID().random(length=6)
+        self.__bot.log.info("##SDM## %s AccessHelper.grant_role new access request for role_name: %s", execution_id, role_name)
+        try:
+            sdm_role = self.__get_role(role_name)
+            yield from self.__grant(message, sdm_role, execution_id)
+        except Exception as ex:
+            self.__bot.log.error("##SDM## %s AccessHelper.grant_role access request failed %s", execution_id, str(ex))
+            yield str(ex)
 
     @staticmethod
     def generate_access_request_id():
@@ -47,6 +54,9 @@ class AccessHelper:
             self.__bot.log.debug("##SDM## %s AccessHelper.__get_resource hidden resource", execution_id)
             raise Exception("Invalid resource name")
         return sdm_resource
+
+    def __get_role(self, role_name):
+        return self.__access_service.get_role_by_name(role_name)
 
     def __is_resource_in_role(self, resource_name, role_name):
         sdm_resources_by_role = self.__access_service.get_all_resources_by_role(role_name)
