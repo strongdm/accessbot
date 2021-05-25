@@ -22,7 +22,7 @@ class AccessBot(BotPlugin):
     def activate(self):
         super().activate()
         # TODO Change name to stale_grant_requests_cleaner
-        self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_access_requests_cleaner)
+        self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_grant_requests_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()

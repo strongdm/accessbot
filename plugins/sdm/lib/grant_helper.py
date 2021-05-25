@@ -30,7 +30,7 @@ class GrantHelper:
             yield str(ex)
 
     @staticmethod
-    def generate_access_request_id():
+    def generate_grant_request_id():
         return shortuuid.ShortUUID().random(length=4)
 
     def __grant_resource(self, message, sdm_object, execution_id):
@@ -78,7 +78,7 @@ class GrantHelper:
         return self.__bot.config['HIDE_RESOURCE_TAG'] and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
 
     def __create_grant_request(self, message, sdm_object, sdm_account, grant_request_type):
-        request_id = self.generate_access_request_id() # TODO Change method name to generate_grant_request_id
+        request_id = self.generate_grant_request_id()
         self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
         return request_id
 

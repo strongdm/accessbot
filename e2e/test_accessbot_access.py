@@ -164,7 +164,7 @@ class Test_resources_by_role:
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
-    accessbot.start_poller(0.5, PollerHelper(accessbot).stale_access_requests_cleaner)
+    accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
@@ -175,7 +175,7 @@ def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resou
 
 def create_grant_helper(accessbot):
     helper = GrantHelper(accessbot)
-    helper.generate_access_request_id = MagicMock(return_value = access_request_id)
+    helper.generate_grant_request_id = MagicMock(return_value = access_request_id)
     return helper
 
 def create_approve_helper(accessbot):

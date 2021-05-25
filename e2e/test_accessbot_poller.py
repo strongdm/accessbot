@@ -13,7 +13,7 @@ extra_plugin_dir = 'plugins/sdm'
 
 access_request_id = "12ab"
 
-class Test_stale_access_requests_cleaner:
+class Test_stale_grant_requests_cleaner:
     def test_poller(self, testbot):
         config = create_config()
         config['ADMIN_TIMEOUT'] = 0
@@ -23,7 +23,7 @@ class Test_stale_access_requests_cleaner:
         sender_id = accessbot.build_identifier(config['SENDER_EMAIL_OVERRIDE'])
         accessbot.enter_grant_request(access_request_id, Message(frm = sender_id), MagicMock(), MagicMock(), MagicMock())
         assert access_request_id in accessbot.get_grant_request_ids()
-        accessbot.start_poller(0.5, PollerHelper(accessbot).stale_access_requests_cleaner)
+        accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
 
         time.sleep(2)
 
