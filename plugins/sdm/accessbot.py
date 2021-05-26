@@ -10,7 +10,6 @@ from lib import ApproveHelper, create_sdm_service, GrantHelper, \
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
-ASSIGN_ROLE_REGEX = r"^\*{0,2}assign role (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
 FIVE_SECONDS = 5
 
@@ -36,13 +35,17 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
-    def access_resource(self, message, match):
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name | access to role role-name")
+    def access(self, message, match):
         """
-        Grant access to a resource (using the requester's email address)
+        Grant access to a resource or resources in a role (using the requester's email address)
         """
-        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_grant_helper().access_resource(message, resource_name)
+        access_input = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        role_name = re.sub("role (.*)", "\\1", access_input)
+        if role_name != access_input:
+            yield from self.get_grant_helper().assign_role(message, role_name)
+            return
+        yield from self.get_grant_helper().access_resource(message, access_input)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
@@ -51,14 +54,6 @@ class AccessBot(BotPlugin):
         """
         access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
         yield from self.get_approve_helper().execute(access_request_id)
-
-    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="assign role role-name")
-    def assign_role(self, message, match):
-        """
-        Assign role to a user (using the requester's email address)
-        """
-        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_grant_helper().assign_role(message, role_name)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")

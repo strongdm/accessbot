@@ -23,7 +23,7 @@ class Test_assign_role:
         return inject_mocks(testbot, config)
 
     def test_show_resources_command(self, mocked_testbot):
-        mocked_testbot.push_message(f"assign role {role_name}")
+        mocked_testbot.push_message(f"access to role {role_name}")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "assign request" in mocked_testbot.pop_message()
