@@ -5,7 +5,6 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from grant_request_type import GrantRequestType
 from lib import ApproveHelper, create_sdm_service, GrantHelper, \
     PollerHelper, ShowResourcesHelper
 
@@ -110,7 +109,7 @@ class AccessBot(BotPlugin):
             'message': message, # cannot be persisted in errbot state
             'sdm_object': sdm_object,
             'sdm_account': sdm_account,
-            'type': grant_request_type.name
+            'type': grant_request_type
         }
 
     def remove_grant_request(self, request_id):
