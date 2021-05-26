@@ -17,6 +17,7 @@ BOT_IDENTITY = {
 
 ACCESS_CONTROLS = {
     'AccessBot:approve': { 'allowusers': BOT_ADMINS },
+    # 'AccessBot:assign_role': { 'denyusers': ('*') },
     'AccessBot:*': { 'allowusers': ('*') },
     'help': { 'allowusers': ('*') },
     'whoami': { 'allowusers': ('*') },

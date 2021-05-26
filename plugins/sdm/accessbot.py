@@ -10,6 +10,7 @@ from lib import ApproveHelper, create_sdm_service, GrantHelper, \
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
+ASSIGN_ROLE_REGEX = r"^\*{0,2}access to role (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
 FIVE_SECONDS = 5
 
@@ -34,17 +35,24 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name | access to role role-name")
-    def access(self, message, match):
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
+    def access_resource(self, message, match):
         """
-        Grant access to a resource or resources in a role
+        Grant access to a resource (using the requester's email address)
         """
-        access_input = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        role_name = re.sub("role (.*)", "\\1", access_input)
-        if role_name != access_input:
-            yield from self.get_grant_helper().assign_role(message, role_name)
+        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        if re.match("^role (.*)", resource_name):
+            self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
-        yield from self.get_grant_helper().access_resource(message, access_input)
+        yield from self.get_grant_helper().access_resource(message, resource_name)
+
+    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
+    def assign_role(self, message, match):
+        """
+        Grant access to all resources in a role (using the requester's email address)
+        """
+        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
+        yield from self.get_grant_helper().assign_role(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
