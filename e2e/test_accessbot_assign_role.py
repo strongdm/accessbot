@@ -1,7 +1,8 @@
 # pylint: disable=invalid-name
+import datetime
 import pytest
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyResource
 sys.path.append('plugins/sdm')
@@ -22,12 +23,24 @@ class Test_assign_role:
         config = create_config()
         return inject_mocks(testbot, config)
 
+    class NewDate(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2021, 5, 12)
+
     def test_show_resources_command(self, mocked_testbot):
-        mocked_testbot.push_message(f"access to role {role_name}")
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "assign request" in mocked_testbot.pop_message()
-        assert "Assigning" in mocked_testbot.pop_message()
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        grant_temporary_access_by_role_mock = accessbot.get_sdm_service().grant_temporary_access_by_role
+        with patch('datetime.datetime', new = self.NewDate):
+            mocked_testbot.push_message(f"access to role {role_name}")
+            mocked_testbot.push_message(f"yes {access_request_id}")
+            assert "valid request" in mocked_testbot.pop_message()
+            assert "assign request" in mocked_testbot.pop_message()
+            assert "Granting" in mocked_testbot.pop_message()
+
+            start_from = datetime.datetime(2021, 5, 12, 0, 0)
+            valid_until = datetime.datetime(2021, 5, 12, 1, 0)
+            grant_temporary_access_by_role_mock.assert_called_with(role_name, account_id, start_from, valid_until)
 
 
 # pylint: disable=dangerous-default-value

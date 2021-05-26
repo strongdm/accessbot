@@ -19,7 +19,6 @@ class AccessBot(BotPlugin):
 
     def activate(self):
         super().activate()
-        # TODO Change name to stale_grant_requests_cleaner
         self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_grant_requests_cleaner)
 
     def get_configuration_template(self):
@@ -38,7 +37,7 @@ class AccessBot(BotPlugin):
     @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name | access to role role-name")
     def access(self, message, match):
         """
-        Grant access to a resource or resources in a role (using the requester's email address)
+        Grant access to a resource or resources in a role
         """
         access_input = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
         role_name = re.sub("role (.*)", "\\1", access_input)

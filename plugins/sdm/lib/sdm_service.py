@@ -54,19 +54,16 @@ class SdmService:
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex)) from ex
 
-    # TODO Add tests
     def grant_temporary_access_by_role(self, role_name, account_id, start_from, valid_until):
         """
         Assign a SDM role temporary to an account
         """
-        try:
-            self.__log.debug(
-                "##SDM## SdmService.grant_temporary_access_by_role role_name: %s account_id: %s start_from: %s valid_until: %s",
-                role_name, account_id, str(start_from), str(valid_until)
-            )
-            # TODO Implement
-        except Exception as ex:
-            raise Exception("Grant failed: " + str(ex)) from ex
+        self.__log.debug(
+            "##SDM## SdmService.grant_temporary_access_by_role role_name: %s account_id: %s start_from: %s valid_until: %s",
+            role_name, account_id, str(start_from), str(valid_until)
+        )
+        for resource in self.get_all_resources_by_role(role_name):
+            self.grant_temporary_access(resource.id, account_id, start_from, valid_until)
 
     def get_all_resources(self):
         """

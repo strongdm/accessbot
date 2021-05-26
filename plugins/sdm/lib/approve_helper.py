@@ -57,4 +57,4 @@ class ApproveHelper:
     def __notify_assign_role_request_granted(self, message, role_name):
         sender_email = self.__bot.get_sender_email(message)
         sender_nick = self.__bot.get_sender_nick(message)
-        yield f"@{sender_nick}: Assigning '{role_name}' to {sender_email} for {self.__bot.config['GRANT_TIMEOUT']} minutes"
+        yield f"@{sender_nick}: Granting {sender_email} access to resources in role '{role_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"
