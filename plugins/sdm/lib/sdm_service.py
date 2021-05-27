@@ -101,6 +101,16 @@ class SdmService:
             raise Exception("Sorry, cannot find that role!")
         return sdm_roles[0]
 
+    def get_all_roles(self):
+        """
+        Return all roles
+        """
+        self.__log.debug("##SDM## SdmService.get_all_roles")
+        try:
+            return list(self.__client.roles.list(''))
+        except Exception as ex:
+            raise Exception("List roles failed: " + str(ex)) from ex
+
     @staticmethod
     def remove_none_values(elements):
         return [e for e in elements if e is not None]

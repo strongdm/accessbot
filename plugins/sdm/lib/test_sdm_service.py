@@ -195,6 +195,14 @@ class Test_get_role_by_name:
         with pytest.raises(Exception):
             service.get_role_by_name(resource_name)
 
+class Test_get_all_roles:
+    def test_returns_roles(self, client, service):
+        client.roles.list = MagicMock(return_value = get_role_list_iter())
+        sdm_roles = service.get_all_roles()
+        assert len(sdm_roles) == 1
+        assert sdm_roles[0].id == role_id
+        assert sdm_roles[0].name == role_name
+
 
 def get_resource_list_iter():
     mock_resource = MagicMock()

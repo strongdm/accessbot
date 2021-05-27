@@ -6,12 +6,13 @@ from errbot import BotPlugin, re_botcmd
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, GrantHelper, \
-    PollerHelper, ShowResourcesHelper
+    PollerHelper, ShowResourcesHelper, ShowRolesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 ASSIGN_ROLE_REGEX = r"^\*{0,2}access to role (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
+SHOW_ROLES_REGEX = r"^\*{0,2}show available roles\*{0,2}$"
 FIVE_SECONDS = 5
 
 # pylint: disable=too-many-ancestors
@@ -70,6 +71,14 @@ class AccessBot(BotPlugin):
         """
         yield from self.get_show_resources_helper().execute()
 
+    #pylint: disable=unused-argument
+    @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
+    def show_roles(self, message, match):
+        """
+        Show all available roles
+        """
+        yield from self.get_show_roles_helper().execute()
+
     @staticmethod
     def get_admins():
         return os.getenv("SDM_ADMINS", "").split(" ")
@@ -96,6 +105,9 @@ class AccessBot(BotPlugin):
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
+
+    def get_show_roles_helper(self):
+        return ShowRolesHelper(self)
 
     def get_admin_ids(self):
         return [self.build_identifier(admin) for admin in self.get_admins()]
