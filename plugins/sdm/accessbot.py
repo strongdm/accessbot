@@ -5,14 +5,14 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from grant_request_type import GrantRequestType
 from lib import ApproveHelper, create_sdm_service, GrantHelper, \
-    PollerHelper, ShowResourcesHelper
+    PollerHelper, ShowResourcesHelper, ShowRolesHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
-ASSIGN_ROLE_REGEX = r"^\*{0,2}assign role (.+)$"
+ASSIGN_ROLE_REGEX = r"^\*{0,2}access to role (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
+SHOW_ROLES_REGEX = r"^\*{0,2}show available roles\*{0,2}$"
 FIVE_SECONDS = 5
 
 # pylint: disable=too-many-ancestors
@@ -21,7 +21,6 @@ class AccessBot(BotPlugin):
 
     def activate(self):
         super().activate()
-        # TODO Change name to stale_grant_requests_cleaner
         self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_grant_requests_cleaner)
 
     def get_configuration_template(self):
@@ -43,7 +42,18 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        if re.match("^role (.*)", resource_name):
+            self.log.debug("##SDM## AccessBot.access better match for assign_role")
+            return
         yield from self.get_grant_helper().access_resource(message, resource_name)
+
+    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
+    def assign_role(self, message, match):
+        """
+        Grant access to all resources in a role (using the requester's email address)
+        """
+        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
+        yield from self.get_grant_helper().assign_role(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, _, match):
@@ -53,14 +63,6 @@ class AccessBot(BotPlugin):
         access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
         yield from self.get_approve_helper().execute(access_request_id)
 
-    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="assign role role-name")
-    def assign_role(self, message, match):
-        """
-        Assign role to a user (using the requester's email address)
-        """
-        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_grant_helper().assign_role(message, role_name)
-
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
     def show_resources(self, message, match):
@@ -68,6 +70,14 @@ class AccessBot(BotPlugin):
         Show all available resources
         """
         yield from self.get_show_resources_helper().execute()
+
+    #pylint: disable=unused-argument
+    @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
+    def show_roles(self, message, match):
+        """
+        Show all available roles
+        """
+        yield from self.get_show_roles_helper().execute()
 
     @staticmethod
     def get_admins():
@@ -96,6 +106,9 @@ class AccessBot(BotPlugin):
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
 
+    def get_show_roles_helper(self):
+        return ShowRolesHelper(self)
+
     def get_admin_ids(self):
         return [self.build_identifier(admin) for admin in self.get_admins()]
 
@@ -110,7 +123,7 @@ class AccessBot(BotPlugin):
             'message': message, # cannot be persisted in errbot state
             'sdm_object': sdm_object,
             'sdm_account': sdm_account,
-            'type': grant_request_type.name
+            'type': grant_request_type
         }
 
     def remove_grant_request(self, request_id):

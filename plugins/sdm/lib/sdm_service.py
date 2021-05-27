@@ -54,6 +54,17 @@ class SdmService:
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex)) from ex
 
+    def grant_temporary_access_by_role(self, role_name, account_id, start_from, valid_until):
+        """
+        Assign a SDM role temporary to an account
+        """
+        self.__log.debug(
+            "##SDM## SdmService.grant_temporary_access_by_role role_name: %s account_id: %s start_from: %s valid_until: %s",
+            role_name, account_id, str(start_from), str(valid_until)
+        )
+        for resource in self.get_all_resources_by_role(role_name):
+            self.grant_temporary_access(resource.id, account_id, start_from, valid_until)
+
     def get_all_resources(self):
         """
         Return all resources
@@ -89,6 +100,16 @@ class SdmService:
         if len(sdm_roles) == 0:
             raise Exception("Sorry, cannot find that role!")
         return sdm_roles[0]
+
+    def get_all_roles(self):
+        """
+        Return all roles
+        """
+        self.__log.debug("##SDM## SdmService.get_all_roles")
+        try:
+            return list(self.__client.roles.list(''))
+        except Exception as ex:
+            raise Exception("List roles failed: " + str(ex)) from ex
 
     @staticmethod
     def remove_none_values(elements):
