@@ -70,6 +70,26 @@ class Test_get_account_by_email:
         mock_account.email = account_email
         return iter([mock_account])
 
+class Test_grant_exists:
+    def test_when_grant_exists(self, client, service):
+        client.account_grants.list = MagicMock(return_value=iter(["one resource"]))
+        grant_exists = service.grant_exists(resource_id, account_id)
+        client.account_grants.list.assert_called_with(f"resource_id:{resource_id},account_id:{account_id}")
+        assert grant_exists is True
+
+    def test_when_grant_doesnt_exists(self, client, service):
+        client.account_grants.list = MagicMock(return_value=iter([]))
+        grant_exists = service.grant_exists(resource_id, account_id)
+        client.account_grants.list.assert_called_with(f"resource_id:{resource_id},account_id:{account_id}")
+        assert grant_exists is False
+
+    def test_when_grant_exists_fail(self, client, service):
+        error_message = "Grant list failed"
+        client.account_grants.list = MagicMock(side_effect = Exception(error_message))
+        with pytest.raises(Exception) as ex:
+            service.grant_exists(resource_id, account_id)
+        assert error_message in str(ex.value)
+
 class Test_grant_temporary_access:
     def test_when_grant_is_possible(self, client, service):
         client.account_grants.create = MagicMock()
@@ -88,42 +108,6 @@ class Test_grant_temporary_access:
         client.account_grants.create = MagicMock(side_effect = Exception(error_message))
         with pytest.raises(Exception) as ex:
             service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
-        assert error_message in str(ex.value)
-
-class Test_grant_temporary_access_by_role:
-    def test_when_grant_is_possible(self, service):
-        mock_resource1 = MagicMock()
-        mock_resource1.id = resource_id
-        mock_resource1.name = resource_name
-        mock_resource2 = MagicMock()
-        mock_resource2.id = 2
-        mock_resource2.name = 'resource2'
-        service.get_all_resources_by_role = MagicMock(return_value = iter([mock_resource1, mock_resource2]))
-
-        service.grant_temporary_access = MagicMock()
-        service.grant_temporary_access_by_role("role_name", account_id, grant_start_from, grant_valid_until)
-        assert (resource_id, account_id, grant_start_from, grant_valid_until) == service.grant_temporary_access.call_args_list[0][0]
-        assert (2, account_id, grant_start_from, grant_valid_until) == service.grant_temporary_access.call_args_list[1][0]
-
-    def test_when_resource_is_doesnt_exists(self, client, service):
-        error_message = "cannot find that role"
-        with pytest.raises(Exception) as ex:
-            service.grant_temporary_access_by_role("role_name", account_id, grant_start_from, grant_valid_until)
-        assert error_message in str(ex.value)
-
-    def test_when_grant_is_not_possible(self, client, service):
-        mock_resource1 = MagicMock()
-        mock_resource1.id = resource_id
-        mock_resource1.name = resource_name
-        mock_resource2 = MagicMock()
-        mock_resource2.id = 2
-        mock_resource2.name = 'resource2'
-        service.get_all_resources_by_role = MagicMock(return_value = iter([mock_resource1, mock_resource2]))
-
-        error_message = "Grant is not possible"
-        service.grant_temporary_access = MagicMock(side_effect = Exception(error_message))
-        with pytest.raises(Exception) as ex:
-            service.grant_temporary_access_by_role("role_name", account_id, grant_start_from, grant_valid_until)
         assert error_message in str(ex.value)
 
 class Test_get_all_resources:

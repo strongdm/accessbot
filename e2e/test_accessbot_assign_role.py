@@ -13,6 +13,8 @@ extra_plugin_dir = 'plugins/sdm'
 
 role_id = 111
 role_name = "role-name"
+resource_id = 1
+resource_name = "myresource"
 account_id = 1
 account_name = "myaccount@test.com"
 access_request_id = "12ab"
@@ -28,9 +30,9 @@ class Test_assign_role:
         def now(cls, tz=None):
             return cls(2021, 5, 12)
 
-    def test_show_resources_command(self, mocked_testbot):
+    def test_assign_role_command(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        grant_temporary_access_by_role_mock = accessbot.get_sdm_service().grant_temporary_access_by_role
+        grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
             mocked_testbot.push_message(f"access to role {role_name}")
             mocked_testbot.push_message(f"yes {access_request_id}")
@@ -40,7 +42,7 @@ class Test_assign_role:
 
             start_from = datetime.datetime(2021, 5, 12, 0, 0)
             valid_until = datetime.datetime(2021, 5, 12, 1, 0)
-            grant_temporary_access_by_role_mock.assert_called_with(role_name, account_id, start_from, valid_until)
+            grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
 
 # pylint: disable=dangerous-default-value
@@ -68,6 +70,8 @@ def create_sdm_service_mock():
     service_mock = MagicMock()
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())
     service_mock.get_role_by_name = MagicMock(return_value = create_mock_role())
+    service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
+    service_mock.grant_exists = MagicMock(return_value = False)
     return service_mock
 
 def create_mock_account():
@@ -81,3 +85,10 @@ def create_mock_role():
     mock_role.id = role_id
     mock_role.name = role_name
     return mock_role
+
+def create_mock_resources():
+    mock_resource = MagicMock()
+    mock_resource.id = resource_id
+    mock_resource.name = resource_name
+    return [mock_resource]
+

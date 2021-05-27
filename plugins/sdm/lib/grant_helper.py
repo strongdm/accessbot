@@ -14,7 +14,11 @@ class GrantHelper:
         self.__bot.log.info("##SDM## %s GrantHelper.access_resource new access request for resource_name: %s", execution_id, resource_name)
         try:
             sdm_resource = self.__get_resource(resource_name, execution_id)
-            yield from self.__grant_resource(message, sdm_resource, execution_id)
+            sdm_account = self.__get_account(message)
+            if self.__sdm_service.grant_exists(sdm_resource.id, sdm_account.id): # TODO Add tests for this branch
+                yield "You already have access to that resource!"
+                return
+            yield from self.__grant_resource(message, sdm_resource, sdm_account, execution_id)
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
@@ -33,11 +37,10 @@ class GrantHelper:
     def generate_grant_request_id():
         return shortuuid.ShortUUID().random(length=4)
 
-    def __grant_resource(self, message, sdm_object, execution_id):
+    def __grant_resource(self, message, sdm_object, sdm_account, execution_id):
         sender_nick = self.__bot.get_sender_nick(message)
-        sender_email = self.__bot.get_sender_email(message)
+        sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_resource sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
-        sdm_account = self.__sdm_service.get_account_by_email(sender_email)
         request_id = self.__create_grant_request(message, sdm_object, sdm_account, GrantRequestType.ACCESS_RESOURCE)
         if self.__needs_manual_approval(sdm_object):
             yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id)
@@ -69,6 +72,10 @@ class GrantHelper:
 
     def __get_role(self, role_name):
         return self.__sdm_service.get_role_by_name(role_name)
+
+    def __get_account(self, message):
+        sender_email = self.__bot.get_sender_email(message)
+        return self.__sdm_service.get_account_by_email(sender_email)
 
     def __is_resource_in_role(self, resource_name, role_name):
         sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
