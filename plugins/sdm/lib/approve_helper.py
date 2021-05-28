@@ -28,7 +28,7 @@ class ApproveHelper:
         yield from self.__approve_access_resource(grant_request)
 
     def __approve_assign_role(self, grant_request):
-        self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
+        yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
         self.__bot.add_thumbsup_reaction(grant_request['message'])
         self.__bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
@@ -42,7 +42,11 @@ class ApproveHelper:
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(minutes = self.__bot.config['GRANT_TIMEOUT'])
-        self.__sdm_service.grant_temporary_access_by_role(role_name, account_id, grant_start_from, grant_valid_until)
+        for resource in self.__sdm_service.get_all_resources_by_role(role_name):
+            if self.__sdm_service.grant_exists(resource.id, account_id):
+                yield f"User already have access to {resource.name}"
+                continue
+            self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
     def __grant_temporal_access(self, resource_id, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)

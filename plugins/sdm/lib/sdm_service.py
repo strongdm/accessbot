@@ -35,6 +35,17 @@ class SdmService:
             raise Exception("Sorry, cannot find your account!")
         return sdm_accounts[0]
 
+    def grant_exists(self, resource_id, account_id):
+        """
+        Does a grant exists
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.grant_exists resource_id: %s account_id: %s", resource_id, account_id)
+            account_grant_iter = self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}")
+            return next(account_grant_iter, None) is not None
+        except Exception as ex:
+            raise Exception("Grant exists failed: " + str(ex)) from ex
+
     def grant_temporary_access(self, resource_id, account_id, start_from, valid_until):
         """
         Grant temporary access to a SDM resource for an account
@@ -53,17 +64,6 @@ class SdmService:
             self.__client.account_grants.create(sdm_grant)
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex)) from ex
-
-    def grant_temporary_access_by_role(self, role_name, account_id, start_from, valid_until):
-        """
-        Assign a SDM role temporary to an account
-        """
-        self.__log.debug(
-            "##SDM## SdmService.grant_temporary_access_by_role role_name: %s account_id: %s start_from: %s valid_until: %s",
-            role_name, account_id, str(start_from), str(valid_until)
-        )
-        for resource in self.get_all_resources_by_role(role_name):
-            self.grant_temporary_access(resource.id, account_id, start_from, valid_until)
 
     def get_all_resources(self):
         """

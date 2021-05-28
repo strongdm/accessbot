@@ -159,16 +159,26 @@ class Test_resources_by_role:
         mocked_testbot.push_message("access to Yyy")
         assert "Invalid" in mocked_testbot.pop_message()
 
+class Test_grant_exists:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_config(testbot, config, grant_exists = True)
+
+    def test_access_command_grant_for_valid_resource(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        assert "already have access" in mocked_testbot.pop_message()
+
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = []):
+def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, grant_exists))
     accessbot.get_grant_helper = MagicMock(return_value = create_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -181,12 +191,13 @@ def create_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(tags, resources_by_role):
+def create_sdm_service_mock(tags, resources_by_role, grant_exists):
     service_mock = MagicMock()
     service_mock.get_resource_by_name = MagicMock(return_value = create_mock_resource(tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())
     service_mock.grant_temporary_access = MagicMock()
     service_mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
+    service_mock.grant_exists = MagicMock(return_value = grant_exists)
     return service_mock
 
 def create_mock_resource(tags):
