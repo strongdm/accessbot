@@ -77,7 +77,6 @@ class Test_automatic_approval_flow:
         mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
 
-
 class Test_multiple_admins_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -169,6 +168,50 @@ class Test_grant_exists:
         mocked_testbot.push_message("access to Xxx")
         assert "already have access" in mocked_testbot.pop_message()
 
+# TODO Add test for approval coming from a non ADMIN
+# TODO Add new variable to docs. IMPORTANT: Format #channel-name
+# TODO Add question to FAQ for how to find Slack ADMIN handles
+# TODO Update accessbot config for "plugin config" - needs to be executed in a 1:1 chatt with accessbot!
+
+class Test_admin_in_channel:
+    channel_name = 'testroom'
+    raw_messages = []
+
+    # pylint: disable=bad-super-call
+    @staticmethod
+    def send_message_override(bot, raw_messages):
+        # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
+        def sm(msg):
+            print(f"\n\n\nMESSAGE:\n{msg.body}\n\n\n")
+            # bot.super().send_message(msg)
+            super(type(bot), bot).send_message(msg)
+            raw_messages.append(msg)
+            bot.outgoing_message_queue.put(bot.md.convert(msg.body))
+        return sm
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
+        testbot.bot.send_message = self.send_message_override(testbot.bot, self.raw_messages)
+        return inject_config(testbot, config)
+
+    def test_access_command_grant_for_valid_sender_room(self, mocked_testbot):
+        mocked_testbot.bot.sender.room = create_room_mock(self.channel_name)
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+        assert self.raw_messages[1].to.person == f"#{self.channel_name}"
+
+    def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Invalid approver" in mocked_testbot.pop_message()
+
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False):
@@ -192,23 +235,28 @@ def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
 def create_sdm_service_mock(tags, resources_by_role, grant_exists):
-    service_mock = MagicMock()
-    service_mock.get_resource_by_name = MagicMock(return_value = create_mock_resource(tags))
-    service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())
-    service_mock.grant_temporary_access = MagicMock()
-    service_mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
-    service_mock.grant_exists = MagicMock(return_value = grant_exists)
-    return service_mock
+    mock = MagicMock()
+    mock.get_resource_by_name = MagicMock(return_value = create_resource_mock(tags))
+    mock.get_account_by_email = MagicMock(return_value = create_account_mock())
+    mock.grant_temporary_access = MagicMock()
+    mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
+    mock.grant_exists = MagicMock(return_value = grant_exists)
+    return mock
 
-def create_mock_resource(tags):
-    mock_resource = MagicMock()
-    mock_resource.id = resource_id
-    mock_resource.name = resource_name
-    mock_resource.tags = tags
-    return mock_resource
+def create_resource_mock(tags):
+    mock = MagicMock()
+    mock.id = resource_id
+    mock.name = resource_name
+    mock.tags = tags
+    return mock
 
-def create_mock_account():
-    mock_account = MagicMock()
-    mock_account.id = account_id
-    mock_account.name = account_name
-    return mock_account
+def create_account_mock():
+    mock = MagicMock()
+    mock.id = account_id
+    mock.name = account_name
+    return mock
+
+def create_room_mock(channel_name):
+    mock = MagicMock()
+    mock.name = channel_name
+    return mock
