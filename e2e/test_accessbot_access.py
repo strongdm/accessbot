@@ -66,6 +66,20 @@ class Test_default_flow: # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+class Test_invalid_approver:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['SENDER_NICK_OVERRIDE'] = 'not-admin'
+        return inject_config(testbot, config)
+
+    def test_access_command_fail_when_user_not_admin(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Invalid approver" in mocked_testbot.pop_message()
+
 class Test_automatic_approval_flow:
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -168,7 +182,6 @@ class Test_grant_exists:
         mocked_testbot.push_message("access to Xxx")
         assert "already have access" in mocked_testbot.pop_message()
 
-# TODO Add test for approval coming from a non ADMIN
 # TODO Add new variable to docs. IMPORTANT: Format #channel-name
 # TODO Add question to FAQ for how to find Slack ADMIN handles
 # TODO Update accessbot config for "plugin config" - needs to be executed in a 1:1 chatt with accessbot!
