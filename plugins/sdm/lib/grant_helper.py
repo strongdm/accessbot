@@ -38,7 +38,7 @@ class GrantHelper:
         return shortuuid.ShortUUID().random(length=4)
 
     def __grant_resource(self, message, sdm_object, sdm_account, execution_id):
-        sender_nick = self.__bot.get_sender_nick(message)
+        sender_nick = self.__bot.get_sender_nick(message.frm)
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_resource sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
         request_id = self.__create_grant_request(message, sdm_object, sdm_account, GrantRequestType.ACCESS_RESOURCE)
@@ -51,8 +51,8 @@ class GrantHelper:
 
     # TODO Evaluate merging with __grant_resource
     def __grant_role(self, message, sdm_object, execution_id):
-        sender_nick = self.__bot.get_sender_nick(message)
-        sender_email = self.__bot.get_sender_email(message)
+        sender_nick = self.__bot.get_sender_nick(message.frm)
+        sender_email = self.__bot.get_sender_email(message.frm)
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_role sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
         sdm_account = self.__sdm_service.get_account_by_email(sender_email)
         request_id = self.__create_grant_request(message, sdm_object, sdm_account, GrantRequestType.ASSIGN_ROLE)
@@ -74,7 +74,7 @@ class GrantHelper:
         return self.__sdm_service.get_role_by_name(role_name)
 
     def __get_account(self, message):
-        sender_email = self.__bot.get_sender_email(message)
+        sender_email = self.__bot.get_sender_email(message.frm)
         return self.__sdm_service.get_account_by_email(sender_email)
 
     def __is_resource_in_role(self, resource_name, role_name):
@@ -94,15 +94,20 @@ class GrantHelper:
         return not self.__bot.config['AUTO_APPROVE_ALL'] and not tagged_resource
 
     def __notify_admins(self, message):
+        admins_channel = self.__bot.config['ADMINS_CHANNEL']
+        if admins_channel:
+            self.__bot.send(self.__bot.build_identifier(admins_channel), message)
+            return
+
         for admin_id in self.__admin_ids:
             self.__bot.send(admin_id, message)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, request_id):
         team_admins = ", ".join(self.__bot.get_admins())
-        yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
+        yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         self.__notify_admins(r"Hey I have an access request from USER \`" + sender_nick + r"\` for RESOURCE \`" + resource_name + r"\`! To approve, enter: **yes " + request_id + r"**")
 
     def __notify_assign_role_request_entered(self, sender_nick, role_name, request_id):
         team_admins = ", ".join(self.__bot.get_admins())
-        yield f"Thanks @{sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
+        yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         self.__notify_admins(r"Hey I have a role assign request from USER \`" + sender_nick + r"\` for ROLE \`" + role_name + r"\`! To approve, enter: **yes " + request_id + r"**")

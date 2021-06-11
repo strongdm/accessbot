@@ -8,13 +8,18 @@ class ApproveHelper:
         self.__bot = bot
         self.__sdm_service = bot.get_sdm_service()
 
-    def execute(self, request_id):
+    def execute(self, approver, request_id):
         execution_id = shortuuid.ShortUUID().random(length=6)
         self.__bot.log.debug("##SDM## %s ApproveHelper.execute request_id: %s", execution_id, request_id)
 
         if not self.__bot.is_valid_grant_request_id(request_id):
             self.__bot.log.debug("##SDM## %s ApproveHelper.execute invalid access request id: %s", execution_id, request_id)
             yield f"Invalid access request id = {request_id}"
+            return
+
+        if not self.__is_admin(approver):
+            self.__bot.log.debug("##SDM## %s ApproveHelper.execute invalid approver, not an admin: %s", execution_id, str(approver))
+            yield "Invalid approver, not an admin or using the wrong channel"
             return
 
         self.__bot.log.info("##SDM## %s ApproveHelper.execute approving access to request id: %s", execution_id, request_id)
@@ -26,6 +31,14 @@ class ApproveHelper:
             yield from self.__approve_assign_role(grant_request)
             return
         yield from self.__approve_access_resource(grant_request)
+
+    def __is_admin(self, approver):
+        admins_channel = self.__bot.config['ADMINS_CHANNEL']
+        approver_channel = None if not hasattr(approver, 'room') else f"#{approver.room.name}"
+        if admins_channel:
+            return approver_channel == admins_channel
+        self.__bot.log.error("********* %s %s", str(self.__bot.get_sender_nick(approver)), str(self.__bot.get_admins()))
+        return self.__bot.get_sender_nick(approver) in self.__bot.get_admins()
 
     def __approve_assign_role(self, grant_request):
         yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
@@ -54,11 +67,11 @@ class ApproveHelper:
         self.__sdm_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
 
     def __notify_access_request_granted(self, message, resource_name):
-        sender_email = self.__bot.get_sender_email(message)
-        sender_nick = self.__bot.get_sender_nick(message)
-        yield f"@{sender_nick}: Granting {sender_email} access to '{resource_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"
+        sender_email = self.__bot.get_sender_email(message.frm)
+        sender_nick = self.__bot.get_sender_nick(message.frm)
+        yield f"{sender_nick}: Granting {sender_email} access to '{resource_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"
 
     def __notify_assign_role_request_granted(self, message, role_name):
-        sender_email = self.__bot.get_sender_email(message)
-        sender_nick = self.__bot.get_sender_nick(message)
-        yield f"@{sender_nick}: Granting {sender_email} access to resources in role '{role_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"
+        sender_email = self.__bot.get_sender_email(message.frm)
+        sender_nick = self.__bot.get_sender_nick(message.frm)
+        yield f"{sender_nick}: Granting {sender_email} access to resources in role '{role_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"

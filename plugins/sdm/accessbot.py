@@ -56,12 +56,13 @@ class AccessBot(BotPlugin):
         yield from self.get_grant_helper().assign_role(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
-    def approve(self, _, match):
+    def approve(self, message, match):
         """
         Approve a grant (resource or role)
         """
         access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
-        yield from self.get_approve_helper().execute(access_request_id)
+        approver = message.frm
+        yield from self.get_approve_helper().execute(approver, access_request_id)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
@@ -139,10 +140,10 @@ class AccessBot(BotPlugin):
         if self._bot.mode == "slack":
             self._bot.add_reaction(message, "thumbsup")
 
-    def get_sender_nick(self, message):
+    def get_sender_nick(self, sender):
         override = self.config['SENDER_NICK_OVERRIDE']
-        return override if override else str(message.frm.nick)
+        return override if override else f"@{sender.nick}"
 
-    def get_sender_email(self, message):
+    def get_sender_email(self, sender):
         override = self.config['SENDER_EMAIL_OVERRIDE']
-        return override if override else str(message.frm.email)
+        return override if override else str(sender.email)
