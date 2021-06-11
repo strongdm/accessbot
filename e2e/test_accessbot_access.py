@@ -182,10 +182,6 @@ class Test_grant_exists:
         mocked_testbot.push_message("access to Xxx")
         assert "already have access" in mocked_testbot.pop_message()
 
-# TODO Add new variable to docs. IMPORTANT: Format #channel-name
-# TODO Add question to FAQ for how to find Slack ADMIN handles
-# TODO Update accessbot config for "plugin config" - needs to be executed in a 1:1 chatt with accessbot!
-
 class Test_admin_in_channel:
     channel_name = 'testroom'
     raw_messages = []

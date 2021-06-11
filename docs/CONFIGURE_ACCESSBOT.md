@@ -4,7 +4,7 @@ There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
 * **SLACK_TOKEN**. Slack Bot User OAuth Token
-* **SDM_ADMINS**. List of Slack admins. Although it's not required, these users are often SDM admins, too
+* **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nicks. 
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
@@ -23,14 +23,16 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. The tag value is ignored, delete tag to disable. Default = None
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
+* **ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
 
 See image below for more information:
 
 ![image](img/bot-config.gif)
 
 ### Some tricks
-* Use `plugin config AccessBot {}` for setting config to initial state
+* Use `plugin config AccessBot {}` for setting config to initial state. This command needs to be executed in a direct chat with AccessBot, cannot be used in channels
 * Use `plugin info AccessBot` for showing all configurations
+* Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
 
 ### Known issues
 * When using `plugin config` from a Mac, you will need to disable: 
