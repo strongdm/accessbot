@@ -15,13 +15,22 @@ class PollerHelper:
                 self.__bot.remove_grant_request(request_id)
 
     def __notify_grant_request_denied(self, grant_request):
+        requester_id = grant_request['message'].frm
         self.__notify_admins(f"Request {grant_request['id']} timed out, user grant will be denied!")
-        self.__notify_requester(grant_request, f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
+        self.__notify_requester(requester_id, f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
+
+    def __get_channel_id(self, requester_id):
+        if not hasattr(requester_id, 'room'):
+            return None
+        return self.__bot.build_identifier(f"#{requester_id.room.name}")
 
     def __notify_admins(self, message):
         for admin_id in self.__admin_ids:
             self.__bot.send(admin_id, message)
 
-    def __notify_requester(self, grant_request, message):
-        requester_id = grant_request['message'].frm
+    def __notify_requester(self, requester_id, message):
+        channel_id = self.__get_channel_id(requester_id)
+        if channel_id:
+            self.__bot.send(channel_id, message)
+            return
         self.__bot.send(requester_id, message)
