@@ -1,4 +1,3 @@
-
 def create_config():
     return {
         'ADMIN_TIMEOUT': 2,
@@ -20,3 +19,14 @@ class DummyResource:
 class DummyRole:
     def __init__(self, name):
         self.name = name
+
+# pylint: disable=bad-super-call
+def send_message_override(bot, raw_messages):
+    # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
+    def sm(msg):
+        print(f"\n\n\nMESSAGE:\n{msg.body}\n\n\n")
+        # bot.super().send_message(msg)
+        super(type(bot), bot).send_message(msg)
+        raw_messages.append(msg)
+        bot.outgoing_message_queue.put(bot.md.convert(msg.body))
+    return sm

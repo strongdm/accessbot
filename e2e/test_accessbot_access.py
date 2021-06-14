@@ -4,7 +4,7 @@ import sys
 from unittest.mock import MagicMock, Mock, patch
 import pytest
 
-from test_common import create_config, DummyResource
+from test_common import create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
 from lib import ApproveHelper, GrantHelper, PollerHelper
 
@@ -186,23 +186,11 @@ class Test_admin_in_channel:
     channel_name = 'testroom'
     raw_messages = []
 
-    # pylint: disable=bad-super-call
-    @staticmethod
-    def send_message_override(bot, raw_messages):
-        # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
-        def sm(msg):
-            print(f"\n\n\nMESSAGE:\n{msg.body}\n\n\n")
-            # bot.super().send_message(msg)
-            super(type(bot), bot).send_message(msg)
-            raw_messages.append(msg)
-            bot.outgoing_message_queue.put(bot.md.convert(msg.body))
-        return sm
-
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
-        testbot.bot.send_message = self.send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         return inject_config(testbot, config)
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot):
