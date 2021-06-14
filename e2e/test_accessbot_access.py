@@ -125,7 +125,7 @@ class Test_hide_resource_tag:
 
     def test_access_command_fail_for_tagged_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
-        assert "Invalid" in mocked_testbot.pop_message()
+        assert "not available" in mocked_testbot.pop_message()
 
 class Test_grant_timeout:
     @pytest.fixture
@@ -170,7 +170,7 @@ class Test_resources_by_role:
 
     def test_access_command_fail_for_invalid_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Yyy")
-        assert "Invalid" in mocked_testbot.pop_message()
+        assert "not available" in mocked_testbot.pop_message()
 
 class Test_grant_exists:
     @pytest.fixture

@@ -62,12 +62,12 @@ class GrantHelper:
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
         if role_name and not self.__is_resource_in_role(resource_name, role_name):
-            self.__bot.log.debug("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
-            raise Exception("Invalid resource")
+            self.__bot.log.info("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
+            raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         sdm_resource = self.__sdm_service.get_resource_by_name(resource_name)
         if self.__is_hidden_resource(sdm_resource):
-            self.__bot.log.debug("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
-            raise Exception("Invalid resource name")
+            self.__bot.log.info("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
+            raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         return sdm_resource
 
     def __get_role(self, role_name):
