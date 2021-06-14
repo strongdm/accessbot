@@ -42,12 +42,12 @@ class GrantHelper:
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_resource sender_nick: %s sender_email: %s", execution_id, sender_nick, sender_email)
         request_id = self.__create_grant_request(message, sdm_object, sdm_account, GrantRequestType.ACCESS_RESOURCE)
-        if self.__needs_manual_approval(sdm_object):
+        if self.__needs_manual_approval(sdm_object) or self.__reached_max_auto_approve_uses(message.frm.person):
             yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id)
             self.__bot.log.debug("##SDM## %s GrantHelper.__grant_resource needs manual approval", execution_id)
             return
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_resource granting access", execution_id)
-        yield from self.__bot.get_approve_helper().approve(request_id)
+        yield from self.__bot.get_approve_helper().approve(request_id, True)
 
     # TODO Evaluate merging with __grant_resource
     def __grant_role(self, message, sdm_object, execution_id):
@@ -92,6 +92,12 @@ class GrantHelper:
     def __needs_manual_approval(self, sdm_resource):
         tagged_resource = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
         return not self.__bot.config['AUTO_APPROVE_ALL'] and not tagged_resource
+
+    # TODO Implement    
+    def __reached_max_auto_approve_uses(self, requester_id):
+        # max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']
+        # max_auto_approve_interval = self.__bot.config['MAX']
+        return False
 
     def __notify_admins(self, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

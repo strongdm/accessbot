@@ -80,16 +80,40 @@ class Test_invalid_approver:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid approver" in mocked_testbot.pop_message()
 
-class Test_automatic_approval_flow:
+class Test_auto_approve_all:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_ALL'] = True
         return inject_config(testbot, config)
 
-    def test_access_command_grant_auto_approved_for_all(self, mocked_testbot):
+    @pytest.fixture
+    def mocked_with_max_auto_approve(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['MAX_AUTO_APPROVE_USES'] = 1
+        accessbot.config['MAX_AUTO_APPROVE_INTERVAL'] = 50
+        return mocked_testbot
+
+    def test_auto_all(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_with_remaining_approvals_message(self, mocked_with_max_auto_approve):
+        mocked_with_max_auto_approve.push_message("access to Xxx")
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+
+    @pytest.mark.skip
+    def test_default_flow_once_exhausted_auto_approvals(self, mocked_with_max_auto_approve):
+        mocked_with_max_auto_approve.push_message("access to Xxx")
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+        mocked_with_max_auto_approve.push_message("access to Xxx")
+        mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_with_max_auto_approve.pop_message()
+        assert "access request" in mocked_with_max_auto_approve.pop_message()
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+
 
 class Test_multiple_admins_flow:
     @pytest.fixture

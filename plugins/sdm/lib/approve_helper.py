@@ -25,12 +25,14 @@ class ApproveHelper:
         self.__bot.log.info("##SDM## %s ApproveHelper.execute approving access to request id: %s", execution_id, request_id)
         yield from self.approve(request_id)
 
-    def approve(self, request_id):
+    def approve(self, request_id, is_auto_approve = False):
         grant_request = self.__bot.get_grant_request(request_id)
         if grant_request['type'] == GrantRequestType.ASSIGN_ROLE:
             yield from self.__approve_assign_role(grant_request)
-            return
-        yield from self.__approve_access_resource(grant_request)
+        else:
+            yield from self.__approve_access_resource(grant_request)
+        if is_auto_approve:
+            yield from self.__register_auto_approve_use(grant_request)
 
     def __is_admin(self, approver):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
@@ -75,3 +77,11 @@ class ApproveHelper:
         sender_email = self.__bot.get_sender_email(message.frm)
         sender_nick = self.__bot.get_sender_nick(message.frm)
         yield f"{sender_nick}: Granting {sender_email} access to resources in role '{role_name}' for {self.__bot.config['GRANT_TIMEOUT']} minutes"
+
+    def __register_auto_approve_use(self, grant_request):
+        max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']
+        if not max_auto_approve_uses:
+            return
+        requester_id = grant_request['message'].frm.person
+        auto_approve_uses = self.__bot.increment_auto_approve_use(requester_id)
+        yield f"You have {auto_approve_uses - max_auto_approve_uses} remaining auto-approve uses"
