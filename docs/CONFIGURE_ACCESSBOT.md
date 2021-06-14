@@ -23,7 +23,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. The tag value is ignored, delete tag to disable. Default = None
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
-* **ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
+* **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
 
 See image below for more information:
 
