@@ -153,7 +153,7 @@ class AccessBot(BotPlugin):
     def increment_auto_approve_use(self, requester_id):
         prev = 0
         if requester_id in self['auto_approve_uses']:
-            prev = self['auto_approve_uses']
+            prev = self['auto_approve_uses'][requester_id]
         with self.mutable('auto_approve_uses') as d:
             d[requester_id] = prev + 1
         return self['auto_approve_uses'][requester_id]

@@ -84,4 +84,4 @@ class ApproveHelper:
             return
         requester_id = grant_request['message'].frm.person
         auto_approve_uses = self.__bot.increment_auto_approve_use(requester_id)
-        yield f"You have {auto_approve_uses - max_auto_approve_uses} remaining auto-approve uses"
+        yield f"You have {max_auto_approve_uses - auto_approve_uses} remaining auto-approve uses"
