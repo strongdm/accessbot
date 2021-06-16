@@ -1,8 +1,9 @@
 # pylint: disable=invalid-name
 import datetime
 import sys
-from unittest.mock import MagicMock, Mock, patch
 import pytest
+import time
+from unittest.mock import MagicMock, Mock, patch
 
 from test_common import create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
@@ -24,21 +25,21 @@ class Test_default_flow: # manual approval
         return inject_config(testbot, config)
 
     def test_access_command_grant_approved(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_access_command_grant_timed_out(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
 
     def test_access_command_grant_not_approved(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message("no") # Anything but yes
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -46,14 +47,14 @@ class Test_default_flow: # manual approval
         assert "not approved" in mocked_testbot.pop_message()
 
     def test_access_command_grant_bolded_yes_message(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"**yes {access_request_id}**")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_access_command_grant_bolded_request_id_in_yes_message(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes *{access_request_id}*")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -74,22 +75,54 @@ class Test_invalid_approver:
         return inject_config(testbot, config)
 
     def test_access_command_fail_when_user_not_admin(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid approver" in mocked_testbot.pop_message()
 
-class Test_automatic_approval_flow:
+class Test_auto_approve_all:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_ALL'] = True
         return inject_config(testbot, config)
 
-    def test_access_command_grant_auto_approved_for_all(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+    @pytest.fixture
+    def mocked_with_max_auto_approve(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['MAX_AUTO_APPROVE_USES'] = 1
+        accessbot.config['MAX_AUTO_APPROVE_INTERVAL'] = 1
+        return mocked_testbot
+
+    def test_auto_all(self, mocked_testbot):
+        push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_with_remaining_approvals_message(self, mocked_with_max_auto_approve):
+        push_access_request(mocked_with_max_auto_approve)
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+
+    def test_default_flow_once_exhausted_auto_approvals(self, mocked_with_max_auto_approve):
+        push_access_request(mocked_with_max_auto_approve)
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_with_max_auto_approve.pop_message()
+        assert "access request" in mocked_with_max_auto_approve.pop_message()
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+
+    def test_keep_remaining_approvals_when_cleaner_passes(self, mocked_with_max_auto_approve):
+        push_access_request(mocked_with_max_auto_approve)
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+        accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
+        PollerHelper(accessbot).stale_max_auto_approve_cleaner()
+        push_access_request(mocked_with_max_auto_approve)
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
 class Test_multiple_admins_flow:
     @pytest.fixture
@@ -98,7 +131,7 @@ class Test_multiple_admins_flow:
         return inject_config(testbot, config, admins = ["gbin@localhost",  "user1"])
 
     def test_access_command_grant_multiple_admins(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -113,7 +146,7 @@ class Test_auto_approve_tag:
         return inject_config(testbot, config, tags = {'auto-approve': True})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
 
 class Test_hide_resource_tag:
@@ -124,7 +157,7 @@ class Test_hide_resource_tag:
         return inject_config(testbot, config, tags = {'hide-resource': True})
 
     def test_access_command_fail_for_tagged_resource(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         assert "not available" in mocked_testbot.pop_message()
 
 class Test_grant_timeout:
@@ -143,7 +176,7 @@ class Test_grant_timeout:
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            mocked_testbot.push_message("access to Xxx")
+            push_access_request(mocked_testbot)
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "access request" in mocked_testbot.pop_message()
@@ -162,7 +195,7 @@ class Test_resources_by_role:
         return inject_config(testbot, config, resources_by_role = resources_by_role)
 
     def test_access_command_grant_for_valid_resource(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -179,7 +212,7 @@ class Test_grant_exists:
         return inject_config(testbot, config, grant_exists = True)
 
     def test_access_command_grant_for_valid_resource(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         assert "already have access" in mocked_testbot.pop_message()
 
 class Test_admin_in_channel:
@@ -195,7 +228,7 @@ class Test_admin_in_channel:
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot):
         mocked_testbot.bot.sender.room = create_room_mock(self.channel_name)
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -203,7 +236,7 @@ class Test_admin_in_channel:
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -214,7 +247,6 @@ class Test_admin_in_channel:
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
-    accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
@@ -257,3 +289,9 @@ def create_room_mock(channel_name):
     mock = MagicMock()
     mock.name = channel_name
     return mock
+
+def push_access_request(testbot):
+    testbot.push_message("access to Xxx")
+    # gives some time to process
+    # needed in slow environments, e.g. github actions
+    time.sleep(0.2) 

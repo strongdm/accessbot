@@ -30,7 +30,6 @@ class Test_stale_grant_requests_cleaner:
         accessbot.config = config
         return testbot
 
-        
     def test_when_handling_direct_messages(self, mocked_testbot):
         os.environ['SDM_ADMINS'] = self.sdm_admin
 
@@ -62,6 +61,25 @@ class Test_stale_grant_requests_cleaner:
         assert self.raw_messages[0].to.person == self.sdm_admin
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
+class Test_stale_max_auto_approve_cleaner:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config = config
+        return testbot
+
+    def test_when_theres_no_max_auto_approve_use_config(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.increase_auto_approve_uses_counter = MagicMock()
+        PollerHelper(accessbot).stale_max_auto_approve_cleaner()
+        accessbot.increase_auto_approve_uses_counter.assert_not_called()
+
+    def test_when_auto_approve_uses_gets_cleaned(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['MAX_AUTO_APPROVE_INTERVAL'] = 1
+        PollerHelper(accessbot).stale_max_auto_approve_cleaner()
+        assert accessbot['auto_approve_uses'] == {}
 
 def create_room_mock(channel_name):
     mock = MagicMock()

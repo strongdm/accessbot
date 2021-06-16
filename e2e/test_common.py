@@ -8,7 +8,9 @@ def create_config():
         'HIDE_RESOURCE_TAG': None,
         'GRANT_TIMEOUT': 60,
         'CONTROL_RESOURCES_ROLE_NAME': None,
-        'ADMINS_CHANNEL': None
+        'ADMINS_CHANNEL': None,
+        'MAX_AUTO_APPROVE_USES': None,
+        'MAX_AUTO_APPROVE_INTERVAL': None
     }
 
 class DummyResource:

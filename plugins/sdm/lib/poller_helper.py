@@ -14,6 +14,14 @@ class PollerHelper:
                 self.__notify_grant_request_denied(grant_request)
                 self.__bot.remove_grant_request(request_id)
 
+    def stale_max_auto_approve_cleaner(self):
+        max_auto_approve_interval = self.__bot.config['MAX_AUTO_APPROVE_INTERVAL']
+        if not max_auto_approve_interval:
+            return
+        auto_approve_uses_counter = self.__bot.increase_auto_approve_uses_counter()
+        if auto_approve_uses_counter >= (max_auto_approve_interval * 60):
+            self.__bot.clean_auto_approve_uses()
+
     def __notify_grant_request_denied(self, grant_request):
         requester_id = grant_request['message'].frm
         self.__notify_admins(f"Request {grant_request['id']} timed out, user grant will be denied!")

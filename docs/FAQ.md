@@ -19,7 +19,7 @@ You can do both, it’s configurable. Most of the users prefer to communicate wi
 Just mention `@accessbot` in your channel
 
 ## How can I use AccessBot in a private channel?
-Add the scope `usergroups:read` to your bot
+Invite AccessBot to your private channel and add the scope `usergroups:read` to your bot
 
 ## Why I need to create a Clasic Slack App?
 At the moment there are no plans to move to the Events API, the integration complexity behind firewalls or corporate networks would increase significantly, because the bot would need to expose an endpoint for receiving Slack events.

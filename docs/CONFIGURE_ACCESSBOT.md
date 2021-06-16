@@ -22,8 +22,9 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. The tag value is ignored, delete tag to disable. Default = None
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. The tag value is ignored, delete tag to disable. Default = None
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
-* **CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
+* **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
+* **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Defaults = None / None
 
 See image below for more information:
 
@@ -31,7 +32,7 @@ See image below for more information:
 
 ### Some tricks
 * Use `plugin config AccessBot {}` for setting config to initial state. This command needs to be executed in a direct chat with AccessBot, cannot be used in channels
-* Use `plugin info AccessBot` for showing all configurations
+* Use `plugin info AccessBot` for showing all configurations, including remaining auto-approve uses
 * Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
 
 ### Known issues
