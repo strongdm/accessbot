@@ -2,6 +2,7 @@
 import datetime
 import pytest
 import sys
+import time
 from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyResource
@@ -35,6 +36,7 @@ class Test_assign_role:
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
             mocked_testbot.push_message(f"access to role {role_name}")
+            time.sleep(0.2)
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
