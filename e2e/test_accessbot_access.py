@@ -247,7 +247,6 @@ class Test_admin_in_channel:
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
-    # accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string

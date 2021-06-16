@@ -35,8 +35,7 @@ class Test_assign_role:
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            mocked_testbot.push_message(f"access to role {role_name}")
-            time.sleep(0.2)
+            push_access_role_request(mocked_testbot)
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
@@ -51,7 +50,6 @@ class Test_assign_role:
 def inject_mocks(testbot, config):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
-    accessbot.start_poller(0.5, PollerHelper(accessbot).stale_grant_requests_cleaner)
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
@@ -94,3 +92,8 @@ def create_mock_resources():
     mock_resource.name = resource_name
     return [mock_resource]
 
+def push_access_role_request(testbot):
+    testbot.push_message(f"access to role {role_name}")
+    # gives some time to process
+    # needed in slow environments, e.g. github actions
+    time.sleep(0.2) 
