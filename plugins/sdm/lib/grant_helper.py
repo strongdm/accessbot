@@ -93,11 +93,12 @@ class GrantHelper:
         tagged_resource = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
         return not self.__bot.config['AUTO_APPROVE_ALL'] and not tagged_resource
 
-    # TODO Implement    
     def __reached_max_auto_approve_uses(self, requester_id):
-        # max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']
-        # max_auto_approve_interval = self.__bot.config['MAX']
-        return False
+        max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']
+        if not max_auto_approve_uses:
+            return False
+        auto_approve_uses = self.__bot.get_auto_approve_use(requester_id)
+        return auto_approve_uses >= max_auto_approve_uses
 
     def __notify_admins(self, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

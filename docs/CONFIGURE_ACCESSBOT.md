@@ -32,7 +32,7 @@ See image below for more information:
 
 ### Some tricks
 * Use `plugin config AccessBot {}` for setting config to initial state. This command needs to be executed in a direct chat with AccessBot, cannot be used in channels
-* Use `plugin info AccessBot` for showing all configurations
+* Use `plugin info AccessBot` for showing all configurations, including remaining auto-approve uses
 * Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
 
 ### Known issues

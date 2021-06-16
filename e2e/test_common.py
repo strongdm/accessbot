@@ -9,8 +9,8 @@ def create_config():
         'GRANT_TIMEOUT': 60,
         'CONTROL_RESOURCES_ROLE_NAME': None,
         'ADMINS_CHANNEL': None,
-        'MAX_AUTO_APPROVALS_PER_INTERVAL': None,
-        'AUTO_APPROVALS_INTERVAL': None
+        'MAX_AUTO_APPROVE_USES': None,
+        'MAX_AUTO_APPROVE_INTERVAL': None
     }
 
 class DummyResource:

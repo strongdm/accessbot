@@ -91,7 +91,7 @@ class Test_auto_approve_all:
     def mocked_with_max_auto_approve(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['MAX_AUTO_APPROVE_USES'] = 1
-        accessbot.config['MAX_AUTO_APPROVE_INTERVAL'] = 50
+        accessbot.config['MAX_AUTO_APPROVE_INTERVAL'] = 1
         return mocked_testbot
 
     def test_auto_all(self, mocked_testbot):
@@ -103,7 +103,6 @@ class Test_auto_approve_all:
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
-    @pytest.mark.skip
     def test_default_flow_once_exhausted_auto_approvals(self, mocked_with_max_auto_approve):
         mocked_with_max_auto_approve.push_message("access to Xxx")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
@@ -114,6 +113,15 @@ class Test_auto_approve_all:
         assert "access request" in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
 
+    def test_keep_remaining_approvals_when_cleaner_passes(self, mocked_with_max_auto_approve):
+        mocked_with_max_auto_approve.push_message("access to Xxx")
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
+        accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
+        PollerHelper(accessbot).stale_max_auto_approve_cleaner()
+        mocked_with_max_auto_approve.push_message("access to Xxx")
+        assert "Granting" in mocked_with_max_auto_approve.pop_message()
+        assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
 class Test_multiple_admins_flow:
     @pytest.fixture

@@ -14,6 +14,7 @@ ASSIGN_ROLE_REGEX = r"^\*{0,2}access to role (.+)$"
 SHOW_RESOURCES_REGEX = r"^\*{0,2}show available resources\*{0,2}$"
 SHOW_ROLES_REGEX = r"^\*{0,2}show available roles\*{0,2}$"
 FIVE_SECONDS = 5
+ONE_MINUTE = 60
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
@@ -22,7 +23,9 @@ class AccessBot(BotPlugin):
     def activate(self):
         super().activate()
         self['auto_approve_uses'] = {}
-        self.start_poller(FIVE_SECONDS, self.get_poller_helper().stale_grant_requests_cleaner)
+        poller_helper = self.get_poller_helper()
+        self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
+        self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
 
     def get_configuration_template(self):
         return config_template.get()
@@ -149,11 +152,26 @@ class AccessBot(BotPlugin):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         return override if override else str(sender.email)
 
-    # pylint: disable=invalid-name
     def increment_auto_approve_use(self, requester_id):
         prev = 0
         if requester_id in self['auto_approve_uses']:
             prev = self['auto_approve_uses'][requester_id]
-        with self.mutable('auto_approve_uses') as d:
-            d[requester_id] = prev + 1
+        with self.mutable('auto_approve_uses') as aau:
+            aau[requester_id] = prev + 1
         return self['auto_approve_uses'][requester_id]
+
+    def get_auto_approve_use(self, requester_id):
+        if requester_id not in self['auto_approve_uses']:
+            return 0
+        return self['auto_approve_uses'][requester_id]
+
+    def increase_auto_approve_uses_counter(self):
+        prev = 0
+        if 'poller_counter' in self['auto_approve_uses']:
+            prev = self['auto_approve_uses']['poller_counter']
+        with self.mutable('auto_approve_uses') as aau:
+            aau['poller_counter'] = prev + ONE_MINUTE # same value used for poller
+        return self['auto_approve_uses']['poller_counter']
+
+    def clean_auto_approve_uses(self):
+        self['auto_approve_uses'] = {}
