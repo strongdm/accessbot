@@ -1,8 +1,9 @@
 # pylint: disable=invalid-name
 import datetime
 import sys
-from unittest.mock import MagicMock, Mock, patch
 import pytest
+import time
+from unittest.mock import MagicMock, Mock, patch
 
 from test_common import create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
@@ -47,6 +48,7 @@ class Test_default_flow: # manual approval
 
     def test_access_command_grant_bolded_yes_message(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
+        time.sleep(0.5)
         mocked_testbot.push_message(f"**yes {access_request_id}**")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
