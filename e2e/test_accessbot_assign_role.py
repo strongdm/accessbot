@@ -96,4 +96,4 @@ def push_access_role_request(testbot):
     testbot.push_message(f"access to role {role_name}")
     # gives some time to process
     # needed in slow environments, e.g. github actions
-    time.sleep(0.2) 
+    time.sleep(0.2)

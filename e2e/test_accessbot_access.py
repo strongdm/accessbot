@@ -151,14 +151,27 @@ class Test_auto_approve_tag:
 
 class Test_hide_resource_tag:
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_testbot_hide_true(self, testbot):
         config = create_config()
         config['HIDE_RESOURCE_TAG'] = "hide-resource"
         return inject_config(testbot, config, tags = {'hide-resource': True})
 
-    def test_access_command_fail_for_tagged_resource(self, mocked_testbot):
-        push_access_request(mocked_testbot)
-        assert "not available" in mocked_testbot.pop_message()
+    @pytest.fixture
+    def mocked_testbot_hide_false(self, testbot):
+        config = create_config()
+        config['HIDE_RESOURCE_TAG'] = "hide-resource"
+        return inject_config(testbot, config, tags = {'hide-resource': False})
+
+    def test_access_command_fail_for_hidden_resources(self, mocked_testbot_hide_true):
+        push_access_request(mocked_testbot_hide_true)
+        assert "not available" in mocked_testbot_hide_true.pop_message()
+
+    def test_access_command_grant_when_hide_resource_is_false(self, mocked_testbot_hide_false):
+        push_access_request(mocked_testbot_hide_false)
+        mocked_testbot_hide_false.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_hide_false.pop_message()
+        assert "access request" in mocked_testbot_hide_false.pop_message()
+        assert "Granting" in mocked_testbot_hide_false.pop_message()
 
 class Test_grant_timeout:
     @pytest.fixture
