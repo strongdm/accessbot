@@ -22,18 +22,31 @@ class Test_show_resources:
         assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" in message
 
-class Test_show_not_hidden_resources:
+class Test_not_show_hidden_resources:
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_testbot_hide_resource_true(self, testbot):
         config = create_config()
-        config['HIDE_RESOURCE_TAG'] = 'hidden-resource'
-        resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'hidden-resource': True}) ]
+        config['HIDE_RESOURCE_TAG'] = 'hide-resource'
+        resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'hide-resource': True}) ]
         return inject_mocks(testbot, config, resources)
 
-    def test_show_resources_command(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources")
-        message = mocked_testbot.pop_message()
+    @pytest.fixture
+    def mocked_testbot_hide_resource_false(self, testbot):
+        config = create_config()
+        config['HIDE_RESOURCE_TAG'] = 'hide-resource'
+        resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'hide-resource': False}) ]
+        return inject_mocks(testbot, config, resources)
+
+    def test_show_resources_when_hide_resource_tag_true(self, mocked_testbot_hide_resource_true):
+        mocked_testbot_hide_resource_true.push_message("show available resources")
+        message = mocked_testbot_hide_resource_true.pop_message()
         assert "Aaa (type: DummyResource)" not in message
+        assert "Bbb (type: DummyResource)" in message
+
+    def test_show_resources_when_hide_resource_tag_false(self, mocked_testbot_hide_resource_false):
+        mocked_testbot_hide_resource_false.push_message("show available resources")
+        message = mocked_testbot_hide_resource_false.pop_message()
+        assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" in message
 
 class Test_show_resources_by_role:

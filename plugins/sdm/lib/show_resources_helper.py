@@ -1,3 +1,5 @@
+from .util import is_hidden_resource
+
 def _get_key(sdm_resource):
     return sdm_resource.name
 
@@ -10,8 +12,7 @@ class ShowResourcesHelper:
         resources = "Available resources:\n\n"
         sdm_resources = self.__get_resources()
         for sdm_resource in sorted(sdm_resources, key = _get_key):
-            hide_resource = self.__bot.config['HIDE_RESOURCE_TAG'] is not None and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
-            if hide_resource:
+            if is_hidden_resource(self.__bot.config, sdm_resource):
                 continue
             resources += self.__get_resource_line(sdm_resource)
         yield resources

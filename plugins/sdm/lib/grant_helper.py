@@ -1,6 +1,7 @@
 import shortuuid
 
 from grant_request_type import GrantRequestType
+from .util import is_hidden_resource
 
 class GrantHelper:
     def __init__(self, bot):
@@ -65,7 +66,7 @@ class GrantHelper:
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
             raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         sdm_resource = self.__sdm_service.get_resource_by_name(resource_name)
-        if self.__is_hidden_resource(sdm_resource):
+        if is_hidden_resource(self.__bot.config, sdm_resource):
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
             raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         return sdm_resource
@@ -80,9 +81,6 @@ class GrantHelper:
     def __is_resource_in_role(self, resource_name, role_name):
         sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
         return any(r.name == resource_name for r in sdm_resources_by_role)
-
-    def __is_hidden_resource(self, sdm_resource):
-        return self.__bot.config['HIDE_RESOURCE_TAG'] and self.__bot.config['HIDE_RESOURCE_TAG'] in sdm_resource.tags
 
     def __create_grant_request(self, message, sdm_object, sdm_account, grant_request_type):
         request_id = self.generate_grant_request_id()
