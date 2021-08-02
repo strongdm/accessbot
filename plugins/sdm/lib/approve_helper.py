@@ -39,7 +39,6 @@ class ApproveHelper:
         approver_channel = None if not hasattr(approver, 'room') else f"#{approver.room.name}"
         if admins_channel:
             return approver_channel == admins_channel
-        self.__bot.log.error("********* %s %s", str(self.__bot.get_sender_nick(approver)), str(self.__bot.get_admins()))
         return self.__bot.get_sender_nick(approver) in self.__bot.get_admins()
 
     def __approve_assign_role(self, grant_request):
