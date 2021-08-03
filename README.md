@@ -43,9 +43,11 @@ First, check the bot and Slack interconnectivity state:
 You would expect to see no error in your logs and the messages **Yes I am alive** and plugin available.
 
 If that's the case, enter any of the following commands:
-* `help`. Show available commands help
-* `show available resources`. Show all available resources
-* `access to resource-name`. Grant access to a resource
+* `help`. Show available commands 
+* `show available resources`. Show available resources - all or the ones assigned to a role
+* `access to resource-name`. Grant temporary access to a resource
+* `show available roles`. Show all roles
+* `access to resource-name`. Grant temporary access to all resources assigned to a role
 
 For example:
 
