@@ -20,7 +20,7 @@ NOTE: Adjust the YAML config according to your needs
 
 ![image](https://user-images.githubusercontent.com/313803/128013997-c35646af-5c24-4fcd-9417-a5e246492fb3.png)
 
-5. Generate an App Level Token under Basic Information 
+5. On the Basic Information page, scroll down to the **App-Level Tokens** section and click the **Generate Tokens and Scopes** button:
 
 ![image](https://user-images.githubusercontent.com/313803/128014405-ed373269-994c-41dd-9b30-e7730a0fa242.png)
 
