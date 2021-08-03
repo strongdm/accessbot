@@ -26,11 +26,11 @@ NOTE: Adjust the YAML config according to your needs
 
 NOTE: Use scope: `connections:write`
 
-6. Get your `SLACK_APP_TOKEN`
+6. Copy the generated `SLACK_APP_TOKEN`
 
 ![image](https://user-images.githubusercontent.com/313803/128014632-9e2cec27-21ee-445c-80a2-375088c19b68.png)
 
-7. Get your `SLACK_BOT_TOKEN`
+7. On the left side, click **OAuth & Permissions**, and copy the **Bot User OAuth Token**:
 
 ![image](https://user-images.githubusercontent.com/313803/128014877-911f5ef0-c766-43d1-8f30-6a66abc5e4e2.png)
 
