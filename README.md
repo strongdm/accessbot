@@ -10,7 +10,8 @@ AccessBot is a chatbot that manages access to strongDM (SDM) resources, initiall
 
 ## Installation
 In order to install AccessBot you need to provide -at least- the following required variables:
-* **SLACK_TOKEN**. Slack Bot User OAuth Token
+* **SLACK_APP_TOKEN**. Slack App-Level Token
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
 * **SDM_ADMINS**. List of Slack admins, although it's not required, this users are usually SDM admins too  
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
