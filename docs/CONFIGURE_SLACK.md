@@ -16,7 +16,7 @@ NOTE: Adjust the YAML config according to your needs
 
 ![image](https://user-images.githubusercontent.com/313803/128013824-acd31ba8-447f-423e-ada5-6e8585819501.png)
 
-4. Assign a channel and install
+4. Assign a channel and click the "Allow" button:
 
 ![image](https://user-images.githubusercontent.com/313803/128013997-c35646af-5c24-4fcd-9417-a5e246492fb3.png)
 
