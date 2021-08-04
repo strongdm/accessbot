@@ -16,21 +16,21 @@ NOTE: Adjust the YAML config according to your needs
 
 ![image](https://user-images.githubusercontent.com/313803/128013824-acd31ba8-447f-423e-ada5-6e8585819501.png)
 
-4. Assign a channel and install
+4. Assign a channel and click the "Allow" button:
 
 ![image](https://user-images.githubusercontent.com/313803/128013997-c35646af-5c24-4fcd-9417-a5e246492fb3.png)
 
-5. Generate an App Level Token under Basic Information 
+5. On the Basic Information page, scroll down to the **App-Level Tokens** section and click the **Generate Tokens and Scopes** button:
 
 ![image](https://user-images.githubusercontent.com/313803/128014405-ed373269-994c-41dd-9b30-e7730a0fa242.png)
 
 NOTE: Use scope: `connections:write`
 
-6. Get your `SLACK_APP_TOKEN`
+6. Copy the generated `SLACK_APP_TOKEN`
 
 ![image](https://user-images.githubusercontent.com/313803/128014632-9e2cec27-21ee-445c-80a2-375088c19b68.png)
 
-7. Get your `SLACK_BOT_TOKEN`
+7. On the left side, click **OAuth & Permissions**, and copy the **Bot User OAuth Token**:
 
 ![image](https://user-images.githubusercontent.com/313803/128014877-911f5ef0-c766-43d1-8f30-6a66abc5e4e2.png)
 
