@@ -1,7 +1,7 @@
 set-env.sh
+env-file
 venv/
 __pycache__
-data/
 errbot.log
 .vscode/
 unset-env.sh

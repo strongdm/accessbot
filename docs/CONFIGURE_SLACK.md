@@ -2,30 +2,36 @@
 
 In order to configure AccessBot integration with Slack follow the next steps:
 
-1. Go to https://api.slack.com/apps?new_classic_app=1 and create a classic app
+1. Go to https://api.slack.com/apps and create an app from a manifest
 
-![image](https://user-images.githubusercontent.com/313803/115708663-936d2380-a370-11eb-94d2-b5edb1596af7.png)
+![image](https://user-images.githubusercontent.com/313803/128012837-79be22d5-72ec-4e6a-92c3-da422332d524.png)
 
-2. Go to OAuth & Permissions and add bot scope in the Scopes 
+2. Enter the content of [slack-manifest.yaml](../slack-manifest.yaml)
 
-![image](https://user-images.githubusercontent.com/313803/115709326-653c1380-a371-11eb-9346-f2fa81c7fd24.png)
+![image](https://user-images.githubusercontent.com/313803/128013483-87b62077-cfc0-44d0-b64e-2f42a0a0d5bb.png)
 
-IMPORTANT: The reason why you need a classic app and the bot scope, is because the current AccessBot implementation uses the RTM API, which is not available 
-when updating to the new bot scopes. 
+NOTE: Adjust the YAML config according to your needs
 
-4. Go to App Home 
+3. Install App 
 
-![image](https://user-images.githubusercontent.com/313803/115710249-6cafec80-a372-11eb-9071-bad38cf0d4bf.png)
+![image](https://user-images.githubusercontent.com/313803/128013824-acd31ba8-447f-423e-ada5-6e8585819501.png)
 
-5. Click Add Legacy Bot User and set its name
+4. Assign a channel and click the "Allow" button:
 
-![image](https://user-images.githubusercontent.com/313803/115710432-a2ed6c00-a372-11eb-8fda-b8ef9c874e49.png)
+![image](https://user-images.githubusercontent.com/313803/128013997-c35646af-5c24-4fcd-9417-a5e246492fb3.png)
 
-6. Go to Install App 
+5. On the Basic Information page, scroll down to the **App-Level Tokens** section and click the **Generate Tokens and Scopes** button:
 
-![image](https://user-images.githubusercontent.com/313803/115710557-c6181b80-a372-11eb-95dd-72927c81e53a.png)
+![image](https://user-images.githubusercontent.com/313803/128014405-ed373269-994c-41dd-9b30-e7730a0fa242.png)
 
+NOTE: Use scope: `connections:write`
 
-**Use "Bot User OAuth Token" for your _SLACK_TOKEN_ variable**
+6. Copy the generated `SLACK_APP_TOKEN`
 
-_Original instructions from [this thread](https://github.com/slackapi/python-slack-sdk/issues/609#issuecomment-6398872129)_
+![image](https://user-images.githubusercontent.com/313803/128014632-9e2cec27-21ee-445c-80a2-375088c19b68.png)
+
+7. On the left side, click **OAuth & Permissions**, and copy the **Bot User OAuth Token**:
+
+![image](https://user-images.githubusercontent.com/313803/128014877-911f5ef0-c766-43d1-8f30-6a66abc5e4e2.png)
+
+**Use "App-Level Token" for _SLACK_APP_TOKEN_ and "Bot User OAuth Token" for _SLACK_BOT_TOKEN_ variables**

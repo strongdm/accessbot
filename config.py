@@ -16,7 +16,9 @@ def get_access_controls():
     }
 
 CORE_PLUGINS=('ACLs', 'Health', 'Help', 'Plugins', 'Utils')
-BACKEND = 'Slack'
+
+BACKEND = 'SlackBolt'
+BOT_EXTRA_BACKEND_DIR = 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
 
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
@@ -27,7 +29,8 @@ BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
 BOT_ADMINS = os.getenv("SDM_ADMINS").split(" ")
 CHATROOM_PRESENCE = ()
 BOT_IDENTITY = {
-    'token': os.getenv("SLACK_TOKEN")
+    "app_token": os.environ["SLACK_APP_TOKEN"],
+    "bot_token": os.environ["SLACK_BOT_TOKEN"],
 }
 
 ACCESS_CONTROLS = get_access_controls()

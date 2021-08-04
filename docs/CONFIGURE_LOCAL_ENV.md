@@ -27,6 +27,12 @@ pip install errbot[slack]
 mv config.py.back config.py
 ```
 
+## Update submodules
+```
+git submodule init
+git submodule update
+```
+
 ## Run the bot
 ```
 pytest # run tests

@@ -3,7 +3,8 @@
 There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
-* **SLACK_TOKEN**. Slack Bot User OAuth Token
+* **SLACK_APP_TOKEN**. Slack App-Level Token 
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
 * **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nicks. 
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
