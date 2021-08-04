@@ -2,5 +2,5 @@
 strongdm
 datetime
 errbot
-slackclient
+slack-bolt
 shortuuid

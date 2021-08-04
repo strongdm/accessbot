@@ -1,4 +1,5 @@
 set-env.sh
+env-file
 venv/
 __pycache__
 errbot.log
