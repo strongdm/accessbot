@@ -18,12 +18,17 @@ oauth_config:
     bot:
       - channels:history
       - channels:read
+      - chat:write
+      - groups:history
+      - groups:write
       - im:history
+      - im:write
       - incoming-webhook
+      - mpim:write
       - reactions:write
       - users:read
       - users:read.email
-      - groups:history
+      - groups:read
 settings:
   event_subscriptions:
     bot_events:
