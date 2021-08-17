@@ -255,15 +255,32 @@ class Test_admin_in_channel:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid approver" in mocked_testbot.pop_message()
 
+class Test_fuzzy_matching:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        resources = [ DummyResource("Very Long name", {}) ]
+        return inject_config(testbot, config, return_resource_by_name=False, resources=resources)
+
+    def test_find_fuzzy_matching(self, mocked_testbot):
+        mocked_testbot.push_message("access to Long name")
+        time.sleep(0.2)
+        assert "cannot find that resource" in mocked_testbot.pop_message()
+        assert "Did you mean" in mocked_testbot.pop_message()
+
+    def test_fail_find_fuzzy_matching(self, mocked_testbot):
+        mocked_testbot.push_message("access to name")
+        time.sleep(0.2)
+        assert "cannot find that resource" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False):
+def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False, return_resource_by_name = True, resources = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, grant_exists))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, grant_exists, return_resource_by_name, resources))
     accessbot.get_grant_helper = MagicMock(return_value = create_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -276,13 +293,19 @@ def create_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(tags, resources_by_role, grant_exists):
+def create_sdm_service_mock(tags, resources_by_role, grant_exists, return_resource_by_name, resources):
     mock = MagicMock()
-    mock.get_resource_by_name = MagicMock(return_value = create_resource_mock(tags))
+    mock_resource = raise_no_resource_found
+
+    if return_resource_by_name:
+        mock_resource = MagicMock(return_value = create_resource_mock(tags))
+
+    mock.get_resource_by_name = mock_resource
     mock.get_account_by_email = MagicMock(return_value = create_account_mock())
     mock.grant_temporary_access = MagicMock()
     mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
     mock.grant_exists = MagicMock(return_value = grant_exists)
+    mock.get_all_resources = MagicMock(return_value = resources)
     return mock
 
 def create_resource_mock(tags):
@@ -308,3 +331,6 @@ def push_access_request(testbot):
     # gives some time to process
     # needed in slow environments, e.g. github actions
     time.sleep(0.2) 
+
+def raise_no_resource_found(message = '', match = ''):
+    raise Exception('Sorry, cannot find that resource!')

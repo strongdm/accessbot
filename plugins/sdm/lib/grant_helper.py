@@ -1,4 +1,5 @@
 import shortuuid
+from fuzzywuzzy import fuzz
 
 from grant_request_type import GrantRequestType
 from .util import is_hidden_resource
@@ -23,6 +24,39 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
+
+            similar_resource = self.__fuzzy_match_resource(resource_name)
+
+            if not similar_resource:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_resource no one similar resources was found.", execution_id)
+            else:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_resource similar resource found: %s", execution_id, str(similar_resource))
+                yield f"Did you mean \"{similar_resource}\"?"
+    
+    def __fuzzy_match_resource(self, searched_resource):
+        resources = self.__sdm_service.get_all_resources()
+        resource_names = list()
+
+        for res in resources:
+            resource_names.append(res.name)
+
+        if len(resource_names) == 0:
+            return None
+        
+        max_ratio = 0
+        max_ratio_resource = None
+
+        for name in resource_names:
+            resource_ratio = fuzz.token_sort_ratio(name, searched_resource) # Local PostgreSQL - postgres
+
+            if resource_ratio > max_ratio:
+                max_ratio = resource_ratio
+                max_ratio_resource = name
+        
+        if max_ratio < 50:
+            return None
+
+        return max_ratio_resource
 
     def assign_role(self, message, role_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
