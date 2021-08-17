@@ -4,6 +4,8 @@ from fuzzywuzzy import fuzz
 from grant_request_type import GrantRequestType
 from .util import is_hidden_resource
 
+FUZZY_MATCH_THRESHOLD = 50 # Base 100
+
 class GrantHelper:
     def __init__(self, bot):
         self.__bot = bot
@@ -24,40 +26,13 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
-
             similar_resource = self.__fuzzy_match_resource(resource_name)
-
             if not similar_resource:
-                self.__bot.log.error("##SDM## %s GrantHelper.access_resource no one similar resources was found.", execution_id)
+                self.__bot.log.error("##SDM## %s GrantHelper.access_resource there are no similar resources.", execution_id)
             else:
                 self.__bot.log.error("##SDM## %s GrantHelper.access_resource similar resource found: %s", execution_id, str(similar_resource))
                 yield f"Did you mean \"{similar_resource}\"?"
     
-    def __fuzzy_match_resource(self, searched_resource):
-        resources = self.__sdm_service.get_all_resources()
-        resource_names = list()
-
-        for res in resources:
-            resource_names.append(res.name)
-
-        if len(resource_names) == 0:
-            return None
-        
-        max_ratio = 0
-        max_ratio_resource = None
-
-        for name in resource_names:
-            resource_ratio = fuzz.token_sort_ratio(name, searched_resource) # Local PostgreSQL - postgres
-
-            if resource_ratio > max_ratio:
-                max_ratio = resource_ratio
-                max_ratio_resource = name
-        
-        if max_ratio < 50:
-            return None
-
-        return max_ratio_resource
-
     def assign_role(self, message, role_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
         self.__bot.log.info("##SDM## %s GrantHelper.assign_role new access request for role_name: %s", execution_id, role_name)
@@ -67,6 +42,7 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
+            # TODO Add fuzzy matching for roles
 
     @staticmethod
     def generate_grant_request_id():
@@ -150,3 +126,17 @@ class GrantHelper:
         team_admins = ", ".join(self.__bot.get_admins())
         yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         self.__notify_admins(r"Hey I have a role assign request from USER \`" + sender_nick + r"\` for ROLE \`" + role_name + r"\`! To approve, enter: **yes " + request_id + r"**")
+
+    def __fuzzy_match_resource(self, searched_resource):
+        resource_names = [res.name for res in self.__sdm_service.get_all_resources()]
+        if len(resource_names) == 0:
+            return None    
+        max_ratio = 0
+        max_ratio_resource = None
+        for name in resource_names:
+            # DISCLAIMER: token_sort_ratio is CPU demanding compared to other options, like: ratio or partial_ratio
+            resource_ratio = fuzz.token_sort_ratio(name, searched_resource)
+            if resource_ratio > max_ratio:
+                max_ratio = resource_ratio
+                max_ratio_resource = name
+        return max_ratio_resource if max_ratio >= FUZZY_MATCH_THRESHOLD else None
