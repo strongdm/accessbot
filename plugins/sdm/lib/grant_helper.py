@@ -26,13 +26,14 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
-            similar_resource = self.__fuzzy_match_resource(resource_name)
+            resources = self.__sdm_service.get_all_resources()
+            similar_resource = self.__fuzzy_match(resources, resource_name)
             if not similar_resource:
                 self.__bot.log.error("##SDM## %s GrantHelper.access_resource there are no similar resources.", execution_id)
             else:
                 self.__bot.log.error("##SDM## %s GrantHelper.access_resource similar resource found: %s", execution_id, str(similar_resource))
                 yield f"Did you mean \"{similar_resource}\"?"
-    
+
     def assign_role(self, message, role_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
         self.__bot.log.info("##SDM## %s GrantHelper.assign_role new access request for role_name: %s", execution_id, role_name)
@@ -42,7 +43,13 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
-            # TODO Add fuzzy matching for roles
+            roles = self.__sdm_service.get_all_roles()
+            similar_role = self.__fuzzy_match(roles, role_name)
+            if not similar_role:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_role there are no similar roles.", execution_id)
+            else:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_role similar role found: %s", execution_id, str(similar_role))
+                yield f"Did you mean \"{similar_role}\"?"
 
     @staticmethod
     def generate_grant_request_id():
@@ -127,16 +134,16 @@ class GrantHelper:
         yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         self.__notify_admins(r"Hey I have a role assign request from USER \`" + sender_nick + r"\` for ROLE \`" + role_name + r"\`! To approve, enter: **yes " + request_id + r"**")
 
-    def __fuzzy_match_resource(self, searched_resource):
-        resource_names = [res.name for res in self.__sdm_service.get_all_resources()]
-        if len(resource_names) == 0:
-            return None    
+    def __fuzzy_match(self, term_list, searched_term):
+        names = [item.name for item in term_list]
+        if len(names) == 0:
+            return None
         max_ratio = 0
-        max_ratio_resource = None
-        for name in resource_names:
+        max_ratio_name = None
+        for name in names:
             # DISCLAIMER: token_sort_ratio is CPU demanding compared to other options, like: ratio or partial_ratio
-            resource_ratio = fuzz.token_sort_ratio(name, searched_resource)
-            if resource_ratio > max_ratio:
-                max_ratio = resource_ratio
-                max_ratio_resource = name
-        return max_ratio_resource if max_ratio >= FUZZY_MATCH_THRESHOLD else None
+            ratio = fuzz.token_sort_ratio(name, searched_term)
+            if ratio > max_ratio:
+                max_ratio = ratio
+                max_ratio_name = name
+        return max_ratio_name if max_ratio >= FUZZY_MATCH_THRESHOLD else None
