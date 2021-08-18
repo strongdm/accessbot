@@ -1,7 +1,10 @@
 import shortuuid
+from fuzzywuzzy import fuzz
 
 from grant_request_type import GrantRequestType
 from .util import is_hidden_resource
+
+FUZZY_MATCH_THRESHOLD = 50 # Base 100
 
 class GrantHelper:
     def __init__(self, bot):
@@ -23,6 +26,13 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
+            resources = self.__sdm_service.get_all_resources()
+            similar_resource = self.__fuzzy_match(resources, resource_name)
+            if not similar_resource:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_resource there are no similar resources.", execution_id)
+            else:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_resource similar resource found: %s", execution_id, str(similar_resource))
+                yield f"Did you mean \"{similar_resource}\"?"
 
     def assign_role(self, message, role_name):
         execution_id = shortuuid.ShortUUID().random(length=6)
@@ -33,6 +43,15 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
+            roles = self.__sdm_service.get_all_roles()
+            similar_role = self.__fuzzy_match(roles, role_name)
+            if not similar_role:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_role there are no similar roles.", execution_id)
+            else:
+                self.__bot.log.error("##SDM## %s GrantHelper.access_role similar role found: %s", execution_id, str(similar_role))
+                yield f"Did you mean \"{similar_role}\"?"
+
+            # TODO Add fuzzy matching for roles
 
     @staticmethod
     def generate_grant_request_id():
@@ -116,3 +135,17 @@ class GrantHelper:
         team_admins = ", ".join(self.__bot.get_admins())
         yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         self.__notify_admins(r"Hey I have a role assign request from USER \`" + sender_nick + r"\` for ROLE \`" + role_name + r"\`! To approve, enter: **yes " + request_id + r"**")
+
+    def __fuzzy_match(self, term_list, searched_term):
+        names = [item.name for item in term_list]
+        if len(names) == 0:
+            return None
+        max_ratio = 0
+        max_ratio_name = None
+        for name in names:
+            # DISCLAIMER: token_sort_ratio is CPU demanding compared to other options, like: ratio or partial_ratio
+            ratio = fuzz.token_sort_ratio(name, searched_term)
+            if ratio > max_ratio:
+                max_ratio = ratio
+                max_ratio_name = name
+        return max_ratio_name if max_ratio >= FUZZY_MATCH_THRESHOLD else None

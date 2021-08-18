@@ -5,7 +5,7 @@ import sys
 import time
 from unittest.mock import MagicMock, patch
 
-from test_common import create_config, DummyResource
+from test_common import DummyRole, create_config, DummyResource
 sys.path.append('plugins/sdm')
 from lib import ApproveHelper, GrantHelper, PollerHelper
 
@@ -45,15 +45,37 @@ class Test_assign_role:
             valid_until = datetime.datetime(2021, 5, 12, 1, 0)
             grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
+class Test_role_fuzzy_matching:
+    role = "Very Long Role"
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        roles = [ DummyRole(self.role) ]
+        return inject_mocks(testbot, config, roles=roles)
+
+    def test_find_role_fuzzy_matching(self, mocked_testbot):
+        mocked_testbot.push_message("access to role Long name")
+        time.sleep(0.2)
+        assert "cannot find that role" in mocked_testbot.pop_message()
+        recommendation = mocked_testbot.pop_message()
+        assert "Did you mean" in recommendation
+        assert self.role in recommendation
+
+    def test_fail_role_find_fuzzy_matching(self, mocked_testbot):
+        mocked_testbot.push_message("access to role name") # it's to short, the threshold is not good enough
+        time.sleep(0.2)
+        assert "cannot find that role" in mocked_testbot.pop_message()
+
 
 # pylint: disable=dangerous-default-value
-def inject_mocks(testbot, config):
+def inject_mocks(testbot, config, roles = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock())
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles))
     accessbot.get_grant_helper = MagicMock(return_value = create_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -66,12 +88,16 @@ def create_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock():
+def create_sdm_service_mock(roles):
     service_mock = MagicMock()
+    if len(roles) > 0:
+        service_mock.get_role_by_name = MagicMock(side_effect = raise_no_role_found)
+    else:
+        service_mock.get_role_by_name = MagicMock(return_value = create_mock_role())
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account())
-    service_mock.get_role_by_name = MagicMock(return_value = create_mock_role())
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
     service_mock.grant_exists = MagicMock(return_value = False)
+    service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 
 def create_mock_account():
@@ -97,3 +123,6 @@ def push_access_role_request(testbot):
     # gives some time to process
     # needed in slow environments, e.g. github actions
     time.sleep(0.2)
+
+def raise_no_role_found(message = '', match = ''):
+    raise Exception('Sorry, cannot find that role!')

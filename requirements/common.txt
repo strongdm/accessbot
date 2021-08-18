@@ -4,3 +4,5 @@ datetime
 errbot
 slack-bolt
 shortuuid
+fuzzywuzzy
+python-Levenshtein
