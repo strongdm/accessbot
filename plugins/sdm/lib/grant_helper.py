@@ -51,8 +51,6 @@ class GrantHelper:
                 self.__bot.log.error("##SDM## %s GrantHelper.access_role similar role found: %s", execution_id, str(similar_role))
                 yield f"Did you mean \"{similar_role}\"?"
 
-            # TODO Add fuzzy matching for roles
-
     @staticmethod
     def generate_grant_request_id():
         return shortuuid.ShortUUID().random(length=4)
