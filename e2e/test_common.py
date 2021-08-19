@@ -11,7 +11,7 @@ def create_config():
         'ADMINS_CHANNEL': None,
         'MAX_AUTO_APPROVE_USES': None,
         'MAX_AUTO_APPROVE_INTERVAL': None,
-        'USER_ROLES_TAG': 'sdm-roles'
+        'USER_ROLES_TAG': None
     }
 
 class DummyResource:

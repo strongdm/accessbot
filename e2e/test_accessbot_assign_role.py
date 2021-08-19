@@ -76,6 +76,7 @@ class Test_control_role_by_tag:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
+        config['USER_ROLES_TAG'] = 'sdm-roles'
         account_tags = { config['USER_ROLES_TAG']: ','.join(self.tag_role_list) }
         return inject_mocks(testbot, config, self.roles, account_tags, False)
 
