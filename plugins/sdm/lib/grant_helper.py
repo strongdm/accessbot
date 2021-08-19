@@ -26,6 +26,7 @@ class GrantHelper:
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_resource access request failed %s", execution_id, str(ex))
             yield str(ex)
+            # TODO Extract method for this logic
             resources = self.__sdm_service.get_all_resources()
             similar_resource = self.__fuzzy_match(resources, resource_name)
             if not similar_resource:
@@ -39,10 +40,15 @@ class GrantHelper:
         self.__bot.log.info("##SDM## %s GrantHelper.assign_role new access request for role_name: %s", execution_id, role_name)
         try:
             sdm_role = self.__get_role(role_name)
+            sdm_account = self.__get_account(message)
+            if not self.__allowed_to_assign_role(role_name, sdm_account):
+                yield "Sorry, you\'re not allowed to get access to this role.\nContact an admin if you want to access to this role."
+                return
             yield from self.__grant_role(message, sdm_role, execution_id)
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
+            # TODO Extract method for this logic
             roles = self.__sdm_service.get_all_roles()
             similar_role = self.__fuzzy_match(roles, role_name)
             if not similar_role:
@@ -66,6 +72,12 @@ class GrantHelper:
             return
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_resource granting access", execution_id)
         yield from self.__bot.get_approve_helper().approve(request_id, True)
+
+    def __allowed_to_assign_role(self, role_name, sdm_account):
+        if not self.__bot.config['USER_ROLES_TAG']:
+            return True
+        permitted_roles = sdm_account.tags.get(self.__bot.config['USER_ROLES_TAG']) if sdm_account.tags else None
+        return permitted_roles and role_name in permitted_roles.split(',')
 
     # TODO Evaluate merging with __grant_resource
     def __grant_role(self, message, sdm_object, execution_id):
