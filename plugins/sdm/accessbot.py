@@ -82,7 +82,7 @@ class AccessBot(BotPlugin):
         """
         Show all available roles
         """
-        yield from self.get_show_roles_helper().execute()
+        yield from self.get_show_roles_helper().execute(message)
 
     @staticmethod
     def get_admins():

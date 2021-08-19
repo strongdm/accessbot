@@ -39,17 +39,25 @@ class GrantHelper:
         self.__bot.log.info("##SDM## %s GrantHelper.assign_role new access request for role_name: %s", execution_id, role_name)
         try:
             sdm_role = self.__get_role(role_name)
+            account = self.__get_account(message)
+            permitted_roles = account.tags.get(self.__bot.config['USER_ROLES_TAG']) if account.tags is not None else None
+            if permitted_roles is not None:
+                permitted_roles = permitted_roles.split(',')
+                if role_name not in permitted_roles:
+                    raise Exception("Sorry, you\'re not allowed to get access to this role.\nContact an admin if you want to access to this role.")
+
             yield from self.__grant_role(message, sdm_role, execution_id)
         except Exception as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.assign_role access request failed %s", execution_id, str(ex))
             yield str(ex)
             roles = self.__sdm_service.get_all_roles()
-            similar_role = self.__fuzzy_match(roles, role_name)
-            if not similar_role:
-                self.__bot.log.error("##SDM## %s GrantHelper.access_role there are no similar roles.", execution_id)
-            else:
-                self.__bot.log.error("##SDM## %s GrantHelper.access_role similar role found: %s", execution_id, str(similar_role))
-                yield f"Did you mean \"{similar_role}\"?"
+            if "cannot find" in str(ex):
+                similar_role = self.__fuzzy_match(roles, role_name)
+                if not similar_role:
+                    self.__bot.log.error("##SDM## %s GrantHelper.access_role there are no similar roles.", execution_id)
+                else:
+                    self.__bot.log.error("##SDM## %s GrantHelper.access_role similar role found: %s", execution_id, str(similar_role))
+                    yield f"Did you mean \"{similar_role}\"?"
 
     @staticmethod
     def generate_grant_request_id():
