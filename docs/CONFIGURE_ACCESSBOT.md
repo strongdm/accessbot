@@ -26,6 +26,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Defaults = None / None
+* **SDM_USER_ROLES_TAG**. Tag to be used for controlling the roles a user can request. Default = None
 
 See image below for more information:
 
@@ -41,7 +42,8 @@ See image below for more information:
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
 
 ### Using Tags
-A snippet that might help:
+
+#### Hide Resource
 ```
 $ sdm admin ssh list
 Server ID               Name
@@ -58,3 +60,21 @@ changed 1 out of 1 matching datasource
 Basically, you need to get the resource id and then add a tag with the name you've configured in `SDM_HIDE_RESOURCE_TAG`. In the example above, we're assuming that `SDM_HIDE_RESOURCE_TAG=hide-resource`. In order to "unhide" the resource, just delete the tag.
 
 From [AccessBot v1.0.3](https://github.com/strongdm/accessbot/releases/tag/1.0.3) the value of the tag is interpreted (see [here](https://github.com/strongdm/accessbot/issues/83)). You could use: `hide-resource=false` instead of deleting the tag. For more information about using tags please refer to the [documentation](https://www.strongdm.com/docs/automation/getting-started/tags).
+
+#### User Roles
+```
+$ sdm admin users list
+User ID                First Name     Last Name     Email                            Tags
+a-xxx                  Firstname1     Lastname1     user1@example.com
+a-yyy                  Firstname2     Lastname2     user2@example.com
+$ sdm admin users update --email user1@example.com --tags 'sdm-roles="dev,prod"'
+$ sdm admin users list
+User ID                First Name     Last Name     Email                              Tags
+a-xxx                  Firstname1     Lastname1     user1@example.com          sdm-roles="dev,prod"
+a-yyy                  Firstname2     Lastname2     user2@example.com
+$ sdm admin users update --email user1@example.com --delete-tags 'sdm-roles'
+```
+
+IMPORTANT:
+* Remember to separate values with commas
+* Remember to enclose multiple values between double quotes (`"`)
