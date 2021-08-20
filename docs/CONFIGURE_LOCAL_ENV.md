@@ -27,6 +27,8 @@ pip install errbot[slack]
 mv config.py.back config.py
 ```
 
+Tip: if `pip install errbot[slack]` gives you an error, try executing `pip install "errbot[slack]"`.
+
 ## Run the bot
 ```
 pytest # run tests

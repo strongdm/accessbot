@@ -4,3 +4,5 @@ datetime
 errbot
 slackclient
 shortuuid
+fuzzywuzzy
+python-Levenshtein

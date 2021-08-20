@@ -55,5 +55,25 @@ changed 1 out of 1 matching datasource
 ```
 
 Basically, you need to get the resource id and then add a tag with the name you've configured in `SDM_HIDE_RESOURCE_TAG`. In the example above, we're assuming that `SDM_HIDE_RESOURCE_TAG=hide-resource`. In order to "unhide" the resource, just delete the tag.
+ 
+From [AccessBot v1.0.3](https://github.com/strongdm/accessbot/releases/tag/1.0.3) the value of the tag is interpreted (see [here](https://github.com/strongdm/accessbot/issues/83)). You could use: `hide-resource=false` instead of deleting the tag. For more information about using tags please refer to the [documentation](https://www.strongdm.com/docs/automation/getting-started/tags).
+
+#### User Roles
+```
+$ sdm admin users list
+User ID                First Name     Last Name     Email                            Tags
+a-xxx                  Firstname1     Lastname1     user1@example.com
+a-yyy                  Firstname2     Lastname2     user2@example.com
+$ sdm admin users update --email user1@example.com --tags 'sdm-roles="dev,prod"'
+$ sdm admin users list
+User ID                First Name     Last Name     Email                              Tags
+a-xxx                  Firstname1     Lastname1     user1@example.com          sdm-roles="dev,prod"
+a-yyy                  Firstname2     Lastname2     user2@example.com
+$ sdm admin users update --email user1@example.com --delete-tags 'sdm-roles'
+```
+
+IMPORTANT:
+* Remember to separate values with commas
+* Remember to enclose multiple values between double quotes (`"`)
 
 From [AccessBot v1.0.3](https://github.com/strongdm/accessbot/releases/tag/1.0.3) the value of the tag is interpreted (see [here](https://github.com/strongdm/accessbot/issues/83)). You could use: `hide-resource=false` instead of deleting the tag. For more information about using tags please refer to the [documentation](https://www.strongdm.com/docs/automation/getting-started/tags).
