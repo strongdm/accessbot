@@ -2,6 +2,12 @@
 
 AccessBot is a chatbot that manages access to strongDM (SDM) resources, initially via Slack
 
+**Important**: This repo hosts two versions of AccessBot with the same set of funcionalities and corresponding documentation:
+* v1.0.x ([branch](https://github.com/strongdm/accessbot/tree/1.0.x)). Uses the old Slack API (RTM) - _requires a Slack Classic App_
+* v1.1.x ([main](https://github.com/strongdm/accessbot)). Uses the new Slack API (Bolt)
+
+**We've observed some problems with v1.1.x, please use v1.0.x until further notice**
+
 ## Table of Contents
 * [Installation](#installation)
 * [Getting Started](#getting-started)
