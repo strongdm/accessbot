@@ -42,6 +42,7 @@ class SdmService:
         """
         try:
             self.__log.debug("##SDM## SdmService.grant_exists resource_id: %s account_id: %s", resource_id, account_id)
+            # FIXME: consider add yield from below to fix no granted resource bug
             account_grant_iter = self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}")
             return next(account_grant_iter, None) is not None
         except Exception as ex:

@@ -49,7 +49,7 @@ class AccessBot(BotPlugin):
         if re.match("^role (.*)", resource_name):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
-        yield from self.get_resource_grant_helper().access_resource(message, resource_name)
+        yield from self.get_resource_grant_helper().request_grant_access(message, resource_name)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
     def assign_role(self, message, match):
@@ -57,7 +57,7 @@ class AccessBot(BotPlugin):
         Grant access to all resources in a role (using the requester's email address)
         """
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_role_grant_helper().assign_role(message, role_name)
+        yield from self.get_role_grant_helper().request_grant_access(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, message, match):
