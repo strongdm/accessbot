@@ -1,3 +1,4 @@
+from .exceptions import NotFoundException
 import strongdm
 
 def create_sdm_service(api_access_key, api_secret_key, log):
@@ -19,7 +20,7 @@ class SdmService:
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
         if len(sdm_resources) == 0:
-            raise Exception("Sorry, cannot find that resource!")
+            raise NotFoundException("Sorry, cannot find that resource!")
         return sdm_resources[0]
 
     def get_account_by_email(self, email):
@@ -98,7 +99,7 @@ class SdmService:
         except Exception as ex:
             raise Exception("List roles failed: " + str(ex)) from ex
         if len(sdm_roles) == 0:
-            raise Exception("Sorry, cannot find that role!")
+            raise NotFoundException("Sorry, cannot find that role!")
         return sdm_roles[0]
 
     def get_all_roles(self):
