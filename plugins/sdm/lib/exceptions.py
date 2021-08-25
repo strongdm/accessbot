@@ -3,3 +3,6 @@ class NotFoundException(Exception):
 
 class RoleNotAllowedException(Exception):
     pass
+
+class PermissionDeniedException(Exception):
+    pass

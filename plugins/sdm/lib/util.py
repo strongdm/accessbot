@@ -2,7 +2,6 @@ from fuzzywuzzy import fuzz
 
 FUZZY_MATCH_THRESHOLD = 50 # Base 100
 
-
 def is_hidden_resource(config, sdm_resource):
     hide_resource_tag = config['HIDE_RESOURCE_TAG']
     return hide_resource_tag and \

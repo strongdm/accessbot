@@ -92,8 +92,8 @@ class Test_auto_approve_tag:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        config['AUTO_APPROVE_ROLE_TAG'] = "sdm-roles"
-        return inject_mocks(testbot, config, account_tags = {'sdm-roles': ''})
+        config['AUTO_APPROVE_ROLE_TAG'] = "auto-approve-role"
+        return inject_mocks(testbot, config, role_tags = {'auto-approve-role': ''})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
         push_access_role_request(mocked_testbot)
@@ -148,13 +148,13 @@ class Test_control_role_by_tag:
         assert "not allowed" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
-def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False):
+def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, throw_no_role_found))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags))
     accessbot.get_role_grant_helper = MagicMock(return_value = create_role_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -167,29 +167,30 @@ def create_role_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(roles, account_tags, throw_no_role_found):
+def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags):
     service_mock = MagicMock()
     if throw_no_role_found:
         service_mock.get_role_by_name = MagicMock(side_effect = raise_no_role_found)
     else:
-        service_mock.get_role_by_name = MagicMock(return_value = create_mock_role())
+        service_mock.get_role_by_name = MagicMock(return_value = create_mock_role(role_tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account(account_tags))
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
     service_mock.grant_exists = MagicMock(return_value = False)
     service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 
-def create_mock_account(account_tags):
+def create_mock_account(tags):
     mock_account = MagicMock()
     mock_account.id = account_id
     mock_account.name = account_name
-    mock_account.tags = account_tags
+    mock_account.tags = tags
     return mock_account
 
-def create_mock_role():
+def create_mock_role(tags):
     mock_role = MagicMock()
     mock_role.id = role_id
     mock_role.name = role_name
+    mock_role.tags = tags
     return mock_role
 
 def create_mock_resources():
