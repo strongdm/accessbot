@@ -14,7 +14,7 @@ class ShowRolesHelper:
         if permitted_roles is not None:
             permitted_roles = permitted_roles.split(',')
         for sdm_role in sorted(sdm_roles, key = _get_key):
-            if permitted_roles is not None and sdm_role.name in permitted_roles:
+            if permitted_roles is None or sdm_role.name in permitted_roles:
                 roles += f"* {sdm_role.name}\n"
             else:
                 roles += r"* ~" + sdm_role.name + r"~" + " (not allowed) \n"

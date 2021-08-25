@@ -5,8 +5,8 @@ from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
-from lib import ApproveHelper, create_sdm_service, GrantHelper, \
-    PollerHelper, ShowResourcesHelper, ShowRolesHelper
+from lib import ApproveHelper, create_sdm_service, PollerHelper, \
+    ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
@@ -49,7 +49,7 @@ class AccessBot(BotPlugin):
         if re.match("^role (.*)", resource_name):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
-        yield from self.get_grant_helper().access_resource(message, resource_name)
+        yield from self.get_resource_grant_helper().request_grant_access(message, resource_name)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
     def assign_role(self, message, match):
@@ -57,7 +57,7 @@ class AccessBot(BotPlugin):
         Grant access to all resources in a role (using the requester's email address)
         """
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
-        yield from self.get_grant_helper().assign_role(message, role_name)
+        yield from self.get_role_grant_helper().request_grant_access(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, message, match):
@@ -99,8 +99,11 @@ class AccessBot(BotPlugin):
     def get_sdm_service(self):
         return create_sdm_service(self.get_api_access_key(), self.get_api_secret_key(), self.log)
 
-    def get_grant_helper(self):
-        return GrantHelper(self)
+    def get_resource_grant_helper(self):
+        return ResourceGrantHelper(self)
+
+    def get_role_grant_helper(self):
+        return RoleGrantHelper(self)
 
     def get_approve_helper(self):
         return ApproveHelper(self)
