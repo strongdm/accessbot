@@ -8,6 +8,12 @@ def is_hidden_resource(config, sdm_resource):
             hide_resource_tag in sdm_resource.tags and \
             (sdm_resource.tags.get(hide_resource_tag) is None or str(sdm_resource.tags.get(hide_resource_tag)).lower().strip() != 'false')
 
+def can_auto_approve_by_tag(config, sdm_object, tag_key):
+    auto_approve_by_tag = config[tag_key]
+    return auto_approve_by_tag and \
+            auto_approve_by_tag in sdm_object.tags and \
+            (sdm_object.tags.get(auto_approve_by_tag) is None or str(sdm_object.tags.get(auto_approve_by_tag)).lower().strip() != 'false')
+
 def fuzzy_match(term_list, searched_term):
     names = [item.name for item in term_list]
     if len(names) == 0:
