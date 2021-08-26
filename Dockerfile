@@ -3,6 +3,8 @@ FROM continuumio/miniconda3
 ENV ERRBOT_DIR=/errbot
 ENV SDM_DOCKERIZED=true
 
+RUN apt update
+RUN apt install -y gcc
 RUN mkdir -p $ERRBOT_DIR
 
 WORKDIR $ERRBOT_DIR
@@ -20,6 +22,7 @@ RUN errbot --init
 RUN pip install errbot[slack]
 COPY config.py .
 
+RUN rm -rf plugins/*
 RUN mkdir -p plugins/sdm
 COPY plugins/sdm ./plugins/sdm/
 
