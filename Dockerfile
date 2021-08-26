@@ -3,6 +3,8 @@ FROM continuumio/miniconda3
 ENV ERRBOT_DIR=/errbot
 ENV SDM_DOCKERIZED=true
 
+RUN apt update
+RUN apt install -y gcc
 RUN mkdir -p $ERRBOT_DIR
 WORKDIR $ERRBOT_DIR
 
