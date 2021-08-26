@@ -105,7 +105,7 @@ class Test_role_fuzzy_matching:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        roles = [ DummyRole(self.role) ]
+        roles = [ DummyRole(self.role, {}) ]
         return inject_mocks(testbot, config, roles, throw_no_role_found = True)
 
     def test_find_role_fuzzy_matching(self, mocked_testbot):
@@ -124,7 +124,7 @@ class Test_role_fuzzy_matching:
 class Test_control_role_by_tag:
     no_allowed_role = "Very Long Role"
     allowed_role = "Second Role"
-    roles = [DummyRole("Very Long Role"), DummyRole("Second Role")]
+    roles = [DummyRole("Very Long Role", {}), DummyRole("Second Role", {})]
     tag_role_list = ["Second Role"]
 
     @pytest.fixture

@@ -12,9 +12,9 @@ If an access request times out without approval, it's automatically rejected and
 Besides the “manual approval” workflow, you can configure:
 * Automatic approval for all resources (`SDM_AUTO_APPROVE_ALL`). Automatically grant access to all available resources - no need for admin approval.
 * Automatic approval by tag for resources (`SDM_AUTO_APPROVE_TAG`). Automatically grant access to all tagged available resources. Delete the tag or set it false to disable. Auto-approve resources will be highlighted when executing: _show available resources_
-* Automatic approval for all roles (`SDM_AUTO_APPROVE_ROLE_ALL`). Automatically grant access to all available roles - no need for admin approval.
-* Automatic approval by tag for roles (`SDM_AUTO_APPROVE_ROLE_TAG`). Automatically grant access to all tagged available roles. Delete the tag or set it false to disable.
 * Hide tagged resources (`SDM_HIDE_RESOURCE_TAG`). Remove tagged resources from the list of available resources. The tag value is ignored, delete tag to disable. Hidden resources will not be shown when executing: _show available resources_
+* Automatic approval for all roles (`SDM_AUTO_APPROVE_ROLE_ALL`). Automatically grant access to all available roles - no need for admin approval.
+* Automatic approval by tag for roles (`SDM_AUTO_APPROVE_ROLE_TAG`). Automatically grant access to all tagged available roles. Delete the tag or set it false to disable. Auto-approve roles will be highlighted when executing: _show available roles_
 
 ## Possible workflows
 Different workflows (permutations) can be configured using the flags mentioned above - adjustable at runtime via [plugin config](docs/CONFIGURE_ACCESSBOT.md).

@@ -16,14 +16,20 @@ def create_config():
         'USER_ROLES_TAG': None
     }
 
+class DummyAccount:
+    def __init__(self, name, tags):
+        self.name = name
+        self.tags = tags
+
 class DummyResource:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
 
 class DummyRole:
-    def __init__(self, name):
+    def __init__(self, name, tags):
         self.name = name
+        self.tags = tags
 
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
