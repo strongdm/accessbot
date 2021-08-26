@@ -5,6 +5,8 @@ def create_config():
         'SENDER_EMAIL_OVERRIDE': "gbin@localhost",
         'AUTO_APPROVE_ALL': False,
         'AUTO_APPROVE_TAG': None,
+        'AUTO_APPROVE_ROLE_ALL': False,
+        'AUTO_APPROVE_ROLE_TAG': None,
         'HIDE_RESOURCE_TAG': None,
         'GRANT_TIMEOUT': 60,
         'CONTROL_RESOURCES_ROLE_NAME': None,
@@ -14,14 +16,20 @@ def create_config():
         'USER_ROLES_TAG': None
     }
 
+class DummyAccount:
+    def __init__(self, name, tags):
+        self.name = name
+        self.tags = tags
+
 class DummyResource:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
 
 class DummyRole:
-    def __init__(self, name):
+    def __init__(self, name, tags):
         self.name = name
+        self.tags = tags
 
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):

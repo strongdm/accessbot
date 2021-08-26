@@ -3,11 +3,12 @@ import datetime
 import sys
 import pytest
 import time
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
-from lib import ApproveHelper, GrantHelper, PollerHelper
+from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
+from lib.exceptions import NotFoundException
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -285,12 +286,12 @@ def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resou
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, grant_exists, resources))
-    accessbot.get_grant_helper = MagicMock(return_value = create_grant_helper(accessbot))
+    accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
 
-def create_grant_helper(accessbot):
-    helper = GrantHelper(accessbot)
+def create_resource_grant_helper(accessbot):
+    helper = ResourceGrantHelper(accessbot)
     helper.generate_grant_request_id = MagicMock(return_value = access_request_id)
     return helper
 
@@ -335,4 +336,4 @@ def push_access_request(testbot):
     time.sleep(0.2) 
 
 def raise_no_resource_found(message = '', match = ''):
-    raise Exception('Sorry, cannot find that resource!')
+    raise NotFoundException('Sorry, cannot find that resource!')

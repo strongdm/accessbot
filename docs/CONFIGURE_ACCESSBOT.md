@@ -20,7 +20,9 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Default = None (_useful for testing_)
 * **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Default = None (_useful for testing_)
 * **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
-* **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. The tag value is ignored, delete tag to disable. Default = None
+* **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Default = None
+* **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
+* **SDM_AUTO_APPROVE_ROLE_TAG**. Tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Default = None
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
