@@ -3,7 +3,7 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
-from test_common import create_config, DummyRole
+from test_common import create_config, DummyRole, DummyAccount
 sys.path.append('plugins/sdm')
 from lib import ShowRolesHelper
 
@@ -22,9 +22,23 @@ class Test_show_roles:
         assert "Aaa" in message
         assert "Bbb" in message
 
+class Test_auto_approve_by_tag:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_ROLE_TAG'] = 'auto-approve-role'
+        return inject_mocks(testbot, config, roles = [DummyRole("Bbb", {}), DummyRole("Aaa", {'auto-approve-role': 'true'})])
+
+    def test_show_roles_command(self, mocked_testbot):
+        mocked_testbot.push_message("show available roles")
+        message = mocked_testbot.pop_message()
+        # For some reason we cannot assert the text enclosed between stars
+        assert "Aaa (auto-approve)" in message
+        assert "Bbb" in message
+
 
 def default_dummy_roles():
-    return [ DummyRole("Bbb"), DummyRole("Aaa") ]
+    return [ DummyRole("Bbb", {}), DummyRole("Aaa", {}) ]
 
 # pylint: disable=dangerous-default-value
 def inject_mocks(testbot, config, roles = default_dummy_roles()):
@@ -40,4 +54,5 @@ def inject_mocks(testbot, config, roles = default_dummy_roles()):
 def create_sdm_service_mock(roles):
     service_mock = MagicMock()
     service_mock.get_all_roles = MagicMock(return_value = roles)
+    service_mock.get_account_by_email = MagicMock(return_value = DummyAccount('user', {}))
     return service_mock

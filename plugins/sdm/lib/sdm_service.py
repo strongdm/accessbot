@@ -1,3 +1,4 @@
+from .exceptions import NotFoundException
 import strongdm
 
 def create_sdm_service(api_access_key, api_secret_key, log):
@@ -19,7 +20,7 @@ class SdmService:
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
         if len(sdm_resources) == 0:
-            raise Exception("Sorry, cannot find that resource!")
+            raise NotFoundException("Sorry, cannot find that resource!")
         return sdm_resources[0]
 
     def get_account_by_email(self, email):
@@ -41,6 +42,7 @@ class SdmService:
         """
         try:
             self.__log.debug("##SDM## SdmService.grant_exists resource_id: %s account_id: %s", resource_id, account_id)
+            # FIXME: consider add yield from below to fix no granted resource bug
             account_grant_iter = self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}")
             return next(account_grant_iter, None) is not None
         except Exception as ex:
@@ -98,7 +100,7 @@ class SdmService:
         except Exception as ex:
             raise Exception("List roles failed: " + str(ex)) from ex
         if len(sdm_roles) == 0:
-            raise Exception("Sorry, cannot find that role!")
+            raise NotFoundException("Sorry, cannot find that role!")
         return sdm_roles[0]
 
     def get_all_roles(self):

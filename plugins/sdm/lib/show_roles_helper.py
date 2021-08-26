@@ -1,6 +1,7 @@
 def _get_key(sdm_role):
     return sdm_role.name
 
+# Refactor: Implement a BaseShowHelper
 class ShowRolesHelper:
     def __init__(self, bot):
         self.__bot = bot
@@ -14,8 +15,12 @@ class ShowRolesHelper:
         if permitted_roles is not None:
             permitted_roles = permitted_roles.split(',')
         for sdm_role in sorted(sdm_roles, key = _get_key):
-            if permitted_roles is not None and sdm_role.name in permitted_roles:
-                roles += f"* {sdm_role.name}\n"
+            # Refactor: Make easier to read this horrible nested conditions
+            if permitted_roles is None or sdm_role.name in permitted_roles:
+                if self.__bot.config['AUTO_APPROVE_ROLE_TAG'] in sdm_role.tags:
+                    roles += r"* **" + sdm_role.name + r" (auto-approve)**" + "\n"
+                else:
+                    roles += f"* {sdm_role.name}\n"
             else:
                 roles += r"* ~" + sdm_role.name + r"~" + " (not allowed) \n"
         yield roles
