@@ -43,7 +43,7 @@ class SdmService:
         try:
             self.__log.debug("##SDM## SdmService.grant_exists resource_id: %s account_id: %s", resource_id, account_id)
             account_grants = list(self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}"))
-            return account_grants is not None
+            return account_grants is not None and len(account_grants) > 0
         except Exception as ex:
             raise Exception("Grant exists failed: " + str(ex)) from ex
 
