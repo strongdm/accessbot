@@ -17,6 +17,11 @@ class ApproveHelper:
             yield f"Invalid access request id = {request_id}"
             return
 
+        if self.__is_able_to_self_approve(request_id, approver):
+            self.__bot.log.debug("##SDM## %s ApproveHelper.execute invalid approver, not an admin to self approve: %s", execution_id, str(approver))
+            yield "Invalid approver, not an admin to self approve"
+            return
+
         if not self.__is_admin(approver):
             self.__bot.log.debug("##SDM## %s ApproveHelper.execute invalid approver, not an admin: %s", execution_id, str(approver))
             yield "Invalid approver, not an admin or using the wrong channel"
@@ -33,6 +38,10 @@ class ApproveHelper:
             yield from self.__approve_access_resource(grant_request)
         if is_auto_approve:
             yield from self.__register_auto_approve_use(grant_request)
+
+    def __is_able_to_self_approve(self, request_id, approver):
+        grant_request = self.__bot.get_grant_request(request_id)
+        return grant_request['sdm_account'].email == approver.email and approver.nick not in self.__bot.get_admins()
 
     def __is_admin(self, approver):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
