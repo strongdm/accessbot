@@ -14,7 +14,7 @@ pip install -r requirements/dev.txt
 export SLACK_TOKEN=slack-token
 export SDM_API_ACCESS_KEY=api-access-key
 export SDM_API_SECRET_KEY=api-secret-key
-export SDM_ADMIN=@admin1 # if multiple, use: @admin1 @admin2
+export SDM_ADMINS=@admin1 # if multiple, use: @admin1 @admin2
 ```
 
 See [Configure Slack](CONFIGURE_SLACK.md) and [Configure SDM](CONFIGURE_SDM.md)
