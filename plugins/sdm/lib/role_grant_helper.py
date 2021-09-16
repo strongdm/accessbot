@@ -27,6 +27,9 @@ class RoleGrantHelper(BaseGrantHelper):
     def get_operation_desc(self):
         return "role assign"
 
+    def can_try_fuzzy_matching(self):
+        return True
+
     def __get_role(self, role_name):
         return self.__sdm_service.get_role_by_name(role_name)
 

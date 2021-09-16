@@ -28,6 +28,9 @@ class ResourceGrantHelper(BaseGrantHelper):
     def get_operation_desc(self):
         return "access"
 
+    def can_try_fuzzy_matching(self):
+        return not self.__bot.config['DISABLE_RESOURCES_FUZZY_MATCHING']
+
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
         if role_name and not self.__is_resource_in_role(resource_name, role_name):
