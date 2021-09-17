@@ -36,14 +36,31 @@ class SdmService:
             raise Exception("Sorry, cannot find your account!")
         return sdm_accounts[0]
 
-    def grant_exists(self, resource_id, account_id):
+    def account_grant_exists(self, resource_id, account_id):
         """
-        Does a grant exists
+        Does an account grant exists - resource assigned to an account
         """
         try:
-            self.__log.debug("##SDM## SdmService.grant_exists resource_id: %s account_id: %s", resource_id, account_id)
+            self.__log.debug("##SDM## SdmService.account_grant_exists resource_id: %s account_id: %s", resource_id, account_id)
             account_grants = list(self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}"))
-            return account_grants is not None and len(account_grants) > 0
+            return len(account_grants) > 0
+        except Exception as ex:
+            raise Exception("Grant exists failed: " + str(ex)) from ex
+
+    def role_grant_exists(self, resource_id, account_id):
+        """
+        Does a role grant exists - resource assigned to a role that is assigned to an account
+
+        account -> account_attachment -> role -> role_grant -> resource
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.role_grant_exists resource_id: %s account_id: %s", resource_id, account_id)
+            for aa in list(self.__client.account_attachments.list(f"account_id:{account_id}")):
+                role = self.__client.roles.get(aa.role_id).role
+                for rg in list(self.__client.role_grants.list(f"role_id:{role.id}")):
+                    if rg.resource_id == resource_id:
+                        return True
+            return False
         except Exception as ex:
             raise Exception("Grant exists failed: " + str(ex)) from ex
 

@@ -175,7 +175,8 @@ def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags)
         service_mock.get_role_by_name = MagicMock(return_value = create_mock_role(role_tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account(account_tags))
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
-    service_mock.grant_exists = MagicMock(return_value = False)
+    service_mock.account_grant_exists = MagicMock(return_value = False)
+    service_mock.role_grant_exists = MagicMock(return_value = False)
     service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 
