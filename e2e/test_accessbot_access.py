@@ -256,8 +256,6 @@ class Test_admin_in_channel:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid approver" in mocked_testbot.pop_message()
 
-
-# pylint: disable=dangerous-default-value
 class Test_fuzzy_matching:
     resource_name = "Very Long name"
 

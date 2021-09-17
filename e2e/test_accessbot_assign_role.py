@@ -1,8 +1,8 @@
 # pylint: disable=invalid-name
-import datetime
-import pytest
 import sys
 import time
+import datetime
+import pytest
 from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyRole
@@ -150,7 +150,7 @@ class Test_control_role_by_tag:
         assert "not allowed" in mocked_testbot.pop_message()
 
  # pylint: disable=dangerous-default-value
-def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = []):
+def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
