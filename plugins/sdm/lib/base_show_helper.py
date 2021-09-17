@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 class BaseShowHelper(ABC):
-    def __init__(self, data_name):
-        self.__data_name = data_name
+    def __init__(self, op_desc):
+        self.__op_desc = op_desc
 
     def execute(self, message = ''):
-        resources = f"Available {self.__data_name}:\n\n"
+        resources = f"Available {self.__op_desc}:\n\n"
         data = self.get_list()
         for item in sorted(data, key=self.__get_key):
             resources += self.get_line(item, message)
