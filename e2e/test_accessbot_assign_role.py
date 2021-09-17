@@ -147,6 +147,24 @@ class Test_control_role_by_tag:
         time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
+class Test_control_role_by_tag_without_roles:
+    no_allowed_role = "Very Long Role"
+    allowed_role = "Second Role"
+    roles = [DummyRole("Very Long Role", {}), DummyRole("Second Role", {})]
+    tag_role_list = ["Second Role"]
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['USER_ROLES_TAG'] = 'sdm-roles'
+        account_tags = { config['USER_ROLES_TAG']: '' }
+        return inject_mocks(testbot, config, self.roles, account_tags, False)
+
+    def test_with_sdm_roles_empty(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to role {self.allowed_role}")
+        time.sleep(0.2)
+        assert "not allowed" in mocked_testbot.pop_message()
+
 # pylint: disable=dangerous-default-value
 def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']

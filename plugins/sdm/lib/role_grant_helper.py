@@ -33,6 +33,5 @@ class RoleGrantHelper(BaseGrantHelper):
     def __allowed_to_assign_role(self, role_name, sdm_account):
         if not self.__bot.config['USER_ROLES_TAG']:
             return True
-        permitted_roles = sdm_account.tags.get(self.__bot.config['USER_ROLES_TAG']) if sdm_account.tags else None
-        # TODO Add tests for especially this condition: sdm-roles=
-        return not permitted_roles or role_name in permitted_roles
+        permitted_roles = sdm_account.tags.get(self.__bot.config['USER_ROLES_TAG']) if sdm_account.tags else ""
+        return role_name in permitted_roles

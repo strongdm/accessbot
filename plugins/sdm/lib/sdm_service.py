@@ -45,7 +45,7 @@ class SdmService:
             account_grants = list(self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}"))
             return len(account_grants) > 0
         except Exception as ex:
-            raise Exception("Grant exists failed: " + str(ex)) from ex
+            raise Exception("Account grant exists failed: " + str(ex)) from ex
 
     def role_grant_exists(self, resource_id, account_id):
         """
@@ -62,7 +62,7 @@ class SdmService:
                         return True
             return False
         except Exception as ex:
-            raise Exception("Grant exists failed: " + str(ex)) from ex
+            raise Exception("Role grant exists failed: " + str(ex)) from ex
 
     def grant_temporary_access(self, resource_id, account_id, start_from, valid_until):
         """
