@@ -70,24 +70,54 @@ class Test_get_account_by_email:
         mock_account.email = account_email
         return iter([mock_account])
 
-class Test_grant_exists:
+class Test_account_grant_exists:
     def test_when_grant_exists(self, client, service):
         client.account_grants.list = MagicMock(return_value=iter(["one resource"]))
-        grant_exists = service.grant_exists(resource_id, account_id)
+        grant_exists = service.account_grant_exists(resource_id, account_id)
         client.account_grants.list.assert_called_with(f"resource_id:{resource_id},account_id:{account_id}")
         assert grant_exists is True
 
     def test_when_grant_doesnt_exists(self, client, service):
         client.account_grants.list = MagicMock(return_value=iter([]))
-        grant_exists = service.grant_exists(resource_id, account_id)
+        grant_exists = service.account_grant_exists(resource_id, account_id)
         client.account_grants.list.assert_called_with(f"resource_id:{resource_id},account_id:{account_id}")
         assert grant_exists is False
 
     def test_when_grant_exists_fail(self, client, service):
-        error_message = "Grant list failed"
+        error_message = "Account grant list failed"
         client.account_grants.list = MagicMock(side_effect = Exception(error_message))
         with pytest.raises(Exception) as ex:
-            service.grant_exists(resource_id, account_id)
+            service.account_grant_exists(resource_id, account_id)
+        assert error_message in str(ex.value)
+
+class Test_role_grant_exists:
+    def test_when_grant_exists(self, client, service):
+        client.account_attachments.list = MagicMock(return_value=get_account_attachments())
+        client.roles.get = MagicMock(return_value=get_role_response())
+        client.role_grants.list = MagicMock(return_value=[get_role_grant()])
+        grant_exists = service.role_grant_exists(resource_id, account_id)
+        client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
+        client.roles.get.assert_called_with(role_id)
+        client.role_grants.list.assert_called_with(f"role_id:{role_id}")
+        assert grant_exists is True
+
+    def test_when_grant_doesnt_exists(self, client, service):
+        client.account_attachments.list = MagicMock(return_value=get_account_attachments())
+        client.roles.get = MagicMock(return_value=get_role_response())
+        client.role_grants.list = MagicMock(return_value=[])
+        grant_exists = service.role_grant_exists(resource_id, account_id)
+        client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
+        client.roles.get.assert_called_with(role_id)
+        client.role_grants.list.assert_called_with(f"role_id:{role_id}")
+        assert grant_exists is False
+
+    def test_when_grant_exists_fail(self, client, service):
+        error_message = "Role grant list failed"
+        client.account_attachments.list = MagicMock(return_value=get_account_attachments())
+        client.roles.get = MagicMock(return_value=get_role_response())
+        client.role_grants.list = MagicMock(side_effect = Exception(error_message))
+        with pytest.raises(Exception) as ex:
+            service.role_grant_exists(resource_id, account_id)
         assert error_message in str(ex.value)
 
 class Test_grant_temporary_access:
@@ -195,7 +225,27 @@ def get_resource_list_iter():
     return iter([mock_resource])
 
 def get_role_list_iter():
+    return iter([get_role()])
+
+def get_account_attachments():
+    account_attachment = MagicMock()
+    account_attachment.role_id = role_id
+    account_attachment.account_id = account_id
+    return iter([account_attachment])
+
+def get_role_response():
+    response = MagicMock()
+    response.role = get_role()
+    return response
+
+def get_role():
     mock_role = MagicMock()
     mock_role.id = role_id
     mock_role.name = role_name
-    return iter([mock_role])
+    return mock_role
+
+def get_role_grant():
+    mock_role_grant = MagicMock()
+    mock_role_grant.role_id = role_id
+    mock_role_grant.resource_id = resource_id
+    return mock_role_grant
