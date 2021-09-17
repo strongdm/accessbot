@@ -28,6 +28,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Defaults = None / None
 * **SDM_USER_ROLES_TAG**. Tag to be used for controlling the roles a user can request. Default = None
+* **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enable fuzzy matching for resources when a searched resource is not found. Default = true. To disable, set the var with empty value or with any value that's different of 'true'.
 
 See image below for more information:
 
