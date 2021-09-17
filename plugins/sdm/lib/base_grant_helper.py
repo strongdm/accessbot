@@ -28,7 +28,8 @@ class BaseGrantHelper(ABC):
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s request failed %s", execution_id, self.__grant_type, operation_desc, str(ex))
             yield str(ex)
             objects = self.get_all_items()
-            yield from self.__try_fuzzy_matching(execution_id, objects, searched_name)
+            if self.can_try_fuzzy_matching():
+                yield from self.__try_fuzzy_matching(execution_id, objects, searched_name)
         except PermissionDeniedException as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s permission denied %s", execution_id, self.__grant_type, operation_desc, str(ex))
             yield str(ex)
@@ -54,6 +55,10 @@ class BaseGrantHelper(ABC):
 
     @abstractmethod
     def get_operation_desc(self):
+        pass
+
+    @abstractmethod
+    def can_try_fuzzy_matching(self):
         pass
 
     def __grant_access(self, message, sdm_object, sdm_account, execution_id, request_id):
