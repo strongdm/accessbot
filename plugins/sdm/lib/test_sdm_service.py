@@ -90,7 +90,6 @@ class Test_account_grant_exists:
             service.account_grant_exists(resource_id, account_id)
         assert error_message in str(ex.value)
 
-# TODO Add tests for role_grant_exists
 class Test_role_grant_exists:
     def test_when_grant_exists(self, client, service):
         client.account_attachments.list = MagicMock(return_value=get_account_attachments())
