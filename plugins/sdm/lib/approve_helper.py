@@ -17,7 +17,7 @@ class ApproveHelper:
             yield f"Invalid access request id = {request_id}"
             return
 
-        if self.__is_able_to_self_approve(request_id, approver):
+        if not self.__is_allowed_to_approve(request_id, approver):
             self.__bot.log.debug("##SDM## %s ApproveHelper.execute invalid approver, not an admin to self approve: %s", execution_id, str(approver))
             yield "Invalid approver, not an admin to self approve"
             return
@@ -39,9 +39,10 @@ class ApproveHelper:
         if is_auto_approve:
             yield from self.__register_auto_approve_use(grant_request)
 
-    def __is_able_to_self_approve(self, request_id, approver):
+    def __is_allowed_to_approve(self, request_id, approver):
         grant_request = self.__bot.get_grant_request(request_id)
-        return grant_request['sdm_account'].email == approver.email and approver.nick not in self.__bot.get_admins()
+        is_self_approve = grant_request['sdm_account'].email == approver.email
+        return not is_self_approve or f'@{approver.nick}' in self.__bot.get_admins()
 
     def __is_admin(self, approver):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
@@ -64,7 +65,7 @@ class ApproveHelper:
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
-        grant_valid_until = grant_start_from + datetime.timedelta(minutes = self.__bot.config['GRANT_TIMEOUT'])
+        grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__bot.config['GRANT_TIMEOUT'])
         for resource in self.__sdm_service.get_all_resources_by_role(role_name):
             if self.__sdm_service.grant_exists(resource.id, account_id):
                 yield f"User already have access to {resource.name}"
@@ -73,7 +74,7 @@ class ApproveHelper:
 
     def __grant_temporal_access(self, resource_id, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
-        grant_valid_until = grant_start_from + datetime.timedelta(minutes = self.__bot.config['GRANT_TIMEOUT'])
+        grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__bot.config['GRANT_TIMEOUT'])
         self.__sdm_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
 
     def __notify_access_request_granted(self, message, resource_name):

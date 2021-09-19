@@ -6,7 +6,6 @@ def get_access_controls():
     deny_all = { 'denyusers': ('*') }
     return { # The order in this dict matters!
         'AccessBot:access_resource': allow_all if 'access_resource' in commands_enabled else deny_all,
-        # 'AccessBot:approve': { 'allowusers': BOT_ADMINS },
         'AccessBot:approve': allow_all if 'approve' in commands_enabled else deny_all,
         'AccessBot:assign_role': allow_all if 'assign_role' in commands_enabled else deny_all,
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
