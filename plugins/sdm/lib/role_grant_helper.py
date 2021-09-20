@@ -32,4 +32,4 @@ class RoleGrantHelper(BaseGrantHelper):
         if not self.__bot.config['USER_ROLES_TAG']:
             return True
         permitted_roles = sdm_account.tags.get(self.__bot.config['USER_ROLES_TAG']) if sdm_account.tags else ""
-        return role_name in permitted_roles
+        return permitted_roles is None or role_name in permitted_roles

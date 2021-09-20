@@ -99,7 +99,7 @@ class Test_role_grant_exists:
         client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
         client.roles.get.assert_called_with(role_id)
         client.role_grants.list.assert_called_with(f"role_id:{role_id}")
-        assert grant_exists is True
+        assert grant_exists
 
     def test_when_grant_doesnt_exists(self, client, service):
         client.account_attachments.list = MagicMock(return_value=get_account_attachments())
@@ -109,7 +109,7 @@ class Test_role_grant_exists:
         client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
         client.roles.get.assert_called_with(role_id)
         client.role_grants.list.assert_called_with(f"role_id:{role_id}")
-        assert grant_exists is False
+        assert not grant_exists
 
     def test_when_grant_exists_fail(self, client, service):
         error_message = "Role grant list failed"
