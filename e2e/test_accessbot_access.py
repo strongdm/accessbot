@@ -278,49 +278,6 @@ class Test_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
-class Test_invalid_self_approve_no_admin:
-    channel_name = 'testroom'
-
-    @pytest.fixture
-    def mocked_testbot(self, testbot):
-        config = create_config()
-        config['ADMIN_TIMEOUT'] = 30
-        return inject_config(testbot, config)
-
-    def test_when_approver_is_different_to_self_approve(self, mocked_testbot):
-        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.enter_grant_request(access_request_id, MagicMock(), MagicMock(), create_account_mock(), MagicMock())
-        approver = create_approver_mock(accessbot.config['SENDER_EMAIL_OVERRIDE'])
-        message = MagicMock(frm = approver)
-        final_message = next(accessbot.approve(message, MagicMock(string=f"yes {access_request_id}")), None)
-        assert "Granting" in final_message
-
-    def test_when_approver_is_equals_to_self_approve(self, mocked_testbot):
-        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.enter_grant_request(access_request_id, MagicMock(), MagicMock(), create_account_mock(), MagicMock())
-        approver = create_approver_mock(account_name)
-        message = MagicMock(frm = approver)
-        final_message = next(accessbot.approve(message, MagicMock(string=f"yes {access_request_id}")), None)
-        assert "Invalid approver" in final_message
-
-class Test_invalid_self_approve:
-    channel_name = 'testroom'
-
-    @pytest.fixture
-    def mocked_testbot(self, testbot):
-        config = create_config()
-        config['ADMIN_TIMEOUT'] = 30
-        config['SENDER_NICK_OVERRIDE'] = f"@{config['SENDER_NICK_OVERRIDE']}"
-        return inject_config(testbot, config, admins = [f"@{config['SENDER_EMAIL_OVERRIDE']}"])
-
-    def test_when_approver_is_different_to_self_approve(self, mocked_testbot):
-        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.enter_grant_request(access_request_id, MagicMock(), MagicMock(), create_account_mock(), MagicMock())
-        approver = create_approver_mock(accessbot.config['SENDER_EMAIL_OVERRIDE'])
-        message = MagicMock(frm = approver)
-        final_message = next(accessbot.approve(message, MagicMock(string=f"yes {access_request_id}")), None)
-        assert "Granting" in final_message
-
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False, resources = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
@@ -361,17 +318,10 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock(account_email = account_name):
+def create_account_mock():
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
-    mock.email = account_email
-    return mock
-
-def create_approver_mock(account_email = account_name):
-    mock = MagicMock()
-    mock.email = account_email
-    mock.nick = account_email
     return mock
 
 def create_room_mock(channel_name):
