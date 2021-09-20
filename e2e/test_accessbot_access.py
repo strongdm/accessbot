@@ -256,8 +256,6 @@ class Test_admin_in_channel:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid approver" in mocked_testbot.pop_message()
 
-
-# pylint: disable=dangerous-default-value
 class Test_fuzzy_matching:
     resource_name = "Very Long name"
 
@@ -279,6 +277,36 @@ class Test_fuzzy_matching:
         mocked_testbot.push_message("access to name") # it's to short, the threshold is not good enough
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
+
+class Test_self_approve:
+    channel_name = 'testroom'
+
+    @pytest.fixture
+    # pylint: disable=protected-access
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
+        config['ADMIN_TIMEOUT'] = 30
+        testbot.bot.sender.room = create_room_mock(self.channel_name)
+        testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
+        testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
+        return inject_config(testbot, config, admins = [f'@not-admin'])
+
+    def test_when_approver_is_different_to_self_approve(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_when_approver_equals_to_self_approve(self, mocked_testbot):
+        mocked_testbot.bot.sender._email = account_name
+        mocked_testbot.bot.sender._nick = account_name
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Invalid" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], grant_exists = False, resources = []):
@@ -320,10 +348,17 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock():
+def create_account_mock(account_email = account_name):
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
+    mock.email = account_email
+    return mock
+
+def create_approver_mock(account_email = account_name):
+    mock = MagicMock()
+    mock.email = account_email
+    mock.nick = account_email
     return mock
 
 def create_room_mock(channel_name):
