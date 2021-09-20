@@ -264,7 +264,6 @@ class Test_fuzzy_matching:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        config['ENABLE_RESOURCES_FUZZY_MATCHING'] = True
         resources = [ DummyResource(self.resource_name, {}) ]
         return inject_config(testbot, config, resources = resources)
 
@@ -281,26 +280,7 @@ class Test_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
-class Test_enable_fuzzy_matching:
-    resource_name = "Very Long name"
-
-    @pytest.fixture
-    def mocked_testbot(self, testbot):
-        config = create_config()
-        resources = [ DummyResource(self.resource_name, {}) ]
-        return inject_config(testbot, config, resources = resources)
-
-    def test_find_fuzzy_matching(self, mocked_testbot):
-        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['ENABLE_RESOURCES_FUZZY_MATCHING'] = True
-        mocked_testbot.push_message("access to Long name")
-        time.sleep(0.2)
-        assert "cannot find that resource" in mocked_testbot.pop_message()
-        recommendation = mocked_testbot.pop_message()
-        assert "Did you mean" in recommendation
-        assert self.resource_name in recommendation
-
-    def test_fail_find_fuzzy_matching(self, mocked_testbot):
+    def test_find_with_disabled_fuzzy_matching(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['ENABLE_RESOURCES_FUZZY_MATCHING'] = False
         mocked_testbot.push_message("access to Long name")

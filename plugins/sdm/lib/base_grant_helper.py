@@ -105,7 +105,6 @@ class BaseGrantHelper(ABC):
         sender_email = self.__bot.get_sender_email(message.frm)
         return self.__sdm_service.get_account_by_email(sender_email)
 
-    # TODO Include variable for toggling this functionality
     def __try_fuzzy_matching(self, execution_id, term_list, role_name):
         similar_result = fuzzy_match(term_list, role_name)
         if not similar_result:
