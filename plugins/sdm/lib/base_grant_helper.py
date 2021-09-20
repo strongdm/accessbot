@@ -105,7 +105,6 @@ class BaseGrantHelper(ABC):
         return self.__sdm_service.get_account_by_email(sender_email)
 
     def __try_fuzzy_matching(self, execution_id, term_list, role_name):
-        # TODO Include variable for toggling this functionality
         similar_result = fuzzy_match(term_list, role_name)
         if not similar_result:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s there are no similar %ss.", execution_id, self.__grant_type, self.__grant_type)
