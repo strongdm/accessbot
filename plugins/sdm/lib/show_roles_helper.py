@@ -13,10 +13,13 @@ class ShowRolesHelper(BaseShowHelper):
         account = self.__get_account(message)
         permitted_roles = account.tags.get(self.__bot.config["USER_ROLES_TAG"])
         if self.__can_request_access(item, permitted_roles):
-            if self.__bot.config["AUTO_APPROVE_ROLE_TAG"] in item.tags:
+            if self.is_auto_approve(item):
                 return r"* **" + item.name + r" (auto-approve)**" + "\n"
             return f"* {item.name}\n"
         return r"* ~" + item.name + r"~" + " (not allowed) \n"
+
+    def is_auto_approve(self, item):
+        return self.__bot.config["AUTO_APPROVE_ROLE_TAG"] in item.tags
 
     def __get_account(self, message):
         sender_email = self.__bot.get_sender_email(message.frm)

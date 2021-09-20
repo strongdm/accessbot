@@ -16,13 +16,15 @@ class ShowResourcesHelper(BaseShowHelper):
         return self.__filter_hidden_resources(resources)
 
     def get_line(self, item, message = ''):
-        auto_approve = (
+        if self.is_auto_approve(item):
+            return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
+        return f"* {item.name} (type: {type(item).__name__})\n"
+
+    def is_auto_approve(self, item):
+        return (
             self.__bot.config["AUTO_APPROVE_TAG"] is not None
             and self.__bot.config["AUTO_APPROVE_TAG"] in item.tags
         )
-        if auto_approve:
-            return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
-        return f"* {item.name} (type: {type(item).__name__})\n"
 
     def __filter_hidden_resources(self, resources):
         return [

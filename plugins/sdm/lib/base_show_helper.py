@@ -19,5 +19,9 @@ class BaseShowHelper(ABC):
     def get_line(self, item, message=""):
         pass
 
+    @abstractmethod
+    def is_auto_approve(self, item):
+        pass
+
     def __get_key(self, item):
         return item.name
