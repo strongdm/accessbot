@@ -14,7 +14,7 @@ def create_config():
         'MAX_AUTO_APPROVE_USES': None,
         'MAX_AUTO_APPROVE_INTERVAL': None,
         'USER_ROLES_TAG': None,
-        'ENABLE_RESOURCES_FUZZY_MATCHING': None
+        'ENABLE_RESOURCES_FUZZY_MATCHING': True
     }
 
 class DummyAccount:
