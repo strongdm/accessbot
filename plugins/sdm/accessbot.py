@@ -152,8 +152,12 @@ class AccessBot(BotPlugin):
         return override if override else f"@{sender.nick}"
 
     def get_sender_email(self, sender):
-        override = self.config['SENDER_EMAIL_OVERRIDE']
-        return override if override else str(sender.email)
+        email_slack_field = self.config['EMAIL_SLACK_FIELD']
+        if email_slack_field:
+            sdm_email = self.__get_sdm_email_from_profile(sender, email_slack_field)
+            if sdm_email:
+                return sdm_email
+        return sender.email
 
     def increment_auto_approve_use(self, requester_id):
         prev = 0
@@ -178,3 +182,10 @@ class AccessBot(BotPlugin):
 
     def clean_auto_approve_uses(self):
         self['auto_approve_uses'] = {}
+
+    def __get_sdm_email_from_profile(self, sender, email_field):
+        user_profile = self._bot.find_user_profile(sender.userid)
+        for field in user_profile['fields'].values():
+            if field['label'] == email_field:
+                return field['value']
+        return None
