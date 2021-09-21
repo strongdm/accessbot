@@ -3,7 +3,7 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
-from test_common import create_config, DummyRole, DummyAccount
+from test_common import create_config, DummyAccount, DummyRole
 sys.path.append('plugins/sdm')
 from lib import ShowRolesHelper
 

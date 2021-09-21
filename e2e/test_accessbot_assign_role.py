@@ -1,8 +1,8 @@
 # pylint: disable=invalid-name
-import datetime
-import pytest
 import sys
 import time
+import datetime
+import pytest
 from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyRole
