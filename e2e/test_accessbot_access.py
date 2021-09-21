@@ -286,6 +286,13 @@ class Test_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
+    def test_find_with_disabled_fuzzy_matching(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['ENABLE_RESOURCES_FUZZY_MATCHING'] = False
+        mocked_testbot.push_message("access to Long name")
+        time.sleep(0.2)
+        assert "cannot find that resource" in mocked_testbot.pop_message()
+
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], account_grant_exists = False, resources = []):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
