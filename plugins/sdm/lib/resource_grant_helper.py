@@ -17,7 +17,7 @@ class ResourceGrantHelper(BaseGrantHelper):
         return shortuuid.ShortUUID().random(length=4)
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
-        if self.__sdm_service.grant_exists(sdm_object.id, sdm_account.id): # TODO Add tests for this branch
+        if self.__sdm_service.account_grant_exists(sdm_object.id, sdm_account.id): # TODO Add tests for this branch
             raise PermissionDeniedException("You already have access to that resource!")
 
     def get_all_items(self):
@@ -28,6 +28,9 @@ class ResourceGrantHelper(BaseGrantHelper):
 
     def get_operation_desc(self):
         return "access"
+
+    def can_try_fuzzy_matching(self):
+        return self.__bot.config['ENABLE_RESOURCES_FUZZY_MATCHING']
 
     def __get_resource(self, resource_name, execution_id):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
