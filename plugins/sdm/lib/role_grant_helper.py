@@ -28,6 +28,9 @@ class RoleGrantHelper(BaseGrantHelper):
     def get_operation_desc(self):
         return "role assign"
 
+    def can_try_fuzzy_matching(self):
+        return True
+
     def __allowed_to_assign_role(self, role_name, sdm_account):
         if not self.__bot.config['USER_ROLES_TAG']:
             return True
