@@ -337,7 +337,8 @@ def create_sdm_service_mock(tags, resources_by_role, grant_exists, resources):
     mock.get_account_by_email = MagicMock(return_value = create_account_mock())
     mock.grant_temporary_access = MagicMock()
     mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
-    mock.grant_exists = MagicMock(return_value = grant_exists)
+    mock.account_grant_exists = MagicMock(return_value = grant_exists)
+    mock.role_grant_exists = MagicMock(return_value = grant_exists)
     mock.get_all_resources = MagicMock(return_value = resources)
     return mock
 
