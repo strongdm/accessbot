@@ -1,8 +1,8 @@
 # pylint: disable=invalid-name
-import datetime
-import pytest
 import sys
 import time
+import datetime
+import pytest
 from unittest.mock import MagicMock, patch
 
 from test_common import create_config, DummyRole
@@ -149,14 +149,57 @@ class Test_control_role_by_tag:
         time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
- # pylint: disable=dangerous-default-value
-def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = []):
+class Test_control_role_by_tag_without_roles:
+    no_allowed_role = "Very Long Role"
+    allowed_role = "Second Role"
+    roles = [DummyRole("Very Long Role", {}), DummyRole("Second Role", {})]
+    tag_role_list = ["Second Role"]
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['USER_ROLES_TAG'] = 'sdm-roles'
+        account_tags = { config['USER_ROLES_TAG']: '' }
+        return inject_mocks(testbot, config, self.roles, account_tags, False)
+
+    def test_with_sdm_roles_empty(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to role {self.allowed_role}")
+        time.sleep(0.2)
+        assert "not allowed" in mocked_testbot.pop_message()
+
+class Test_role_grant_exists:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_mocks(testbot, config, role_grant_exists = True)
+
+    def test_when_grant_exists(self, mocked_testbot):
+        mocked_testbot.push_message("access to role Granted Role")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        time.sleep(0.2)
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "assign request" in mocked_testbot.pop_message()
+        assert "already have access" in mocked_testbot.pop_message()
+
+    def test_when_grant_doesnt_exists(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        service = accessbot.get_sdm_service()
+        service.role_grant_exists.return_value = False
+        mocked_testbot.push_message("access to role Allowed Role")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        time.sleep(0.2)
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "assign request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+# pylint: disable=dangerous-default-value
+def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None, role_grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags, role_grant_exists))
     accessbot.get_role_grant_helper = MagicMock(return_value = create_role_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -169,7 +212,7 @@ def create_role_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags):
+def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags, role_grant_exists):
     service_mock = MagicMock()
     if throw_no_role_found:
         service_mock.get_role_by_name = MagicMock(side_effect = raise_no_role_found)
@@ -177,7 +220,8 @@ def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags)
         service_mock.get_role_by_name = MagicMock(return_value = create_mock_role(role_tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account(account_tags))
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
-    service_mock.grant_exists = MagicMock(return_value = False)
+    service_mock.account_grant_exists = MagicMock(return_value = False)
+    service_mock.role_grant_exists = MagicMock(return_value = role_grant_exists)
     service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 

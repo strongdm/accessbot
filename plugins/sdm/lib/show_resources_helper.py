@@ -1,30 +1,34 @@
 from .util import is_hidden_resource
+from .base_show_helper import BaseShowHelper
 
-def _get_key(sdm_resource):
-    return sdm_resource.name
-
-class ShowResourcesHelper:
+class ShowResourcesHelper(BaseShowHelper):
     def __init__(self, bot):
         self.__bot = bot
         self.__sdm_service = bot.get_sdm_service()
+        super().__init__("resources")
 
-    def execute(self):
-        resources = "Available resources:\n\n"
-        sdm_resources = self.__get_resources()
-        for sdm_resource in sorted(sdm_resources, key = _get_key):
-            if is_hidden_resource(self.__bot.config, sdm_resource):
-                continue
-            resources += self.__get_resource_line(sdm_resource)
-        yield resources
-
-    def __get_resources(self):
-        role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
+    def get_list(self):
+        role_name = self.__bot.config["CONTROL_RESOURCES_ROLE_NAME"]
         if role_name is not None:
-            return self.__sdm_service.get_all_resources_by_role(role_name)
-        return self.__sdm_service.get_all_resources()
+            resources = self.__sdm_service.get_all_resources_by_role(role_name)
+        else:
+            resources = self.__sdm_service.get_all_resources()
+        return self.__filter_hidden_resources(resources)
 
-    def __get_resource_line(self, sdm_resource):
-        auto_approve = self.__bot.config['AUTO_APPROVE_TAG'] is not None and self.__bot.config['AUTO_APPROVE_TAG'] in sdm_resource.tags
-        if auto_approve:
-            return f"* **{sdm_resource.name} (type: {type(sdm_resource).__name__}, auto-approve)**\n"
-        return f"* {sdm_resource.name} (type: {type(sdm_resource).__name__})\n"
+    def get_line(self, item, message = ''):
+        if self.is_auto_approve(item):
+            return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
+        return f"* {item.name} (type: {type(item).__name__})\n"
+
+    def is_auto_approve(self, item):
+        return (
+            self.__bot.config["AUTO_APPROVE_TAG"] is not None
+            and self.__bot.config["AUTO_APPROVE_TAG"] in item.tags
+        )
+
+    def __filter_hidden_resources(self, resources):
+        return [
+            resource
+            for resource in resources
+            if not is_hidden_resource(self.__bot.config, resource)
+        ]

@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
-from .exceptions import NotFoundException
-from typing import Any
 import shortuuid
+from abc import ABC, abstractmethod
+from typing import Any
 from .exceptions import NotFoundException, PermissionDeniedException
 from .util import can_auto_approve_by_tag, fuzzy_match
 
@@ -28,7 +27,8 @@ class BaseGrantHelper(ABC):
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s request failed %s", execution_id, self.__grant_type, operation_desc, str(ex))
             yield str(ex)
             objects = self.get_all_items()
-            yield from self.__try_fuzzy_matching(execution_id, objects, searched_name)
+            if self.can_try_fuzzy_matching():
+                yield from self.__try_fuzzy_matching(execution_id, objects, searched_name)
         except PermissionDeniedException as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s permission denied %s", execution_id, self.__grant_type, operation_desc, str(ex))
             yield str(ex)
@@ -54,6 +54,10 @@ class BaseGrantHelper(ABC):
 
     @abstractmethod
     def get_operation_desc(self):
+        pass
+
+    @abstractmethod
+    def can_try_fuzzy_matching(self):
         pass
 
     def __grant_access(self, message, sdm_object, sdm_account, execution_id, request_id):
@@ -100,7 +104,6 @@ class BaseGrantHelper(ABC):
         sender_email = self.__bot.get_sender_email(message.frm)
         return self.__sdm_service.get_account_by_email(sender_email)
 
-    # TODO Include variable for toggling this functionality
     def __try_fuzzy_matching(self, execution_id, term_list, role_name):
         similar_result = fuzzy_match(term_list, role_name)
         if not similar_result:

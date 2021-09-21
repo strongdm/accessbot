@@ -14,7 +14,8 @@ _INSTANCE = {
     'ADMINS_CHANNEL': os.getenv("SDM_ADMINS_CHANNEL"),
     'MAX_AUTO_APPROVE_USES': os.getenv("SDM_MAX_AUTO_APPROVE_USES"),
     'MAX_AUTO_APPROVE_INTERVAL': os.getenv("SDM_MAX_AUTO_APPROVE_INTERVAL"),
-    'USER_ROLES_TAG': os.getenv("SDM_USER_ROLES_TAG")
+    'USER_ROLES_TAG': os.getenv("SDM_USER_ROLES_TAG"),
+    'ENABLE_RESOURCES_FUZZY_MATCHING': str(os.getenv("SDM_ENABLE_RESOURCES_FUZZY_MATCHING", 'true')).lower() == 'true'
 }
 
 def get():
