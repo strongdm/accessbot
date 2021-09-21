@@ -278,11 +278,11 @@ class Test_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
+# pylint: disable=protected-access
 class Test_self_approve:
     channel_name = 'testroom'
 
     @pytest.fixture
-    # pylint: disable=protected-access
     def mocked_testbot(self, testbot):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
@@ -292,14 +292,14 @@ class Test_self_approve:
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
         return inject_config(testbot, config, admins = [f'@not-admin'])
 
-    def test_when_approver_is_different_to_self_approve(self, mocked_testbot):
+    def test_when_approver_is_not_the_requester(self, mocked_testbot):
         push_access_request(mocked_testbot)
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
-    def test_when_approver_equals_to_self_approve(self, mocked_testbot):
+    def test_when_approver_is_requester(self, mocked_testbot):
         mocked_testbot.bot.sender._email = account_name
         mocked_testbot.bot.sender._nick = account_name
         push_access_request(mocked_testbot)
