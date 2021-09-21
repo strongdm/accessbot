@@ -67,7 +67,6 @@ class ApproveHelper:
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__bot.config['GRANT_TIMEOUT'])
         for resource in self.__sdm_service.get_all_resources_by_role(role_name):
-            # TODO: implement tests for this two branches
             if self.__sdm_service.account_grant_exists(resource.id, account_id) or self.__sdm_service.role_grant_exists(resource.id, account_id):
                 yield f"User already have access to {resource.name}"
                 continue
