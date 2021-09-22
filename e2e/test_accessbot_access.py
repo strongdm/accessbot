@@ -296,6 +296,35 @@ class Test_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
+# pylint: disable=protected-access
+class Test_self_approve:
+    channel_name = 'testroom'
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
+        config['ADMIN_TIMEOUT'] = 30
+        testbot.bot.sender.room = create_room_mock(self.channel_name)
+        testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
+        testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
+        return inject_config(testbot, config, admins = [f'@not-admin'])
+
+    def test_when_approver_is_not_the_requester(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_when_approver_is_requester(self, mocked_testbot):
+        mocked_testbot.bot.sender._email = account_name
+        mocked_testbot.bot.sender._nick = account_name
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Invalid" in mocked_testbot.pop_message()
 
 class Test_alternate_emails:
     @pytest.fixture
@@ -303,7 +332,6 @@ class Test_alternate_emails:
         config = create_config()
         config['EMAIL_SLACK_FIELD'] = alternative_email_tag
         testbot.bot.sender.userid = 'XXX'
-        testbot.bot.sender._email = account_name
         return inject_config(testbot, config, alternate_email = True)
 
     def test_alternative_email(self, mocked_testbot):
@@ -356,10 +384,17 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock():
+def create_account_mock(account_email = account_name):
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
+    mock.email = account_email
+    return mock
+
+def create_approver_mock(account_email = account_name):
+    mock = MagicMock()
+    mock.email = account_email
+    mock.nick = account_email
     return mock
 
 def create_room_mock(channel_name):
