@@ -412,8 +412,3 @@ def push_access_request(testbot):
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')
 
-def get_custom_timeout_resources():
-    return [
-        DummyResource('Resource 1', {timeout_grant_tag: '1'}),
-        DummyResource('Resource 2', {timeout_grant_tag: '10'}),
-    ]
