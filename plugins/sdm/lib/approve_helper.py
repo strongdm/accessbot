@@ -58,11 +58,10 @@ class ApproveHelper:
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
 
     def __approve_access_resource(self, grant_request):
-        grant_timeout = self.__get_resource_grant_timeout(grant_request['sdm_object'])
-        self.__grant_temporal_access(grant_request['sdm_object'].id, grant_request['sdm_account'].id, grant_timeout)
+        self.__grant_temporal_access(grant_request['sdm_object'], grant_request['sdm_account'].id)
         self.__bot.add_thumbsup_reaction(grant_request['message'])
         self.__bot.remove_grant_request(grant_request['id'])
-        yield from self.__notify_access_request_granted(grant_request['message'], grant_request['sdm_object'].name, grant_timeout)
+        yield from self.__notify_access_request_granted(grant_request['message'], grant_request['sdm_object'])
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
@@ -73,15 +72,16 @@ class ApproveHelper:
                 continue
             self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
-    def __grant_temporal_access(self, resource_id, account_id, grant_timeout):
+    def __grant_temporal_access(self, resource, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
-        grant_valid_until = grant_start_from + datetime.timedelta(minutes=grant_timeout)
-        self.__sdm_service.grant_temporary_access(resource_id, account_id, grant_start_from, grant_valid_until)
+        grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__get_resource_grant_timeout(resource))
+        self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
-    def __notify_access_request_granted(self, message, resource_name, grant_timeout):
+    def __notify_access_request_granted(self, message, resource):
         sender_email = self.__bot.get_sender_email(message.frm)
         sender_nick = self.__bot.get_sender_nick(message.frm)
-        yield f"{sender_nick}: Granting {sender_email} access to '{resource_name}' for {grant_timeout} minutes"
+        grant_timeout = self.__get_resource_grant_timeout(resource)
+        yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {grant_timeout} minutes"
 
     def __notify_assign_role_request_granted(self, message, role_name):
         sender_email = self.__bot.get_sender_email(message.frm)
