@@ -30,7 +30,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Defaults = None / None
 * **SDM_USER_ROLES_TAG**. Tag to be used for controlling the roles a user can request. Default = None
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enabling fuzzy matching for resources when a perfect match is not found. Default = true
-* **SDM_EMAIL_SLACK_FIELD**. Tag to be used to identify StrongDM email from a Slack account when the Slack account email is not the same as StrongDM account. Add the value of this tag in [Slack Custom Profile Fields](https://slack.com/intl/en-es/help/articles/212281478-Customize-member-profiles#add-custom-profile-fields) with the StrongDM account email. Default = None
+* **SDM_EMAIL_SLACK_FIELD**. Tag to be used to identify StrongDM email from a Slack account when the Slack account email is not the same as StrongDM account. Refer to [CONFIGURE_ALTERNATIVE_EMAIL.md](./CONFIGURE_ALTERNATIVE_EMAIL.md) for more details.
 
 See image below for more information:
 

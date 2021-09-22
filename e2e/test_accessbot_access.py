@@ -331,6 +331,7 @@ class Test_alternate_emails:
     def mocked_testbot(self, testbot):
         config = create_config()
         config['EMAIL_SLACK_FIELD'] = alternative_email_tag
+        config['SENDER_EMAIL_OVERRIDE'] = None
         testbot.bot.sender.userid = 'XXX'
         return inject_config(testbot, config, alternate_email = True)
 
@@ -342,6 +343,24 @@ class Test_alternate_emails:
         granting_message = mocked_testbot.pop_message()
         assert "Granting" in granting_message
         assert alternative_email in granting_message
+
+class Test_override_email:
+    override_email = 'override@email.com'
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['SENDER_EMAIL_OVERRIDE'] = self.override_email
+        return inject_config(testbot, config)
+
+    def test_override_email(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        granting_message = mocked_testbot.pop_message()
+        assert "Granting" in granting_message
+        assert self.override_email in granting_message
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], account_grant_exists = False, resources = [], alternate_email = False):

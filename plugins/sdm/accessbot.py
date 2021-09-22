@@ -152,6 +152,9 @@ class AccessBot(BotPlugin):
         return override if override else f"@{sender.nick}"
 
     def get_sender_email(self, sender):
+        override = self.config['SENDER_EMAIL_OVERRIDE']
+        if override:
+            return override
         email_slack_field = self.config['EMAIL_SLACK_FIELD']
         if email_slack_field:
             sdm_email = self.__get_sdm_email_from_profile(sender, email_slack_field)
