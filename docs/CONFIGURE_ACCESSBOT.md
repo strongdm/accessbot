@@ -29,6 +29,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Defaults = None / None
 * **SDM_USER_ROLES_TAG**. Tag to be used for controlling the roles a user can request. Default = None
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enabling fuzzy matching for resources when a perfect match is not found. Default = true
+* **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
 
 See image below for more information:
 

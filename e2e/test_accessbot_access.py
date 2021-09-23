@@ -296,7 +296,7 @@ class Test_fuzzy_matching:
 # pylint: disable=protected-access
 class Test_self_approve:
     channel_name = 'testroom'
-
+    
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -322,6 +322,25 @@ class Test_self_approve:
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid" in mocked_testbot.pop_message()
+
+class Test_custom_resource_grant_timeout:
+    timeout = 1
+    
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        timeout_grant_tag = 'grant-timeout'
+        config['RESOURCE_GRANT_TIMEOUT_TAG'] = timeout_grant_tag
+        return inject_config(testbot, config, tags={timeout_grant_tag: f'{self.timeout}'})
+
+    def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f'yes {access_request_id}')
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        granting_message = mocked_testbot.pop_message()
+        assert "Granting" in granting_message
+        assert f"{self.timeout} minutes" in granting_message
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], account_grant_exists = False, resources = []):
