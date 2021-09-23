@@ -19,7 +19,7 @@ account_id = 1
 account_name = "myaccount@test.com"
 access_request_id = "12ab"
 
-class Test_default_flow: # manual approval
+class Test_default_flow:  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -124,6 +124,7 @@ class Test_auto_approve_all:
         push_access_request(mocked_with_max_auto_approve)
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
+
 
 class Test_multiple_admins_flow:
     @pytest.fixture
@@ -323,13 +324,34 @@ class Test_self_approve:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid" in mocked_testbot.pop_message()
 
+
+class Test_custom_resource_grant_timeout:
+    timeout = 1
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        timeout_grant_tag = 'grant-timeout'
+        config['RESOURCE_GRANT_TIMEOUT_TAG'] = timeout_grant_tag
+        return inject_config(testbot, config, tags={timeout_grant_tag: f'{self.timeout}'})
+
+    def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f'yes {access_request_id}')
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        granting_message = mocked_testbot.pop_message()
+        assert "Granting" in granting_message
+        assert f"{self.timeout} minutes" in granting_message
+
+
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins = ["gbin@localhost"], tags = {}, resources_by_role = [], account_grant_exists = False, resources = []):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[]):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
-    accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
+    accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources))
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
@@ -389,3 +411,4 @@ def push_access_request(testbot):
 
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')
+
