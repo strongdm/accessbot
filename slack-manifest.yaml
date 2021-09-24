@@ -29,6 +29,7 @@ oauth_config:
       - users:read
       - users:read.email
       - groups:read
+      - users.profile:read
 settings:
   event_subscriptions:
     bot_events:
