@@ -3,6 +3,7 @@ import re
 import time
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
+import requests
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
@@ -153,7 +154,14 @@ class AccessBot(BotPlugin):
 
     def get_sender_email(self, sender):
         override = self.config['SENDER_EMAIL_OVERRIDE']
-        return override if override else str(sender.email)
+        if override:
+            return override
+        email_slack_field = self.config['EMAIL_SLACK_FIELD']
+        if email_slack_field:
+            sdm_email = self.__get_sdm_email_from_profile(sender, email_slack_field)
+            if sdm_email:
+                return sdm_email
+        return sender.email
 
     def increment_auto_approve_use(self, requester_id):
         prev = 0
@@ -178,3 +186,34 @@ class AccessBot(BotPlugin):
 
     def clean_auto_approve_uses(self):
         self['auto_approve_uses'] = {}
+
+    def __get_sdm_email_from_profile(self, sender, email_field):
+        user_profile = self._find_user_profile(sender.userid)
+        for field in user_profile['fields'].values():
+            if field['label'] == email_field:
+                return field['value']
+        return None
+
+    def _find_user_profile(self, userid):
+        '''
+            We know that's not an ideal approach, but following some documentation
+            and questions in the community, like:
+            
+            https://stackoverflow.com/questions/57056419/how-to-fix-the-error-which-getting-users-profile-get-in-slack
+            
+            We saw that _bot.api_call uses the OAuth Bot Token and this token is
+            not allowed to make requests to users.profile.get, needing to change
+            the Bot Scopes to the Granular Scopes (basically, updating the bot
+            from the classic version) or use the OAuth User Token, but, using
+            this token in the api_call args, it gives an error, like passing
+            more than one arg to "token" key (it seems that the api_call method
+            includes passively the OAuth Bot Token). So, the best way to make
+            the request is using the requests package, but we know that's not a
+            good idea. We need to think about it.
+        '''
+        get_response = requests.get(
+            f"https://slack.com/api/users.profile.get?user={userid}&include_labels=true",
+            headers={ 'Authorization': f"Bearer {os.getenv('SLACK_USER_TOKEN')}" }
+        )
+        data = get_response.json()
+        return data['profile']
