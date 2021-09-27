@@ -2,6 +2,8 @@
 
 This configuration is to set up a field in Slack to say the StrongDM Account email of a user that the Slack Account email is not the same of the StrongDM Account.
 
+**_This functionality is only available in pro workspace plan._**
+
 Follow these steps to configure in your Slack Workspace:
 
 1. Go to the top left side dropdown button (with your workspace name), click in `Settings & Administration > Customize <workspace-name>`:
