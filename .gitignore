@@ -9,3 +9,4 @@ docker-compose copy.yaml
 .DS_Store
 README copy.md
 .idea/
+docker-compose david.yaml
