@@ -31,7 +31,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_USER_ROLES_TAG**. Tag to be used for controlling the roles a user can request. Default = None
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enabling fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
-* **SDM_EMAIL_SLACK_FIELD**. Tag to be used for alternative e-mails when the Slack Account email is not the same of StrongDM Account. See [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md) to see how to configure.
+* **SDM_EMAIL_SLACK_FIELD**. Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 
 See image below for more information:
 
