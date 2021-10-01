@@ -9,6 +9,7 @@ _INSTANCE = {
     'AUTO_APPROVE_ROLE_ALL': str(os.getenv("SDM_AUTO_APPROVE_ROLE_ALL", "")).lower() == 'true',
     'AUTO_APPROVE_ROLE_TAG': os.getenv("SDM_AUTO_APPROVE_ROLE_TAG"),
     'HIDE_RESOURCE_TAG': os.getenv("SDM_HIDE_RESOURCE_TAG"),
+    'HIDE_ROLE_TAG': os.getenv("SDM_HIDE_ROLE_TAG"),
     'GRANT_TIMEOUT': int(os.getenv("SDM_GRANT_TIMEOUT", "60")),
     'CONTROL_RESOURCES_ROLE_NAME': os.getenv("SDM_CONTROL_RESOURCES_ROLE_NAME"),
     'ADMINS_CHANNEL': os.getenv("SDM_ADMINS_CHANNEL"),
