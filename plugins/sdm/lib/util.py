@@ -8,6 +8,12 @@ def is_hidden_resource(config, sdm_resource):
             hide_resource_tag in sdm_resource.tags and \
             (sdm_resource.tags.get(hide_resource_tag) is None or str(sdm_resource.tags.get(hide_resource_tag)).lower().strip() != 'false')
 
+def is_hidden_role(config, sdm_role):
+    hide_role_tag = config['HIDE_ROLE_TAG']
+    return hide_role_tag and \
+           hide_role_tag in sdm_role.tags and \
+           (sdm_role.tags.get(hide_role_tag) is None or str(sdm_role.tags.get(hide_role_tag)).lower().strip() != 'false')
+
 def can_auto_approve_by_tag(config, sdm_object, tag_key):
     auto_approve_by_tag = config[tag_key]
     return auto_approve_by_tag and \
