@@ -187,8 +187,15 @@ class AccessBot(BotPlugin):
         self['auto_approve_uses'] = {}
 
     def __get_sdm_email_from_profile(self, sender, email_field):
-        user_profile = self._bot.find_user_profile(sender.userid)
-        for field in user_profile['fields'].values():
-            if field['label'] == email_field:
-                return field['value']
-        return None
+        try:
+            user_profile = self._bot.find_user_profile(sender.userid)
+
+            if user_profile['fields'] is None:
+                return None
+
+            for field in user_profile['fields'].values():
+                if field['label'] == email_field:
+                    return field['value']
+            return None
+        except:
+            return None
