@@ -1,12 +1,15 @@
 import os
 import re
 import time
+import logging
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper
+
+log = logging.getLogger(__name__)
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
@@ -197,5 +200,8 @@ class AccessBot(BotPlugin):
                 if field['label'] == email_field:
                     return field['value']
             return None
-        except:
+        except Exception as e:
+            log.error(
+                f"I got an error when trying to get the user profile:\n{str(e)}."
+            )
             return None
