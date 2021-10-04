@@ -7,8 +7,8 @@ class HiddenTagEnum(enum.Enum):
     RESOURCE = 'HIDE_RESOURCE_TAG'
     ROLE = 'HIDE_ROLE_TAG'
 
-def is_hidden(config, hidden_tag_name, sdm_entity):
-    hide_entity_tag = config[hidden_tag_name]
+def is_hidden(config, hidden_tag_enum, sdm_entity):
+    hide_entity_tag = config[hidden_tag_enum.value]
     return hide_entity_tag and \
            hide_entity_tag in sdm_entity.tags and \
            (sdm_entity.tags.get(hide_entity_tag) is None or str(sdm_entity.tags.get(hide_entity_tag)).lower().strip() != 'false')
