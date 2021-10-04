@@ -1,5 +1,5 @@
 from .base_show_helper import BaseShowHelper
-from .util import is_hidden_role
+from .util import is_hidden, HiddenTagEnum
 
 class ShowRolesHelper(BaseShowHelper):
     def __init__(self, bot):
@@ -34,5 +34,5 @@ class ShowRolesHelper(BaseShowHelper):
         return [
             role
             for role in roles
-            if not is_hidden_role(self.__bot.config, role)
+            if not is_hidden(self.__bot.config, HiddenTagEnum.ROLE, role)
         ]

@@ -2,7 +2,7 @@ import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from .exceptions import PermissionDeniedException
-from .util import is_hidden_role
+from .util import is_hidden, HiddenTagEnum
 
 class RoleGrantHelper(BaseGrantHelper):
     def __init__(self, bot):
@@ -24,7 +24,7 @@ class RoleGrantHelper(BaseGrantHelper):
         return self.__sdm_service.get_all_roles()
 
     def get_item_by_name(self, name, execution_id = None):
-        if is_hidden_role(self.__bot.config, name):
+        if is_hidden(self.__bot.config, HiddenTagEnum.ROLE, name):
             self.__bot.log.info("##SDM## %s GrantHelper.get_item_by_name hidden role", name)
             raise Exception("Access to this role is not available via bot. Please see your strongDM admins.")
         return self.__sdm_service.get_role_by_name(name)
