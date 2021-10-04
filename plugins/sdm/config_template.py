@@ -1,6 +1,8 @@
 import os
+from _version import __version__
 
 _INSTANCE = {
+    'VERSION': __version__,
     'ADMIN_TIMEOUT': int(os.getenv("SDM_ADMIN_TIMEOUT", "30")),
     'SENDER_NICK_OVERRIDE': os.getenv("SDM_SENDER_NICK_OVERRIDE"),
     'SENDER_EMAIL_OVERRIDE': os.getenv("SDM_SENDER_EMAIL_OVERRIDE"),
