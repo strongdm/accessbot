@@ -199,9 +199,9 @@ class AccessBot(BotPlugin):
             for field in user_profile['fields'].values():
                 if field['label'] == email_field:
                     return field['value']
-            return None
         except Exception as e:
             log.error(
-                f"I got an error when trying to get the user profile:\n{str(e)}."
+                f"I got an error when trying to get the user profile, you might want to check your account limits."
+                f"\n{str(e)}."
             )
-            return None
+        return None
