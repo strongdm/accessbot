@@ -3,6 +3,7 @@ strongdm
 datetime
 errbot
 slackclient
+aiohttp
 shortuuid
 fuzzywuzzy
 python-Levenshtein
