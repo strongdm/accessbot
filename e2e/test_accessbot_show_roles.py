@@ -22,6 +22,19 @@ class Test_show_roles:
         assert "Aaa" in message
         assert "Bbb" in message
 
+class Test_show_roles_except_hidden_roles:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['HIDE_ROLE_TAG'] = 'hide-role'
+        return inject_mocks(testbot, config, roles=[DummyRole("Bbb", {}), DummyRole("Aaa", {'hide-role': 'true'})])
+
+    def test_show_roles_command(self, mocked_testbot):
+        mocked_testbot.push_message("show available roles")
+        message = mocked_testbot.pop_message()
+        assert "Aaa" not in message
+        assert "Bbb" in message
+
 class Test_auto_approve_by_tag:
     @pytest.fixture
     def mocked_testbot(self, testbot):
