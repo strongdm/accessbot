@@ -1,6 +1,9 @@
 on:
-  push:
+  workflow_run:
+    workflows: ["accessbot"]
     branches: [ main ]
+    types:
+      - completed
 
 name: AccessBot Release on ECR
 
@@ -8,6 +11,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - name: Checkout
@@ -32,10 +36,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
     - name: Build, tag, and push the image to Amazon ECR
       id: build-image
       env:
@@ -44,7 +44,8 @@ jobs:
         IMAGE_TAG: ${{ steps.version.outputs.new_tag }}
       run: |
         # Build a docker container and push it to ECR
-        aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+        git submodule init
+        git submodule update
         echo __version__=\"$IMAGE_TAG\" > plugins/sdm/_version.py
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         echo "Pushing image to ECR..."
