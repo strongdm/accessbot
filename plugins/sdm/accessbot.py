@@ -9,8 +9,6 @@ import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper
 
-log = logging.getLogger(__name__)
-
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
 ASSIGN_ROLE_REGEX = r"^\*{0,2}access to role (.+)$"
@@ -200,7 +198,7 @@ class AccessBot(BotPlugin):
                 if field['label'] == email_field:
                     return field['value']
         except Exception as e:
-            log.error(
+            self.log.error(
                 f"I got an error when trying to get the user profile, you might want to check your account limits."
                 f"\n{str(e)}."
             )
