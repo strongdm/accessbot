@@ -24,10 +24,11 @@ class RoleGrantHelper(BaseGrantHelper):
         return self.__sdm_service.get_all_roles()
 
     def get_item_by_name(self, name, execution_id = None):
-        if is_hidden(self.__bot.config, HiddenTagEnum.ROLE, name):
+        sdm_role = self.__sdm_service.get_role_by_name(name)
+        if is_hidden(self.__bot.config, HiddenTagEnum.ROLE, sdm_role):
             self.__bot.log.info("##SDM## %s GrantHelper.get_item_by_name hidden role", name)
             raise Exception("Access to this role is not available via bot. Please see your strongDM admins.")
-        return self.__sdm_service.get_role_by_name(name)
+        return sdm_role
 
     def get_operation_desc(self):
         return "role assign"
