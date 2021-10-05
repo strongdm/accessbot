@@ -43,12 +43,15 @@ jobs:
         ECR_REPOSITORY: accessbot
         IMAGE_TAG: ${{ steps.version.outputs.new_tag }}
       run: |
-        # Build a docker container and push it to ECR
+        # Installing submodules
         git submodule init
         git submodule update
+        # Adding version
         echo __version__=\"$IMAGE_TAG\" > plugins/sdm/_version.py
+        # Building docker image
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        echo "Pushing image to ECR..."
+        # Pushing image to ECR
+        aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
