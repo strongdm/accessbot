@@ -5,6 +5,11 @@ import argparse
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
+# $ python tools/get-slack-handle.py -e rodolfo@strongdm.com
+# The nick for that user is: @rodolfo
+# $ python tools/get-slack-handle.py -d "Rodolfo Campos"
+# The nick for that user is: @rodolfo
+
 slack_token = os.environ["SLACK_BOT_TOKEN"]
 client = WebClient(token=slack_token)
 USERS_PAGE_LIMIT = 500
