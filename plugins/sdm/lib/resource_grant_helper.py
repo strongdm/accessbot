@@ -2,7 +2,7 @@ import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from .exceptions import PermissionDeniedException
-from .util import is_hidden_resource
+from .util import is_hidden, HiddenTagEnum
 
 class ResourceGrantHelper(BaseGrantHelper):
     def __init__(self, bot):
@@ -37,7 +37,7 @@ class ResourceGrantHelper(BaseGrantHelper):
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
             raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         sdm_resource = self.__sdm_service.get_resource_by_name(resource_name)
-        if is_hidden_resource(self.__bot.config, sdm_resource):
+        if is_hidden(self.__bot.config, HiddenTagEnum.RESOURCE, sdm_resource):
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
             raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
         return sdm_resource

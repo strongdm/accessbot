@@ -1,12 +1,15 @@
 import os
 import re
 import time
+import logging
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper
+
+log = logging.getLogger(__name__)
 
 ACCESS_REGEX = r"^\*{0,2}access to (.+)$"
 APPROVE_REGEX = r"^\*{0,2}yes (.+)$"
@@ -187,8 +190,18 @@ class AccessBot(BotPlugin):
         self['auto_approve_uses'] = {}
 
     def __get_sdm_email_from_profile(self, sender, email_field):
-        user_profile = self._bot.find_user_profile(sender.userid)
-        for field in user_profile['fields'].values():
-            if field['label'] == email_field:
-                return field['value']
+        try:
+            user_profile = self._bot.find_user_profile(sender.userid)
+
+            if user_profile['fields'] is None:
+                return None
+
+            for field in user_profile['fields'].values():
+                if field['label'] == email_field:
+                    return field['value']
+        except Exception as e:
+            log.error(
+                f"I got an error when trying to get the user profile, you might want to check your account limits."
+                f"\n{str(e)}."
+            )
         return None
