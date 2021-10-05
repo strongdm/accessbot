@@ -77,5 +77,5 @@ A list of typical issues and resolutions can be found [here](docs/TROUBLESHOOTIN
 In case you want to contribute to the project, please check our [guidelines](CONTRIBUTING.md).
 
 ## Support
-In case you need support, please check our [Frequently Asked Questions](FAQ.md) and [support](SUPPORT.md) documents.
+In case you need support, please check our [Frequently Asked Questions](docs/FAQ.md) and [support](SUPPORT.md) documents.
 
