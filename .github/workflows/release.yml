@@ -1,8 +1,8 @@
 on:
   workflow_run:
     workflows: ["accessbot"]
-    branches: [ main ]
-    types:
+    branches: [ main, 1.0.x ]
+    types: 
       - completed
 
 name: AccessBot Release on ECR
