@@ -1,17 +1,17 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: accessbot
+name: main
 
 on:
   push:
-    branches: [ main, 1.0.x ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, 1.0.x ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
