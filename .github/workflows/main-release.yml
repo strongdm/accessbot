@@ -1,15 +1,16 @@
 on:
   workflow_run:
-    workflows: ["accessbot"]
-    branches: [ main, 1.0.x ]
+    workflows: ["main"]
+    branches: [ main ]
     types: 
       - completed
+  workflow_dispatch:
 
-name: AccessBot Release on ECR
+name: Release
 
 jobs:
-  deploy:
-    name: Deploy
+  release:
+    name: Release
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
