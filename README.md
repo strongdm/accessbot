@@ -73,4 +73,3 @@ In case you want to contribute to the project, please check our [guidelines](CON
 
 ## Support
 In case you need support, please check our [Frequently Asked Questions](FAQ.md) and [support](docs/SUPPORT.md) documents.
-
