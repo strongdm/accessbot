@@ -6,7 +6,7 @@ on:
       - completed
   workflow_dispatch:
 
-name: Release
+name: main-release
 
 jobs:
   release:
