@@ -22,6 +22,7 @@ class AccessBot(BotPlugin):
 
     def activate(self):
         super().activate()
+        self._bot.MSG_ERROR_OCCURRED = "An error occurred, please contact your SDM admin"
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
