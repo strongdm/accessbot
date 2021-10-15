@@ -381,6 +381,18 @@ class Test_custom_resource_grant_timeout:
         assert "Granting" in granting_message
         assert f"{self.timeout} minutes" in granting_message
 
+class Test_change_error_message:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        return inject_config(testbot, create_config())
+
+    def test_error_message(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.get_sdm_service().get_account_by_email = MagicMock(side_effect = Exception('Something failed'))
+
+        push_access_request(mocked_testbot)
+        assert "An error occurred" in mocked_testbot.pop_message()
+
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], alternate_email = False):
