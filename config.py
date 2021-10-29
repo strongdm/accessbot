@@ -15,10 +15,10 @@ def get_access_controls():
         '*': { 'allowusers': BOT_ADMINS },
     }
 
-CORE_PLUGINS=('ACLs', 'Health', 'Help', 'Plugins', 'Utils')
+CORE_PLUGINS=('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
 
-BACKEND = 'SlackBolt'
-BOT_EXTRA_BACKEND_DIR = 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
+BACKEND = 'BotFramework'
+BOT_EXTRA_BACKEND_DIR = 'errbot-backend-botframework'
 
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
@@ -29,11 +29,11 @@ BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
 BOT_ADMINS = os.getenv("SDM_ADMINS").split(" ")
 CHATROOM_PRESENCE = ()
 BOT_IDENTITY = {
-    "app_token": os.environ["SLACK_APP_TOKEN"],
-    "bot_token": os.environ["SLACK_BOT_TOKEN"],
+    'appId': os.getenv("AZURE_APP_ID"),
+    'appPassword': os.getenv("AZURE_APP_PASSWORD")
 }
 
-ACCESS_CONTROLS = get_access_controls()
+# ACCESS_CONTROLS = get_access_controls()
 
 BOT_PREFIX = ''
 HIDE_RESTRICTED_COMMANDS = True

@@ -16,17 +16,29 @@ SHOW_ROLES_REGEX = r"^\*{0,2}show available roles\*{0,2}$"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
 
+
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __grant_requests = {}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def activate(self):
         super().activate()
-        self._bot.MSG_ERROR_OCCURRED = "An error occurred, please contact your SDM admin"
+        self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
+
+        webserver = self.get_plugin('Webserver')
+        webserver.configure(webserver.get_configuration_template())
+        webserver.activate()
+
+    def deactivate(self):
+        self.get_plugin('Webserver').deactivate()
+        super().deactivate()
 
     def get_configuration_template(self):
         return config_template.get()
@@ -119,7 +131,7 @@ class AccessBot(BotPlugin):
         return ShowRolesHelper(self)
 
     def get_admin_ids(self):
-        return [self.build_identifier(admin) for admin in self.get_admins()]
+        return []
 
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
