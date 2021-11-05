@@ -18,9 +18,7 @@ class ShowRolesHelper(BaseShowHelper):
             if self.is_auto_approve(item):
                 return r"* **" + item.name + r" (auto-approve)**" + "\n"
             return f"* {item.name}\n"
-        if self.__bot.bot_config.BOT_PLATFORM == 'ms-teams':
-            return r"* ~~" + item.name + r"~~" + " (not allowed) \n"
-        return r"* ~" + item.name + r"~" + " (not allowed) \n"
+        return r"* " + self.__bot.format_strikethrough(item.name) + " (not allowed) \n"
 
     def is_auto_approve(self, item):
         return self.__bot.config["AUTO_APPROVE_ROLE_TAG"] in item.tags

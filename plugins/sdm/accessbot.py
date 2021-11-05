@@ -8,7 +8,7 @@ from errbot.core import ErrBot
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper, \
-    util
+    SlackImprover, MSTeamsImprover
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
@@ -20,10 +20,15 @@ ONE_MINUTE = 60
 
 def get_callback_message_fn(bot):
     def callback_message(msg):
-        msg.body = util.clean_up_message(msg.body)
+        msg.body = bot.clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
 
+def get_improver(bot):
+    platform = bot.bot_config.BOT_PLATFORM if hasattr(bot.bot_config, 'BOT_PLATFORM') else None
+    if platform == 'ms-teams':
+        return MSTeamsImprover(bot)
+    return SlackImprover(bot)
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
@@ -31,9 +36,11 @@ class AccessBot(BotPlugin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._improver = None
 
     def activate(self):
         super().activate()
+        self._improver = get_improver(self)
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
         self['auto_approve_uses'] = {}
@@ -41,14 +48,10 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
 
-        if hasattr(self.bot_config, 'BOT_PLATFORM') and self.bot_config.BOT_PLATFORM == 'ms-teams':
-            webserver = self.get_plugin('Webserver')
-            webserver.configure(webserver.get_configuration_template())
-            webserver.activate()
+        self._improver.activate()
 
     def deactivate(self):
-        if hasattr(self.bot_config, 'BOT_PLATFORM') and self.bot_config.BOT_PLATFORM == 'ms-teams':
-            self.get_plugin('Webserver').deactivate()
+        self._improver.deactivate()
         super().deactivate()
 
     def get_configuration_template(self):
@@ -70,16 +73,8 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        if re.match("^role (.*)", resource_name):
-            self.log.debug("##SDM## AccessBot.access better match for assign_role")
-            return
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and self.config['ADMINS_CHANNEL']:
-            yield "Sorry, it's not possible to request access to resources right now because an \
-                Admin Channel was defined, and Microsoft Teams doesn't support Admin's Channels. \
-                Please, contact your StrongDM admin."
-            return
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and not message.extras['conversation'].data['channelData'].get('team'):
-            yield "You cannot execute this command via DM. Please, send a message via a team's channel."
+        can_access_resource = yield from self._improver.can_access_resource(resource_name, message)
+        if not can_access_resource:
             return
         yield from self.get_resource_grant_helper().request_access(message, resource_name)
 
@@ -88,13 +83,8 @@ class AccessBot(BotPlugin):
         """
         Grant access to all resources in a role (using the requester's email address)
         """
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and self.config['ADMINS_CHANNEL']:
-            yield "Sorry, it's not possible to request access to roles right now because an \
-                Admin Channel was defined, and Microsoft Teams doesn't support Admin's Channels. \
-                Please, contact your StrongDM admin."
-            return
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and not message.extras['conversation'].data['channelData'].get('team'):
-            yield "You cannot execute this command via DM. Please, send a message via a team's channel."
+        can_assign_role = yield from self._improver.can_assign(message)
+        if not can_assign_role:
             return
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
         yield from self.get_role_grant_helper().request_access(message, role_name)
@@ -114,8 +104,8 @@ class AccessBot(BotPlugin):
         """
         Show all available resources
         """
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and not message.extras['conversation'].data['channelData'].get('team'):
-            yield "You cannot execute this command via DM. Please, send a message via a team's channel."
+        can_show_resources = yield from self._improver.can_show_resources(message)
+        if not can_show_resources:
             return
         yield from self.get_show_resources_helper().execute()
 
@@ -125,8 +115,8 @@ class AccessBot(BotPlugin):
         """
         Show all available roles
         """
-        if self.bot_config.BOT_PLATFORM == 'ms-teams' and not message.extras['conversation'].data['channelData'].get('team'):
-            yield "You cannot execute this command via DM. Please, send a message via a team's channel."
+        can_show_roles = yield from self._improver.can_show_roles(message)
+        if not can_show_roles:
             return
         yield from self.get_show_roles_helper().execute(message)
 
@@ -164,9 +154,7 @@ class AccessBot(BotPlugin):
         return ShowRolesHelper(self)
 
     def get_admin_ids(self):
-        if hasattr(self.bot_config, 'BOT_PLATFORM') and self.bot_config.BOT_PLATFORM == 'ms-teams':
-            return [self.build_identifier({ 'email': admin_email }) for admin_email in self.get_admins()]
-        return [self.build_identifier(admin) for admin in self.get_admins()]
+        return self._improver.get_admin_ids()
 
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
@@ -192,31 +180,23 @@ class AccessBot(BotPlugin):
         return list(self.__grant_requests.keys())
 
     def add_thumbsup_reaction(self, message):
-        if hasattr(self.bot_config, 'BOT_PLATFORM'):
-            self._bot.add_reaction(message, "thumbsup")
+        self._bot.add_reaction(message, "thumbsup")
 
     def get_sender_nick(self, sender):
         override = self.config['SENDER_NICK_OVERRIDE']
         return override if override else f"@{sender.nick}"
     
     def get_sender_id(self, sender):
-        if hasattr(self.bot_config, 'BOT_PLATFORM'):
-            return sender.email
-        else:
-            return self.get_sender_nick(sender)
+        return self._improver.get_sender_id(sender)
 
     def get_sender_email(self, sender):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         if override:
             return override
-        if hasattr(self.bot_config, 'BOT_PLATFORM') and self.bot_config.BOT_PLATFORM == 'ms-teams':
-            return sender.email
-        email_slack_field = self.config['EMAIL_SLACK_FIELD']
-        if email_slack_field:
-            sdm_email = self.__get_sdm_email_from_profile(sender, email_slack_field)
-            if sdm_email:
-                return sdm_email
-        return sender.email
+        return self._improver.get_sender_email(sender)
+
+    def get_user_nick(self, user):
+        return self._improver.get_user_nick(user)
 
     def increment_auto_approve_use(self, requester_id):
         prev = 0
@@ -258,3 +238,12 @@ class AccessBot(BotPlugin):
                 f"\n{str(e)}."
             )
         return None
+
+    def clean_up_message(self, message):
+        return self._improver.clean_up_message(message)
+
+    def format_access_request_params(self, resource_name, sender_nick, request_id):
+        return self._improver.format_access_request_params(resource_name, sender_nick, request_id)
+
+    def format_strikethrough(self, text):
+        return self._improver.format_strikethrough(text)

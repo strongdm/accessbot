@@ -1,5 +1,3 @@
-import re
-import os
 import enum
 from fuzzywuzzy import fuzz
 
@@ -34,9 +32,3 @@ def fuzzy_match(term_list, searched_term):
             max_ratio = ratio
             max_ratio_name = name
     return max_ratio_name if max_ratio >= FUZZY_MATCH_THRESHOLD else None
-
-def clean_up_message(text):
-    bot_platform = os.getenv('SDM_BOT_PLATFORM')
-    if bot_platform == 'ms-teams':
-        text = re.sub(r'<at>.+</at>', '', text).strip()
-    return text

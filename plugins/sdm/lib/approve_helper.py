@@ -42,11 +42,7 @@ class ApproveHelper:
     def __is_allowed_to_approve(self, request_id, approver):
         grant_request = self.__bot.get_grant_request(request_id)
         is_self_approve = grant_request['sdm_account'].email == approver.email
-        if self.__bot.bot_config.BOT_PLATFORM == 'ms-teams':
-            nick = approver.email
-        else:
-            nick = f'@{approver.nick}'
-        return not is_self_approve or nick in self.__bot.get_admins()
+        return not is_self_approve or self.__bot.get_user_nick(approver) in self.__bot.get_admins()
 
     def __is_admin(self, approver):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
