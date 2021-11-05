@@ -23,6 +23,8 @@ BOT_EXTRA_BACKEND_DIR = 'errbot-backend-botframework'
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
 
+BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM")
+
 BOT_LOG_FILE = '' if str(os.getenv("SDM_DOCKERIZED", "")).lower() == 'true' else 'errbot.log'
 BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
 
@@ -33,7 +35,7 @@ BOT_IDENTITY = {
     'appPassword': os.getenv("AZURE_APP_PASSWORD")
 }
 
-# ACCESS_CONTROLS = get_access_controls()
+ACCESS_CONTROLS = get_access_controls()
 
 BOT_PREFIX = ''
 HIDE_RESTRICTED_COMMANDS = True

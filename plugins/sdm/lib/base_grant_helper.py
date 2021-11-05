@@ -88,9 +88,17 @@ class BaseGrantHelper(ABC):
 
     def __notify_access_request_entered(self, sender_nick, resource_name, request_id):
         team_admins = ", ".join(self.__bot.get_admins())
-        yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\n" + r"Your request id is \`" + request_id + r"\`"
         operation_desc = self.get_operation_desc()
-        self.__notify_admins(r"Hey I have an " + operation_desc + r" request from USER \`" + sender_nick + r"\` for " + self.__grant_type.name + r" \`" + resource_name + r"\`! To approve, enter: **yes " + request_id + r"**")
+        if self.__bot.bot_config.BOT_PLATFORM:
+            resource_name = f'**{resource_name}**'
+            sender_nick = f'**{sender_nick}**'
+            request_id = f'**{request_id}**'
+        else:
+            resource_name = r"\'" + resource_name + r"\'"
+            sender_nick = r"\'" + sender_nick + r"\'"
+            request_id = r"\'" + request_id + r"\'"
+        yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is {request_id}"
+        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {sender_nick} for {self.__grant_type.name} {resource_name}! To approve, enter: **yes** {request_id}")
 
     def __notify_admins(self, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

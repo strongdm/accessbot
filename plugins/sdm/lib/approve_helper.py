@@ -42,14 +42,18 @@ class ApproveHelper:
     def __is_allowed_to_approve(self, request_id, approver):
         grant_request = self.__bot.get_grant_request(request_id)
         is_self_approve = grant_request['sdm_account'].email == approver.email
-        return not is_self_approve or f'@{approver.nick}' in self.__bot.get_admins()
+        if self.__bot.bot_config.BOT_PLATFORM == 'ms-teams':
+            nick = approver.email
+        else:
+            nick = f'@{approver.nick}'
+        return not is_self_approve or nick in self.__bot.get_admins()
 
     def __is_admin(self, approver):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         approver_channel = None if not hasattr(approver, 'room') else f"#{approver.room.name}"
         if admins_channel:
             return approver_channel == admins_channel
-        return self.__bot.get_sender_nick(approver) in self.__bot.get_admins()
+        return self.__bot.get_sender_id(approver) in self.__bot.get_admins()
 
     def __approve_assign_role(self, grant_request):
         yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
