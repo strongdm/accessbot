@@ -1,11 +1,13 @@
 # pylint: disable=invalid-name
 import datetime
 import sys
+from errbot.backends.base import Message
+from errbot.core import ErrBot
 import pytest
 import time
 from unittest.mock import MagicMock, patch
 
-from test_common import create_config, DummyResource, send_message_override
+from test_common import DummyConversation, create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
@@ -13,6 +15,7 @@ from lib.exceptions import NotFoundException
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
 
+admin_default_email = 'gbin@localhost'
 resource_id = 1
 resource_name = "myresource"
 account_id = 1
@@ -69,6 +72,42 @@ class Test_default_flow:  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+
+class Test_ms_teams_default_flow:
+    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_config(testbot, config)
+
+    def test_fail_access_command_when_sent_via_dm(self, mocked_testbot):
+        push_access_request(mocked_testbot)
+        assert "command via DM" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_when_self_approved(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_approved(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True))
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_fail_access_command_when_not_admin_self_approved(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(mocked_testbot._bot, from_email=account_name))
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "not an admin to self approve" in mocked_testbot.pop_message()
 
 class Test_invalid_approver:
     @pytest.fixture
@@ -476,3 +515,31 @@ def get_alternative_email_func(alternate_email):
             return profile
         return None
     return get_alternative_email
+
+def callback_message_fn(bot, from_email = admin_default_email, approver_is_admin = False):
+    def callback_message(msg):
+        if approver_is_admin and "yes" in msg.body:
+            frm_email = admin_default_email
+        else:
+            frm_email = from_email
+        frm = msg.frm
+        frm._email = frm_email
+        msg = Message(
+            body = msg.body,
+            frm=frm,
+            to=msg.to,
+            parent=msg.parent,
+            extras = {
+                'conversation': DummyConversation({
+                    'id': 1,
+                    'serviceUrl': 'http://localhost',
+                    'channelData': {
+                        'team': {
+                            'id': 1
+                        }
+                    }
+                })
+            }
+        )
+        ErrBot.callback_message(bot, msg)
+    return callback_message

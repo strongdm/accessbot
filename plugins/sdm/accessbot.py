@@ -8,7 +8,7 @@ from errbot.core import ErrBot
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper, \
-    SlackImprover, MSTeamsImprover
+    SlackPlatform, MSTeamsPlatform
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
@@ -20,38 +20,34 @@ ONE_MINUTE = 60
 
 def get_callback_message_fn(bot):
     def callback_message(msg):
-        msg.body = bot.clean_up_message(msg.body)
+        msg.body = bot.plugin_manager.plugins['AccessBot'].clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
 
-def get_improver(bot):
+def get_platform(bot):
     platform = bot.bot_config.BOT_PLATFORM if hasattr(bot.bot_config, 'BOT_PLATFORM') else None
     if platform == 'ms-teams':
-        return MSTeamsImprover(bot)
-    return SlackImprover(bot)
+        return MSTeamsPlatform(bot)
+    return SlackPlatform(bot)
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __grant_requests = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._improver = None
+    _platform = None
 
     def activate(self):
         super().activate()
-        self._improver = get_improver(self)
+        self._platform = get_platform(self)
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
-
-        self._improver.activate()
+        self._platform.activate()
 
     def deactivate(self):
-        self._improver.deactivate()
+        self._platform.deactivate()
         super().deactivate()
 
     def get_configuration_template(self):
@@ -73,8 +69,13 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        can_access_resource = yield from self._improver.can_access_resource(resource_name, message)
-        if not can_access_resource:
+        try:
+            if not self._platform.can_access_resource(message):
+                return
+        except Exception as e:
+            yield str(e)
+        if re.match("^role (.*)", resource_name):
+            self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         yield from self.get_resource_grant_helper().request_access(message, resource_name)
 
@@ -83,9 +84,11 @@ class AccessBot(BotPlugin):
         """
         Grant access to all resources in a role (using the requester's email address)
         """
-        can_assign_role = yield from self._improver.can_assign(message)
-        if not can_assign_role:
-            return
+        try:
+            if not self._platform.can_assign_role(message):
+                return
+        except Exception as e:
+            yield str(e)
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
         yield from self.get_role_grant_helper().request_access(message, role_name)
 
@@ -104,9 +107,11 @@ class AccessBot(BotPlugin):
         """
         Show all available resources
         """
-        can_show_resources = yield from self._improver.can_show_resources(message)
-        if not can_show_resources:
-            return
+        try:
+            if not self._platform.can_show_resources(message):
+                return
+        except Exception as e:
+            yield str(e)
         yield from self.get_show_resources_helper().execute()
 
     #pylint: disable=unused-argument
@@ -115,9 +120,11 @@ class AccessBot(BotPlugin):
         """
         Show all available roles
         """
-        can_show_roles = yield from self._improver.can_show_roles(message)
-        if not can_show_roles:
-            return
+        try:
+            if not self._platform.can_show_roles(message):
+                return
+        except Exception as e:
+            yield str(e)
         yield from self.get_show_roles_helper().execute(message)
 
     @staticmethod
@@ -154,7 +161,7 @@ class AccessBot(BotPlugin):
         return ShowRolesHelper(self)
 
     def get_admin_ids(self):
-        return self._improver.get_admin_ids()
+        return self._platform.get_admin_ids()
 
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
@@ -180,23 +187,24 @@ class AccessBot(BotPlugin):
         return list(self.__grant_requests.keys())
 
     def add_thumbsup_reaction(self, message):
-        self._bot.add_reaction(message, "thumbsup")
+        if self._bot.mode != 'test':
+            self._bot.add_reaction(message, "thumbsup")
 
     def get_sender_nick(self, sender):
         override = self.config['SENDER_NICK_OVERRIDE']
         return override if override else f"@{sender.nick}"
     
     def get_sender_id(self, sender):
-        return self._improver.get_sender_id(sender)
+        return self._platform.get_sender_id(sender)
 
     def get_sender_email(self, sender):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         if override:
             return override
-        return self._improver.get_sender_email(sender)
+        return self._platform.get_sender_email(sender)
 
     def get_user_nick(self, user):
-        return self._improver.get_user_nick(user)
+        return self._platform.get_user_nick(user)
 
     def increment_auto_approve_use(self, requester_id):
         prev = 0
@@ -222,7 +230,7 @@ class AccessBot(BotPlugin):
     def clean_auto_approve_uses(self):
         self['auto_approve_uses'] = {}
 
-    def __get_sdm_email_from_profile(self, sender, email_field):
+    def get_sdm_email_from_profile(self, sender, email_field):
         try:
             user_profile = self._bot.find_user_profile(sender.userid)
 
@@ -240,10 +248,10 @@ class AccessBot(BotPlugin):
         return None
 
     def clean_up_message(self, message):
-        return self._improver.clean_up_message(message)
+        return self._platform.clean_up_message(message)
 
     def format_access_request_params(self, resource_name, sender_nick, request_id):
-        return self._improver.format_access_request_params(resource_name, sender_nick, request_id)
+        return self._platform.format_access_request_params(resource_name, sender_nick, request_id)
 
     def format_strikethrough(self, text):
-        return self._improver.format_strikethrough(text)
+        return self._platform.format_strikethrough(text)

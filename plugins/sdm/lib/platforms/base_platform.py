@@ -1,32 +1,33 @@
-import re
 from abc import ABC, abstractmethod
 
 
-class BaseImprover(ABC):
-
+class BasePlatform(ABC):
     def __init__(self, bot):
         self._bot = bot
 
+    @abstractmethod
     def activate(self):
         pass
 
+    @abstractmethod
     def deactivate(self):
         pass
 
-    def can_access_resource(self, resource_name, message):
-        if re.match("^role (.*)", resource_name):
-            self._bot.log.debug("##SDM## AccessBot.access better match for assign_role")
-            return False
-        return True
+    @abstractmethod
+    def can_access_resource(self, message):
+        pass
 
+    @abstractmethod
     def can_assign_role(self, message):
-        return True
+        pass
 
+    @abstractmethod
     def can_show_resources(self, message):
-        return True
+        pass
 
+    @abstractmethod
     def can_show_roles(self, message):
-        return True
+        pass
 
     @abstractmethod
     def get_admin_ids(self):
@@ -36,11 +37,13 @@ class BaseImprover(ABC):
     def get_sender_id(self, sender):
         pass
 
+    @abstractmethod
     def get_sender_email(self, sender):
-        return sender.email
+        pass
 
+    @abstractmethod
     def get_user_nick(self, approver):
-        return f'@{approver.nick}'
+        pass
 
     @abstractmethod
     def clean_up_message(self, text):

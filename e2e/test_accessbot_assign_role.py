@@ -2,9 +2,11 @@
 import sys
 import time
 import datetime
+from errbot.backends.base import Message
+from errbot.core import ErrBot
 import pytest
 from unittest.mock import MagicMock, patch
-from test_common import DummyRole, create_config
+from test_common import DummyConversation, DummyRole, create_config
 sys.path.append('plugins/sdm')
 from lib import ApproveHelper, RoleGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
@@ -12,6 +14,7 @@ from lib.exceptions import NotFoundException
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
 
+admin_default_email = 'gbin@localhost'
 role_id = 111
 role_name = "role-name"
 resource_id = 1
@@ -190,6 +193,63 @@ class Test_role_grant_exists:
         assert "assign request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+class Test_ms_teams_assign_role:
+    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_mocks(testbot, config)
+
+    class NewDate(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2021, 5, 12)
+
+    def test_fail_assign_role_command_when_sent_via_dm(self, mocked_testbot):
+        push_access_role_request(mocked_testbot)
+        assert "command via DM" in mocked_testbot.pop_message()
+
+    def test_assign_role_command(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
+        grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
+        with patch('datetime.datetime', new = self.NewDate):
+            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"yes {access_request_id}")
+            assert "valid request" in mocked_testbot.pop_message()
+            assert "assign request" in mocked_testbot.pop_message()
+            assert "Granting" in mocked_testbot.pop_message()
+
+            start_from = datetime.datetime(2021, 5, 12, 0, 0)
+            valid_until = datetime.datetime(2021, 5, 12, 1, 0)
+            grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
+
+    def test_assign_role_command_when_not_self_approved(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True)
+        grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
+        with patch('datetime.datetime', new = self.NewDate):
+            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"yes {access_request_id}")
+            assert "valid request" in mocked_testbot.pop_message()
+            assert "assign request" in mocked_testbot.pop_message()
+            assert "Granting" in mocked_testbot.pop_message()
+
+            start_from = datetime.datetime(2021, 5, 12, 0, 0)
+            valid_until = datetime.datetime(2021, 5, 12, 1, 0)
+            grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
+
+    def test_fail_assign_role_command_when_self_approved(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot, from_email=account_name)
+        with patch('datetime.datetime', new = self.NewDate):
+            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"yes {access_request_id}")
+            assert "valid request" in mocked_testbot.pop_message()
+            assert "assign request" in mocked_testbot.pop_message()
+            assert "not an admin to self approve" in mocked_testbot.pop_message()
+
 # pylint: disable=dangerous-default-value
 def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None, role_grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
@@ -227,6 +287,7 @@ def create_mock_account(tags):
     mock_account = MagicMock()
     mock_account.id = account_id
     mock_account.name = account_name
+    mock_account.email = account_name
     mock_account.tags = tags
     return mock_account
 
@@ -251,3 +312,30 @@ def push_access_role_request(testbot):
 
 def raise_no_role_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that role!')
+
+def callback_message_fn(bot, from_email = admin_default_email, approver_is_admin = False):
+    def callback_message(msg):
+        if approver_is_admin and "yes" in msg.body:
+            frm_email = admin_default_email
+        else:
+            frm_email = from_email
+        msg.frm._email = frm_email
+        msg = Message(
+            body = msg.body,
+            frm=msg.frm,
+            to=msg.to,
+            parent=msg.parent,
+            extras = {
+                'conversation': DummyConversation({
+                    'id': 1,
+                    'serviceUrl': 'http://localhost',
+                    'channelData': {
+                        'team': {
+                            'id': 1
+                        }
+                    }
+                })
+            }
+        )
+        ErrBot.callback_message(bot, msg)
+    return callback_message

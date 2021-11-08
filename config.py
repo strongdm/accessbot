@@ -36,13 +36,8 @@ def get_bot_extra_backend_dir():
         return 'errbot-backend-botframework'
     return 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
 
-def get_core_plugins():
-    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
-        return ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
-    return ('ACLs', 'Health', 'Help', 'Plugins', 'Utils')
 
-
-CORE_PLUGINS = get_core_plugins()
+CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
 
 BACKEND = get_backend()
 BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
