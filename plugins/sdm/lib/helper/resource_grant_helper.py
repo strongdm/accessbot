@@ -1,8 +1,8 @@
 import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
-from .exceptions import PermissionDeniedException
-from .util import is_hidden, HiddenTagEnum
+from ..exceptions import PermissionDeniedException
+from ..util import is_hidden, HiddenTagEnum
 
 class ResourceGrantHelper(BaseGrantHelper):
     def __init__(self, bot):

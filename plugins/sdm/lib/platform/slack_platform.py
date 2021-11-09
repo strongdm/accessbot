@@ -48,3 +48,6 @@ class SlackPlatform(BasePlatform):
 
     def format_strikethrough(self, text):
         return r"~" + text + r"~"
+
+    def add_extra_identifier_args(self, identifier, message):
+        return identifier

@@ -56,3 +56,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def format_strikethrough(self, text):
         pass
+
+    @abstractmethod
+    def add_extra_identifier_args(self, identifier, message):
+        pass

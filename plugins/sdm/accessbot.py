@@ -69,13 +69,14 @@ class AccessBot(BotPlugin):
         Grant access to a resource (using the requester's email address)
         """
         resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        if re.match("^role (.*)", resource_name):
+            self.log.debug("##SDM## AccessBot.access better match for assign_role")
+            return
         try:
             if not self._platform.can_access_resource(message):
                 return
         except Exception as e:
             yield str(e)
-        if re.match("^role (.*)", resource_name):
-            self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         yield from self.get_resource_grant_helper().request_access(message, resource_name)
 
@@ -89,6 +90,7 @@ class AccessBot(BotPlugin):
                 return
         except Exception as e:
             yield str(e)
+            return
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
         yield from self.get_role_grant_helper().request_access(message, role_name)
 
@@ -255,3 +257,6 @@ class AccessBot(BotPlugin):
 
     def format_strikethrough(self, text):
         return self._platform.format_strikethrough(text)
+
+    def add_extra_identifier_args(self, identifier, message):
+        return self._platform.add_extra_identifier_args(identifier, message)

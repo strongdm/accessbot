@@ -81,12 +81,11 @@ def send_message_override(bot, raw_messages):
 
 def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False):
     def callback_message(msg):
-        if approver_is_admin and "yes" in msg.body:
-            frm_email = admin_default_email
-        else:
-            frm_email = from_email
         frm = msg.frm
-        frm._email = frm_email
+        if approver_is_admin and "yes" in msg.body:
+            frm._email = admin_default_email
+        else:
+            frm._email = from_email
         msg = Message(
             body=msg.body,
             frm=frm,
@@ -98,6 +97,9 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
                     'serviceUrl': 'http://localhost',
                     'channelData': {
                         'team': {
+                            'id': 1
+                        },
+                        'tenant': {
                             'id': 1
                         }
                     }

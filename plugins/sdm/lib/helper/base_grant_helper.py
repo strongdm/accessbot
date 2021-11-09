@@ -1,8 +1,8 @@
 import shortuuid
 from abc import ABC, abstractmethod
 from typing import Any
-from .exceptions import NotFoundException, PermissionDeniedException
-from .util import can_auto_approve_by_tag, fuzzy_match
+from ..exceptions import NotFoundException, PermissionDeniedException
+from ..util import can_auto_approve_by_tag, fuzzy_match
 
 class BaseGrantHelper(ABC):
     def __init__(self, bot, sdm_service, admin_ids, grant_type, auto_approve_tag_key, auto_approve_all_key):
@@ -66,7 +66,8 @@ class BaseGrantHelper(ABC):
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
         if not self.__needs_auto_approve(sdm_object) or self.__reached_max_auto_approve_uses(message.frm.person):
-            yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id)
+            # TODO: ADD EXTRAS
+            yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
             self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
             return
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
@@ -86,20 +87,22 @@ class BaseGrantHelper(ABC):
         auto_approve_uses = self.__bot.get_auto_approve_use(requester_id)
         return auto_approve_uses >= max_auto_approve_uses
 
-    def __notify_access_request_entered(self, sender_nick, resource_name, request_id):
+    def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message):
         team_admins = ", ".join(self.__bot.get_admins())
         operation_desc = self.get_operation_desc()
         resource_name, sender_nick, request_id = self.__bot.format_access_request_params(resource_name, sender_nick, request_id)
         yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is {request_id}"
-        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {sender_nick} for {self.__grant_type.name} {resource_name}! To approve, enter: **yes** {request_id}")
+        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {sender_nick} for {self.__grant_type.name} {resource_name}! To approve, enter: **yes** {request_id}", message)
 
-    def __notify_admins(self, message):
+    def __notify_admins(self, text, message):
+
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
-            self.__bot.send(self.__bot.build_identifier(admins_channel), message)
+            self.__bot.send(self.__bot.build_identifier(admins_channel), text)
             return
         for admin_id in self.__admin_ids:
-            self.__bot.send(admin_id, message)
+            admin_id = self.__bot.add_extra_identifier_args(admin_id, message)
+            self.__bot.send(admin_id, text)
 
     def __get_account(self, message):
         sender_email = self.__bot.get_sender_email(message.frm)

@@ -5,9 +5,10 @@ import pytest
 import time
 from unittest.mock import MagicMock, patch
 
-from test_common import create_config, DummyResource, send_message_override, callback_message_fn
-
 sys.path.append('plugins/sdm')
+sys.path.append('e2e/')
+
+from test_common import create_config, DummyResource, send_message_override, callback_message_fn
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -71,42 +72,6 @@ class Test_default_flow:  # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
-class Test_ms_teams_default_flow:
-    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
-
-    @pytest.fixture
-    def mocked_testbot(self, testbot):
-        config = create_config()
-        return inject_config(testbot, config)
-
-    def test_fail_access_command_when_sent_via_dm(self, mocked_testbot):
-        push_access_request(mocked_testbot)
-        assert "cannot execute this command via DM" in mocked_testbot.pop_message()
-
-    def test_access_command_grant_when_self_approved(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Granting" in mocked_testbot.pop_message()
-
-    def test_access_command_grant_approved(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True))
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Granting" in mocked_testbot.pop_message()
-
-    def test_fail_access_command_when_not_admin_self_approved(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(mocked_testbot._bot, from_email=account_name))
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "not an admin to self approve" in mocked_testbot.pop_message()
-
 class Test_invalid_approver:
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -163,7 +128,6 @@ class Test_auto_approve_all:
         push_access_request(mocked_with_max_auto_approve)
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
-
 
 class Test_multiple_admins_flow:
     @pytest.fixture

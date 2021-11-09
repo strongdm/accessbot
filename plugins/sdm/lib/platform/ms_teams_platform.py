@@ -54,6 +54,15 @@ class MSTeamsPlatform(BasePlatform):
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"
 
+    def add_extra_identifier_args(self, identifier, message):
+        extras = {
+            'team_id': message.extras['conversation'].data['channelData']['team']['id'],
+            'service_url': message.extras['conversation'].data['serviceUrl'],
+            'tenant_id': message.extras['conversation'].data['channelData']['tenant']['id']
+        }
+        identifier._extras = extras
+        return identifier
+
     def __verify_admins_channel_use(self):
         if self._bot.config['ADMINS_CHANNEL']:
             raise Exception("Sorry, it's not possible to request access to resources right now because an \
