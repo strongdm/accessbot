@@ -3,12 +3,14 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
-from test_common import create_config, DummyResource
+from test_common import create_config, DummyResource, callback_message_fn
+
 sys.path.append('plugins/sdm')
 from lib import ShowResourcesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
+extra_plugin_dir = "plugins/sdm"
+account_name = "myaccount@test.com"
 
 class Test_show_resources:
     @pytest.fixture
@@ -17,6 +19,25 @@ class Test_show_resources:
         return inject_mocks(testbot, config)
 
     def test_show_resources_command(self, mocked_testbot):
+        mocked_testbot.push_message("show available resources")
+        message = mocked_testbot.pop_message()
+        assert "Aaa (type: DummyResource)" in message
+        assert "Bbb (type: DummyResource)" in message
+
+class Test_ms_teams_show_resources:
+    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_mocks(testbot, config)
+
+    def test_fail_show_resources_command_when_sent_via_dm(self, mocked_testbot):
+        mocked_testbot.push_message("show available resources")
+        assert "cannot execute this command via DM" in mocked_testbot.pop_message()
+
+    def test_show_resources_command_when_sent_via_team(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True))
         mocked_testbot.push_message("show available resources")
         message = mocked_testbot.pop_message()
         assert "Aaa (type: DummyResource)" in message

@@ -1,3 +1,8 @@
+from errbot import Message
+from errbot.core import ErrBot
+
+admin_default_email = 'gbin@localhost'
+
 def create_config():
     return {
         'ADMIN_TIMEOUT': 2,
@@ -73,3 +78,31 @@ def send_message_override(bot, raw_messages):
         raw_messages.append(msg)
         bot.outgoing_message_queue.put(bot.md.convert(msg.body))
     return sm
+
+def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False):
+    def callback_message(msg):
+        if approver_is_admin and "yes" in msg.body:
+            frm_email = admin_default_email
+        else:
+            frm_email = from_email
+        frm = msg.frm
+        frm._email = frm_email
+        msg = Message(
+            body=msg.body,
+            frm=frm,
+            to=msg.to,
+            parent=msg.parent,
+            extras={
+                'conversation': DummyConversation({
+                    'id': 1,
+                    'serviceUrl': 'http://localhost',
+                    'channelData': {
+                        'team': {
+                            'id': 1
+                        }
+                    }
+                })
+            }
+        )
+        ErrBot.callback_message(bot, msg)
+    return callback_message
