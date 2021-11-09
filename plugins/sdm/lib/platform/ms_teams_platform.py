@@ -13,21 +13,21 @@ class MSTeamsPlatform(BasePlatform):
         self._bot.get_plugin('Webserver').deactivate()
 
     def can_access_resource(self, message):
-        self.verify_admins_channel_use()
-        self.verify_dm_availability(message)
+        self.__verify_admins_channel_use()
+        self.__verify_dm_availability(message)
         return True
 
     def can_assign_role(self, message):
-        self.verify_admins_channel_use()
-        self.verify_dm_availability(message)
+        self.__verify_admins_channel_use()
+        self.__verify_dm_availability(message)
         return True
 
     def can_show_resources(self, message):
-        self.verify_dm_availability(message)
+        self.__verify_dm_availability(message)
         return True
 
     def can_show_roles(self, message):
-        self.verify_dm_availability(message)
+        self.__verify_dm_availability(message)
         return True
 
     def get_admin_ids(self):
@@ -54,13 +54,13 @@ class MSTeamsPlatform(BasePlatform):
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"
 
-    def verify_admins_channel_use(self):
+    def __verify_admins_channel_use(self):
         if self._bot.config['ADMINS_CHANNEL']:
             raise Exception("Sorry, it's not possible to request access to resources right now because an \
                 Admin Channel was defined, and Microsoft Teams doesn't support Admin's Channels. \
                 Please, contact your StrongDM admin.")
 
-    def verify_dm_availability(self, message):
+    def __verify_dm_availability(self, message):
         conversation = message.extras.get('conversation')
         if not conversation or not conversation.data['channelData'].get('team'):
             raise Exception("You cannot execute this command via DM. Please, send a message via a team's channel.")
