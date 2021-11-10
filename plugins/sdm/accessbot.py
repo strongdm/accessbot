@@ -72,11 +72,7 @@ class AccessBot(BotPlugin):
         if re.match("^role (.*)", resource_name):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
-        try:
-            if not self._platform.can_access_resource(message):
-                return
-        except Exception as e:
-            yield str(e)
+        if not self._platform.can_access_resource(message):
             return
         yield from self.get_resource_grant_helper().request_access(message, resource_name)
 
@@ -85,11 +81,7 @@ class AccessBot(BotPlugin):
         """
         Grant access to all resources in a role (using the requester's email address)
         """
-        try:
-            if not self._platform.can_assign_role(message):
-                return
-        except Exception as e:
-            yield str(e)
+        if not self._platform.can_assign_role(message):
             return
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
         yield from self.get_role_grant_helper().request_access(message, role_name)
@@ -109,11 +101,8 @@ class AccessBot(BotPlugin):
         """
         Show all available resources
         """
-        try:
-            if not self._platform.can_show_resources(message):
-                return
-        except Exception as e:
-            yield str(e)
+        if not self._platform.can_show_resources(message):
+            return
         yield from self.get_show_resources_helper().execute()
 
     #pylint: disable=unused-argument
@@ -122,11 +111,8 @@ class AccessBot(BotPlugin):
         """
         Show all available roles
         """
-        try:
-            if not self._platform.can_show_roles(message):
-                return
-        except Exception as e:
-            yield str(e)
+        if not self._platform.can_show_roles(message):
+            return
         yield from self.get_show_roles_helper().execute(message)
 
     @staticmethod
