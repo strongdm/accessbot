@@ -3,12 +3,15 @@ import pytest
 import sys
 from unittest.mock import MagicMock
 
-from test_common import create_config, DummyResource
 sys.path.append('plugins/sdm')
+sys.path.append('e2e/')
+
+from test_common import create_config, DummyResource
 from lib import ShowResourcesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
+extra_plugin_dir = "plugins/sdm"
+account_name = "myaccount@test.com"
 
 class Test_show_resources:
     @pytest.fixture

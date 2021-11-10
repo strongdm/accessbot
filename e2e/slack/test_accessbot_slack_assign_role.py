@@ -4,8 +4,11 @@ import time
 import datetime
 import pytest
 from unittest.mock import MagicMock, patch
-from test_common import DummyRole, create_config
+
 sys.path.append('plugins/sdm')
+sys.path.append('e2e/')
+
+from test_common import create_config, DummyRole
 from lib import ApproveHelper, RoleGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -227,6 +230,7 @@ def create_mock_account(tags):
     mock_account = MagicMock()
     mock_account.id = account_id
     mock_account.name = account_name
+    mock_account.email = account_name
     mock_account.tags = tags
     return mock_account
 

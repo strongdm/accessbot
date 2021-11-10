@@ -16,11 +16,22 @@ AccessBot is a chatbot that manages access to strongDM (SDM) resources, initiall
 
 ## Installation
 In order to install AccessBot, you need to provide the following required variables:
-* **SLACK_APP_TOKEN**. Slack App-Level Token
-* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
-* **SDM_ADMINS**. List of Slack admins, although it's not required, this users are usually SDM admins too  
+* **SDM_BOT_PLATFORM**. The platform that the bot will be installed on, i.e. "ms-teams", "slack" or blank (which will be interpreted as Slack by default)
+* **SDM_ADMINS**. List of admins, although it's not required, these users are usually SDM admins too 
+  - For Slack platform: use the nick handles of all the admins
+  - For MS Teams platform: use the email addresses of all the admins
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
+
+### Slack Installation
+For Slack platform, you need to provide the following required variables:
+* **SLACK_APP_TOKEN**. Slack App-Level Token
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
+
+### MS Teams Installation
+For MS Teams platform, you need to provide the following required variables:
+* **AZURE_APP_ID**. Azure Bot application ID
+* **AZURE_APP_PASSWORD**. Azure Bot application password
 
 For a full list of configuration variables please read: [Configure AccessBot](docs/CONFIGURE_ACCESSBOT.md)
 

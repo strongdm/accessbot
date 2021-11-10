@@ -1,4 +1,4 @@
-from .exceptions import NotFoundException
+from ..exceptions import NotFoundException
 import strongdm
 
 def create_sdm_service(api_access_key, api_secret_key, log):

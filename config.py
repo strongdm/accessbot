@@ -15,23 +15,44 @@ def get_access_controls():
         '*': { 'allowusers': BOT_ADMINS },
     }
 
-CORE_PLUGINS=('ACLs', 'Health', 'Help', 'Plugins', 'Utils')
+def get_bot_identity():
+    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+        return {
+            "appId": os.getenv("AZURE_APP_ID"),
+            "appPassword": os.getenv("AZURE_APP_PASSWORD")
+        }
+    return {
+        "app_token": os.environ["SLACK_APP_TOKEN"],
+        "bot_token": os.environ["SLACK_BOT_TOKEN"],
+    }
 
-BACKEND = 'SlackBolt'
-BOT_EXTRA_BACKEND_DIR = 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
+def get_backend():
+    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+        return 'BotFramework'
+    return 'SlackBolt'
+
+def get_bot_extra_backend_dir():
+    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+        return 'errbot-backend-botframework'
+    return 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
+
+
+CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
+
+BACKEND = get_backend()
+BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
 
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
+
+BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM")
 
 BOT_LOG_FILE = '' if str(os.getenv("SDM_DOCKERIZED", "")).lower() == 'true' else 'errbot.log'
 BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
 
 BOT_ADMINS = os.getenv("SDM_ADMINS").split(" ")
 CHATROOM_PRESENCE = ()
-BOT_IDENTITY = {
-    "app_token": os.environ["SLACK_APP_TOKEN"],
-    "bot_token": os.environ["SLACK_BOT_TOKEN"],
-}
+BOT_IDENTITY = get_bot_identity()
 
 ACCESS_CONTROLS = get_access_controls()
 

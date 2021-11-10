@@ -1,5 +1,5 @@
-from .util import is_hidden, HiddenTagEnum
 from .base_show_helper import BaseShowHelper
+from ..util import is_hidden, HiddenTagEnum
 
 class ShowResourcesHelper(BaseShowHelper):
     def __init__(self, bot):

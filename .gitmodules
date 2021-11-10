@@ -1,3 +1,6 @@
+[submodule "errbot-backend-botframework"]
+	path = errbot-backend-botframework
+	url = https://github.com/strongdm/errbot-backend-botframework
 [submodule "errbot-slack-bolt-backend"]
 	path = errbot-slack-bolt-backend
 	url = https://github.com/strongdm/errbot-slack-bolt-backend

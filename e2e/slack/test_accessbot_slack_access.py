@@ -5,8 +5,10 @@ import pytest
 import time
 from unittest.mock import MagicMock, patch
 
-from test_common import create_config, DummyResource, send_message_override
 sys.path.append('plugins/sdm')
+sys.path.append('e2e/')
+
+from test_common import create_config, DummyResource, send_message_override, callback_message_fn
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -126,7 +128,6 @@ class Test_auto_approve_all:
         push_access_request(mocked_with_max_auto_approve)
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
-
 
 class Test_multiple_admins_flow:
     @pytest.fixture

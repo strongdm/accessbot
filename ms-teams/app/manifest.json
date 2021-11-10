@@ -1,0 +1,57 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.11",
+    "version": "1.0.0",
+    "id": "enter-a-valid-id",
+    "packageName": "com.strongdm.teams.app",
+    "developer": {
+        "name": "strongDM",
+        "websiteUrl": "https://strongdm.com",
+        "privacyUrl": "https://privacy.microsoft.com/en-ca/privacystatement",
+        "termsOfUseUrl": "https://privacy.microsoft.com/en-ca/privacystatement"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "AccessBot",
+        "full": ""
+    },
+    "description": {
+        "short": "AccessBot is a chatbot that manages access to strongDM resources",
+        "full": "AccessBot is a chatbot that manages access to strongDM resources"
+    },
+    "accentColor": "#FFFFFF",
+    "staticTabs": [
+        {
+            "entityId": "conversations",
+            "scopes": [
+                "personal"
+            ]
+        },
+        {
+            "entityId": "about",
+            "scopes": [
+                "personal"
+            ]
+        }
+    ],
+    "bots": [
+        {
+            "botId": "enter-a-valid-id",
+            "scopes": [
+                "personal",
+                "team",
+                "groupchat"
+            ],
+            "supportsFiles": false,
+            "isNotificationOnly": false
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": []
+}

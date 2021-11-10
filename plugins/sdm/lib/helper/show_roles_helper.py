@@ -1,5 +1,5 @@
 from .base_show_helper import BaseShowHelper
-from .util import is_hidden, HiddenTagEnum
+from ..util import is_hidden, HiddenTagEnum
 
 class ShowRolesHelper(BaseShowHelper):
     def __init__(self, bot):
@@ -18,7 +18,7 @@ class ShowRolesHelper(BaseShowHelper):
             if self.is_auto_approve(item):
                 return r"* **" + item.name + r" (auto-approve)**" + "\n"
             return f"* {item.name}\n"
-        return r"* ~" + item.name + r"~" + " (not allowed) \n"
+        return r"* " + self.__bot.format_strikethrough(item.name) + " (not allowed)\n"
 
     def is_auto_approve(self, item):
         return self.__bot.config["AUTO_APPROVE_ROLE_TAG"] in item.tags
