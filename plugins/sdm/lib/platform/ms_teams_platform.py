@@ -54,7 +54,7 @@ class MSTeamsPlatform(BasePlatform):
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"
 
-    def add_extra_identifier_args(self, identifier, message):
+    def get_rich_identifier(self, identifier, message):
         extras = {
             'team_id': message.extras['conversation'].data['channelData']['team']['id'],
             'service_url': message.extras['conversation'].data['serviceUrl'],

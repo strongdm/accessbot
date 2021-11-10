@@ -245,4 +245,4 @@ class AccessBot(BotPlugin):
         return self._platform.format_strikethrough(text)
 
     def add_extra_identifier_args(self, identifier, message):
-        return self._platform.add_extra_identifier_args(identifier, message)
+        return self._platform.get_rich_identifier(identifier, message)

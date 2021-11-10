@@ -95,13 +95,12 @@ class BaseGrantHelper(ABC):
         self.__notify_admins(f"Hey I have an {operation_desc} request from USER {sender_nick} for {self.__grant_type.name} {resource_name}! To approve, enter: **yes** {request_id}", message)
 
     def __notify_admins(self, text, message):
-
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
             self.__bot.send(self.__bot.build_identifier(admins_channel), text)
             return
         for admin_id in self.__admin_ids:
-            admin_id = self.__bot.add_extra_identifier_args(admin_id, message)
+            admin_id = self.__bot.get_rich_identifier(admin_id, message)
             self.__bot.send(admin_id, text)
 
     def __get_account(self, message):

@@ -58,5 +58,5 @@ class BasePlatform(ABC):
         pass
 
     @abstractmethod
-    def add_extra_identifier_args(self, identifier, message):
+    def get_rich_identifier(self, identifier, message):
         pass
