@@ -22,6 +22,10 @@ In order to configure AccessBot integration with Slack follow the next steps:
 
 ![image](https://user-images.githubusercontent.com/313803/141981551-5586276d-638e-438d-ab7a-751f1d7cde60.png)
 
+4. Go to channels and share the Bot with MS Teams
+
+![image](https://user-images.githubusercontent.com/313803/141986889-e218353d-3e76-4400-9d83-ca82129931e9.png)
+
 The **Microsoft App ID** and **Secret Value** are the values for your variables **AZURE_APP_ID** and **AZURE_APP_PASSWORD** respectively. IMPORTANT: If you're passing environment variables via shell, ensure that you eclose the password between single quotes!
 
 ## Start the bot
@@ -29,7 +33,7 @@ The **Microsoft App ID** and **Secret Value** are the values for your variables 
 Start accessbot with the following environment variables: 
 * **AZURE_APP_ID**. Set to the **Microsoft App ID**
 * **AZURE_APP_PASSWORD**. Set to the **Secret Value** 
-* **SDM_BOT_PLATFORM**. Set to *ms-teams*
+* **SDM_BOT_PLATFORM**. Set to **ms-teams**
 * **SDM_ADMINS**. Set to the administrator's email addresses (separated by spaces)
 
 The MS Teams version uses a webhook endpoint. Ideally setup a HTTP Server with a Reverse Proxy pointing to: `0.0.0.0:3141`. For developing purposes you could use [ngrok](https://ngrok.com/), see [here](https://github.com/strongdm/accessbot/tree/main/ms-teams/dev/http-server)
