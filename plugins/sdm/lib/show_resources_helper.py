@@ -1,4 +1,4 @@
-from .util import is_hidden, HiddenTagEnum
+from .util import is_hidden, HiddenTagEnum, AllowedTagEnum, is_allowed
 from .base_show_helper import BaseShowHelper
 
 class ShowResourcesHelper(BaseShowHelper):
@@ -31,4 +31,5 @@ class ShowResourcesHelper(BaseShowHelper):
             resource
             for resource in resources
             if not is_hidden(self.__bot.config, HiddenTagEnum.RESOURCE, resource)
+            and is_allowed(self.__bot.config, AllowedTagEnum.RESOURCE, resource)
         ]
