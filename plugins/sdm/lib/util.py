@@ -18,9 +18,9 @@ def is_hidden(config, hidden_tag_enum, sdm_entity):
 
 def is_allowed(config, allowed_tag_enum, sdm_entity):
     allowed_entity_tag = config[allowed_tag_enum.value]
-    return not allowed_entity_tag \
-        or (allowed_entity_tag in sdm_entity.tags and sdm_entity.tags.get(allowed_entity_tag) is not None
-            and str(sdm_entity.tags.get(allowed_entity_tag)).lower().strip() == 'true')
+    return not allowed_entity_tag or \
+           allowed_entity_tag in sdm_entity.tags and \
+           (sdm_entity.tags.get(allowed_entity_tag) is None or str(sdm_entity.tags.get(allowed_entity_tag)).lower().strip() != 'false')
 
 def can_auto_approve_by_tag(config, sdm_object, tag_key):
     auto_approve_by_tag = config[tag_key]

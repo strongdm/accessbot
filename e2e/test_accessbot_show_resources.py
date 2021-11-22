@@ -46,6 +46,7 @@ class Test_show_allowed_resources:
     def test_dont_show_resources_when_allow_resource_tag_false(self, mocked_testbot_allow_resource_false):
         mocked_testbot_allow_resource_false.push_message("show available resources")
         message = mocked_testbot_allow_resource_false.pop_message()
+        assert "no available resources" in message
         assert "Aaa (type: DummyResource)" not in message
         assert "Bbb (type: DummyResource)" not in message
 

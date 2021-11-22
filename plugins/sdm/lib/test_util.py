@@ -49,17 +49,17 @@ class Test_is_allowed_resource:
         sdm_resource.tags = {'allow-resource': 'false'}
         assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
 
-    def test_dont_allow_resource_when_tag_have_no_value(self):
+    def test_allow_resource_when_tag_have_no_value(self):
         config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'allow-resource': None}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource)
 
-    def test_dont_allow_resource_when_tag_have_unexpected_value(self):
+    def test_allow_resource_when_tag_have_unexpected_value(self):
         config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'allow-resource': 'not-a-boolean'}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource)
 
     def test_dont_allow_resource_when_tag_doesnt_exist(self):
         config = {'ALLOW_RESOURCE_TAG': 'another-tag'}
