@@ -9,7 +9,7 @@ You might want to take a look at the [ACCESS_CONFIGURATION](ACCESS_CONFIGURATION
 Absolutely, it’s an independent config. Everyone can be a user. However, bot admins are configured only at installation time via env variables: `SDM_ADMINS`
  
 ## Where does the list of "available resources" populate from?
-The resources you see and can request access to, are all the ones available in your account. That’s because the bot uses API Keys. You can restrict certain resources using tags setting the var `SDM_HIDE_RESOURCE_TAG`.
+The resources you see and can request access to, are all the ones available in your account. That’s because the bot uses API Keys. You can restrict certain resources using tags setting the var `SDM_HIDE_RESOURCE_TAG` or you can hide all resources by enabling the var `SDM_ALLOW_RESOURCE_TAG` and adding the correspondent tag only to the resources that you want to show.
 Besides you can use `CONTROL_RESOURCES_ROLE_NAME` for listing only resources associated with a specific role. See [CONFIGURE_ACCESSBOT](CONFIGURE_ACCESSBOT.md)
 
 ## Can the bot send the approval requests to SDM admins via a Slack DM? Or only post to a channel?
