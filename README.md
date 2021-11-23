@@ -60,6 +60,7 @@ For example:
 1. Set `SDM_AUTO_APPROVE_ALL=true` to disable approval entirely.
 2. Use the strongDM CLI or SDK to add the following tags to individual resources:
       - `SDM_AUTO_APPROVE_TAG=auto-approve` -- automatic approval for this resource
+      - `SDM_ALLOW_RESOURCE_TAG=allow-resource` -- resource is displayed via `show` command; any access request auto-fails if the resource does not have the tag
       - `SDM_HIDE_RESOURCE_TAG=hide-resource` -- resource is not displayed via `show` command; any access request auto-fails
 
 For more information, please refer to the [detailed guide for access configuration](docs/ACCESS_CONFIGURATION.md).
