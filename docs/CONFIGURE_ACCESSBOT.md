@@ -9,6 +9,9 @@ There are a number of variables you can use for configuring AccessBot.
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
+_Note_: when SDM_BOT_PLATFORM is 'slack-classic', you need to set the following variable instead of **SLACK_APP_TOKEN** and **SLACK_BOT_TOKEN**:
+  - **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
+
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO
 * **SDM_DOCKERIZED**. Logging type. Default = true (_when using docker_), meaning logs go to STDOUT
@@ -48,6 +51,7 @@ See image below for more information:
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
 
 ### Using Tags
+A snippet that might help:
 
 #### Allow Resource
 ```
