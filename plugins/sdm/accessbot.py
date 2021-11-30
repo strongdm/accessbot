@@ -101,9 +101,12 @@ class AccessBot(BotPlugin):
         """
         Show all available resources
         """
+
         if not self._platform.can_show_resources(message):
             return
-        yield from self.get_show_resources_helper().execute()
+        
+        filters = self.extract_filters(message.body)
+        yield from self.get_show_resources_helper().execute(filters=filters)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -246,3 +249,14 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
+    
+    def extract_filters(self, message):
+        if '--filter' in message:
+            filters = re.findall(r"(?<=--filter ')[^']+", message)
+            print(">>> Filters:", filters)
+            if not filters:
+                raise Exception('You must pass the filter arguments after the "--filter" tag.')
+            return ','.join([
+                filter.replace(':', ':\"') + "\""
+                for filter in filters
+            ])

@@ -160,21 +160,28 @@ class Test_get_all_resources:
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
+    def test_with_filters(self, client, service):
+        client.resources.list = MagicMock(side_effect = filter_resources)
+        sdm_resources = service.get_all_resources(filters = "name:resource1")
+        assert len(sdm_resources) == 1
+        assert sdm_resources[0].id == resource_id
+        assert sdm_resources[0].name == resource_name
+
+    def test_no_resources_with_filters(self, client, service):
+        client.resources.list = MagicMock(side_effect = filter_resources)
+        sdm_resources = service.get_all_resources(filters = "name:resource2")
+        assert len(sdm_resources) == 0
+
+    def test_fail_with_wrong_filters(self, client, service):
+        client.resources.list = MagicMock(side_effect = filter_resources)
+        with pytest.raises(Exception):
+            service.get_all_resources(filters = "name=resource1")
+
+
 class Test_get_all_resources_by_role:
     def test_returns_resources(self, client, service):
-        mock_role = MagicMock()
-        mock_role.id = 111
-        mock_role.name = "role_name"
-        role_iter = iter([mock_role])
-        client.roles.list = MagicMock(return_value = role_iter)
-
-        mock_role_grant1 = MagicMock()
-        mock_role_grant1.resource_id = 1
-        mock_role_grant2 = MagicMock()
-        mock_role_grant2.resource_id = 2
-        role_grants_iter = iter([mock_role_grant1, mock_role_grant2])
-        client.role_grants.list = MagicMock(return_value = role_grants_iter)
-
+        client.roles.list = MagicMock(return_value = get_role_iter())
+        client.role_grants.list = MagicMock(return_value = get_role_grant_iter())
         client.resources.list = MagicMock(return_value = [None])
 
         resources = service.get_all_resources_by_role("role_name")
@@ -189,6 +196,38 @@ class Test_get_all_resources_by_role:
             service.get_all_resources_by_role("role_name")
         client.roles.list.assert_called_with(('name:"role_name"'))
         assert str(ex.value) != ""
+
+    def test_with_filters(self, client, service):
+        client.roles.list = MagicMock(return_value = get_role_iter())
+        client.role_grants.list = MagicMock(return_value = get_role_grant_iter())
+        client.resources.list = MagicMock(side_effect = filter_resources)
+
+        sdm_resources = service.get_all_resources_by_role("role_name", filters = f"name:{resource_name}")
+
+        client.roles.list.assert_called_with(('name:"role_name"'))
+        client.role_grants.list.assert_called_with("role_id:111")
+        client.resources.list.assert_called_with(f"id:1,id:2,name:{resource_name}")
+        assert len(sdm_resources) == 1
+        assert sdm_resources[0].id == resource_id
+        assert sdm_resources[0].name == resource_name
+
+    def test_no_resources_with_filters(self, client, service):
+        nonexistent_resource = 'resource2'
+
+        client.roles.list = MagicMock(return_value = get_role_iter())
+        client.role_grants.list = MagicMock(return_value = get_role_grant_iter())
+        client.resources.list = MagicMock(side_effect = filter_resources)
+
+        sdm_resources = service.get_all_resources_by_role("role_name", filters = f"name:{nonexistent_resource}")
+        client.roles.list.assert_called_with(('name:"role_name"'))
+        client.role_grants.list.assert_called_with("role_id:111")
+        client.resources.list.assert_called_with(f"id:1,id:2,name:{nonexistent_resource}")
+        assert len(sdm_resources) == 0
+
+    def test_fail_with_wrong_filters(self, client, service):
+        client.resources.list = MagicMock(side_effect = filter_resources)
+        with pytest.raises(Exception):
+            service.get_all_resources_by_role("role_name", filters = "name=resource1")
 
 class Test_get_role_by_name:
     def test_when_resource_exists_returns_role(self, client, service):
@@ -222,6 +261,7 @@ def get_resource_list_iter():
     mock_resource = MagicMock()
     mock_resource.id = resource_id
     mock_resource.name = resource_name
+    mock_resource.role_id = role_id
     return iter([mock_resource])
 
 def get_role_list_iter():
@@ -244,8 +284,31 @@ def get_role():
     mock_role.name = role_name
     return mock_role
 
+def get_role_iter():
+    mock_role = MagicMock()
+    mock_role.id = 111
+    mock_role.name = "role_name"
+    return iter([mock_role])
+
 def get_role_grant():
     mock_role_grant = MagicMock()
     mock_role_grant.role_id = role_id
     mock_role_grant.resource_id = resource_id
     return mock_role_grant
+
+def get_role_grant_iter():
+    mock_role_grant1 = MagicMock()
+    mock_role_grant1.resource_id = 1
+    mock_role_grant2 = MagicMock()
+    mock_role_grant2.resource_id = 2
+    return iter([mock_role_grant1, mock_role_grant2])
+
+def filter_resources(filters = ''):
+    if '=' in filters:
+        raise Exception('You must use semicolon ":" instead of equal "=" sign.')
+    resources = get_resource_list_iter()
+    return [
+        resource
+        for resource in resources
+        if not filters or resource.name in filters
+    ]
