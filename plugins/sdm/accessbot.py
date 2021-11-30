@@ -253,10 +253,10 @@ class AccessBot(BotPlugin):
     def extract_filters(self, message):
         if '--filter' in message:
             filters = re.findall(r"(?<=--filter ')[^']+", message)
-            print(">>> Filters:", filters)
             if not filters:
                 raise Exception('You must pass the filter arguments after the "--filter" tag.')
             return ','.join([
                 filter.replace(':', ':\"') + "\""
                 for filter in filters
             ])
+        return ''
