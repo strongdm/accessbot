@@ -5,11 +5,14 @@ class BaseShowHelper(ABC):
         self.__op_desc = op_desc
 
     def execute(self, message = ''):
-        resources = f"Available {self.__op_desc}:\n\n"
         data = self.get_list()
-        for item in sorted(data, key=self.__get_key):
-            resources += self.get_line(item, message)
-        yield resources
+        if len(data):
+            resources = f"Available {self.__op_desc}:\n\n"
+            for item in sorted(data, key=self.__get_key):
+                resources += self.get_line(item, message)
+            yield resources
+            return
+        yield f"There are no available {self.__op_desc}"
 
     @abstractmethod
     def get_list(self):

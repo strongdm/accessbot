@@ -14,7 +14,7 @@ class ShowResourcesHelper(BaseShowHelper):
             resources = self.__sdm_service.get_all_resources_by_role(role_name)
         else:
             resources = self.__sdm_service.get_all_resources()
-        return self.__filter_hidden_resources(resources)
+        return self.__filter_resources(resources)
 
     def get_line(self, item, message = ''):
         if self.is_auto_approve(item):
@@ -27,7 +27,7 @@ class ShowResourcesHelper(BaseShowHelper):
             and self.__bot.config["AUTO_APPROVE_TAG"] in item.tags
         )
 
-    def __filter_hidden_resources(self, resources):
+    def __filter_resources(self, resources):
         return [
             resource
             for resource in resources
