@@ -67,6 +67,33 @@ class Test_show_resources_by_role:
         assert "Bbb in role (type: DummyResource)" in message
 
 
+class Test_show_resources_with_concealed_resources:
+    @pytest.fixture
+    def mocked_testbot_conceal_resource_true(self, testbot):
+        config = create_config()
+        config['CONCEAL_RESOURCE_TAG'] = 'conceal-resource'
+        resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'conceal-resource': True}) ]
+        return inject_mocks(testbot, config, resources)
+
+    @pytest.fixture
+    def mocked_testbot_conceal_resource_false(self, testbot):
+        config = create_config()
+        config['CONCEAL_RESOURCE_TAG'] = 'conceal-resource'
+        resources = [ DummyResource("Bbb", {}), DummyResource("Aaa", {'conceal-resource': False}) ]
+        return inject_mocks(testbot, config, resources)
+
+    def test_when_conceal_resource_tag_true(self, mocked_testbot_conceal_resource_true):
+        mocked_testbot_conceal_resource_true.push_message("show available resources")
+        message = mocked_testbot_conceal_resource_true.pop_message()
+        assert "Aaa (type: DummyResource)" not in message
+        assert "Bbb (type: DummyResource)" in message
+
+    def test_when_conceal_resource_tag_false(self, mocked_testbot_conceal_resource_false):
+        mocked_testbot_conceal_resource_false.push_message("show available resources")
+        message = mocked_testbot_conceal_resource_false.pop_message()
+        assert "Aaa (type: DummyResource)" in message
+        assert "Bbb (type: DummyResource)" in message
+
 def default_dummy_resources():
     return [ DummyResource("Bbb", {}), DummyResource("Aaa", {}) ]
 
