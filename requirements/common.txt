@@ -7,4 +7,4 @@ slack-bolt
 shortuuid
 fuzzywuzzy
 python-Levenshtein
-errbot[slack]
+memoization
