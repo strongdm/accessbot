@@ -45,11 +45,8 @@ class MSTeamsPlatform(BasePlatform):
     def clean_up_message(self, text):
         return re.sub(r'<at>.+</at>', '', text).strip()
 
-    def format_access_request_params(self, resource_name, sender_nick, request_id):
-        resource_name = f'**{resource_name}**'
-        sender_nick = f'**{sender_nick}**'
-        request_id = f'**{request_id}**'
-        return resource_name, sender_nick, request_id
+    def format_access_request_params(self, resource_name, sender_nick):
+        return f'**{resource_name}**', f'**{sender_nick}**'
 
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"

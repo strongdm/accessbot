@@ -16,24 +16,35 @@ def get_access_controls():
     }
 
 def get_bot_identity():
-    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+    platform = os.getenv('SDM_BOT_PLATFORM')
+    if platform == 'ms-teams':
         return {
             "appId": os.getenv("AZURE_APP_ID"),
             "appPassword": os.getenv("AZURE_APP_PASSWORD")
         }
+    elif platform == 'slack-classic':
+        return {
+            'token': os.getenv("SLACK_TOKEN")
+        }
     return {
-        "app_token": os.environ["SLACK_APP_TOKEN"],
-        "bot_token": os.environ["SLACK_BOT_TOKEN"],
+        "app_token": os.getenv("SLACK_APP_TOKEN"),
+        "bot_token": os.getenv("SLACK_BOT_TOKEN"),
     }
 
 def get_backend():
-    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+    platform = os.getenv('SDM_BOT_PLATFORM')
+    if platform == 'ms-teams':
         return 'BotFramework'
+    elif platform == 'slack-classic':
+        return 'Slack'
     return 'SlackBolt'
 
 def get_bot_extra_backend_dir():
-    if os.getenv('SDM_BOT_PLATFORM') == 'ms-teams':
+    platform = os.getenv('SDM_BOT_PLATFORM')
+    if platform == 'ms-teams':
         return 'errbot-backend-botframework'
+    elif platform == 'slack-classic':
+        return None
     return 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
 
 

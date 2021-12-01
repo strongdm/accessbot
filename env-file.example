@@ -1,0 +1,42 @@
+# You can copy this file as "env-file" for your docker-compose
+# IMPORTANT: Do not enclose values in double or single quotes 
+
+# ------------------------------------------------------------------------------
+# |                           GENERAL ENV VARS                                 |
+# ------------------------------------------------------------------------------
+# These vars are required for any SDM_BOT_PLAFORM.
+
+SDM_BOT_PLATFORM=slack # possible values: slack, slack-classic, ms-teams
+SDM_API_ACCESS_KEY=
+SDM_API_SECRET_KEY=
+
+# ------------------------------------------------------------------------------
+# |                          SLACK BOLT ENV VARS                               |
+# ------------------------------------------------------------------------------
+# You need to use the following vars when SDM_BOT_PLATFORM var is "slack":
+
+# SLACK_APP_TOKEN=
+# SLACK_BOT_TOKEN=
+# SDM_ADMINS=@nickname
+
+# ------------------------------------------------------------------------------
+# |                         SLACK CLASSIC ENV VARS                             |
+# ------------------------------------------------------------------------------
+# You need to use the following vars when SDM_BOT_PLATFORM var is "slack-classic":
+
+# SLACK_TOKEN=
+# SDM_ADMINS=@nickname
+
+# ------------------------------------------------------------------------------
+# |                            MS-TEAMS ENV VARS                               |
+# ------------------------------------------------------------------------------
+# You need to use the following vars when SDM_BOT_PLATFORM var is "ms-teams":
+
+# SDM_ADMINS=user@email.com
+# AZURE_APP_ID=
+# AZURE_APP_PASSWORD=
+
+# ------------------------------------------------------------------------------
+# |                              OPTIONAL VARS                                 |
+# ------------------------------------------------------------------------------
+# See: docs/CONFIGURE_ACCESSBOT.md

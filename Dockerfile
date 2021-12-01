@@ -15,11 +15,11 @@ RUN pip install \
       -r requirements.txt
 RUN pip install errbot[slack]
 
-COPY data ./data
 COPY config.py .
 COPY errbot-slack-bolt-backend ./errbot-slack-bolt-backend
 COPY errbot-backend-botframework ./errbot-backend-botframework
 
+RUN mkdir ./data
 RUN mkdir -p plugins/sdm
 COPY plugins/sdm ./plugins/sdm/
 

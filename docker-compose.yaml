@@ -2,15 +2,9 @@ version: "3.9"
 services:
   accessbot:
     image: public.ecr.aws/strongdm/accessbot:latest
-    environment:
-      # IMPORTANT: Do not enclose values in double or single quotes 
+    env_file:
+      # You could use env-file.example as a reference
+      - env-file
+    ports:
+      - 3141:3141
 
-      # Required variables
-      - SLACK_APP_TOKEN=slack-app-token
-      - SLACK_BOT_TOKEN=slack-bot-token
-      - SDM_ADMINS=@slack-handle1 @slack-handle2 # use space for configuring multiple slack handles 
-      - SDM_API_ACCESS_KEY=sdm-api-acess-key
-      - SDM_API_SECRET_KEY=sdm-api-secret-key
-
-      # Optional variables
-      # See: docs/CONFIGURE_ACCESSBOT.md

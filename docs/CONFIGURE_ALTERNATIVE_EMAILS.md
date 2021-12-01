@@ -2,7 +2,7 @@
 
 You can make access requests using alternative emails. This functionality is specially helpful when you need to make access requests using a different email address than the one you have configured in your Slack Profile. 
 
-**_Custom profile fields are only available for Slack Business+ workspaces_**
+**_Custom profile fields are only available for Slack Business+ workspaces and Bolt API_**
 
 Follow these steps to configure in your Slack Workspace:
 

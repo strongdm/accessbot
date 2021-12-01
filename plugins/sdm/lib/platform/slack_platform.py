@@ -40,11 +40,8 @@ class SlackPlatform(BasePlatform):
     def clean_up_message(self, text):
         return text
 
-    def format_access_request_params(self, resource_name, sender_nick, request_id):
-        resource_name = r"\`" + resource_name + r"\`"
-        sender_nick = r"\`" + sender_nick + r"\`"
-        request_id = r"\`" + request_id + r"\`"
-        return resource_name, sender_nick, request_id
+    def format_access_request_params(self, resource_name, sender_nick):
+        return r"\`" + resource_name + r"\`", r"\`" + sender_nick + r"\`"
 
     def format_strikethrough(self, text):
         return r"~" + text + r"~"
