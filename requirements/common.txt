@@ -6,4 +6,4 @@ slack-bolt
 shortuuid
 fuzzywuzzy
 python-Levenshtein
-
+memoization
