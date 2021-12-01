@@ -3,14 +3,20 @@
 There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
-* **SLACK_APP_TOKEN**. Slack App-Level Token 
-* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
-* **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nicks. 
+* **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. For getting user nicks, you could use the command `whoami` or the [tools/get-slack-handle.py](../tools/get-slack-handle.py) script.
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
-_Note_: when SDM_BOT_PLATFORM is 'slack-classic', you need to set the following variable instead of **SLACK_APP_TOKEN** and **SLACK_BOT_TOKEN**:
-  - **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
+### Slack (SDM_BOT_PLATFORM='slack' / default)
+* **SLACK_APP_TOKEN**. Slack App-Level Token 
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
+
+### Slack Classic (SDM_BOT_PLATFORM='slack-classic')
+* **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
+
+### MS Teams (SDM_BOT_PLATFORM='ms-teams')
+* **AZURE_APP_ID**. Set to the **Microsoft App ID**
+* **AZURE_APP_PASSWORD**. Set to the **Secret Value** 
 
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO

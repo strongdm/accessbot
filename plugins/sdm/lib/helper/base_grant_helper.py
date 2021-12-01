@@ -66,7 +66,6 @@ class BaseGrantHelper(ABC):
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
         if not self.__needs_auto_approve(sdm_object) or self.__reached_max_auto_approve_uses(message.frm.person):
-            # TODO: ADD EXTRAS
             yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
             self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
             return
@@ -90,9 +89,9 @@ class BaseGrantHelper(ABC):
     def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message):
         team_admins = ", ".join(self.__bot.get_admins())
         operation_desc = self.get_operation_desc()
-        resource_name, sender_nick, request_id = self.__bot.format_access_request_params(resource_name, sender_nick, request_id)
-        yield f"Thanks {sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is {request_id}"
-        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {sender_nick} for {self.__grant_type.name} {resource_name}! To approve, enter: **yes** {request_id}", message)
+        formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
+        yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
+        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
 
     def __notify_admins(self, text, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

@@ -1,8 +1,5 @@
-# Create your set-env.sh or use the env vars in docker based on the examples
-# below.
-
-# Ps.: this file only has examples for the required variables. If you need to
-#      include some optional var, refer to doc files in the docs folder.
+# You can copy this file as "env-file" for your docker-compose
+# IMPORTANT: Do not enclose values in double or single quotes 
 
 # ------------------------------------------------------------------------------
 # |                           GENERAL ENV VARS                                 |
@@ -38,3 +35,8 @@ SDM_API_SECRET_KEY=
 # SDM_ADMINS=user@email.com
 # AZURE_APP_ID=
 # AZURE_APP_PASSWORD=
+
+# ------------------------------------------------------------------------------
+# |                              OPTIONAL VARS                                 |
+# ------------------------------------------------------------------------------
+# See: docs/CONFIGURE_ACCESSBOT.md

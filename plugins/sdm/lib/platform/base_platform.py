@@ -50,7 +50,7 @@ class BasePlatform(ABC):
         pass
 
     @abstractmethod
-    def format_access_request_params(self, resource_name, sender_nick, request_id):
+    def format_access_request_params(self, resource_name, sender_nick):
         pass
 
     @abstractmethod
