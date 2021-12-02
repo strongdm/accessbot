@@ -91,7 +91,11 @@ class BaseGrantHelper(ABC):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
         yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
+        if self.__has_active_admins():
+            self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
+        else:
+            self.__bot.log.error("There is no active SDM Admin user in Slack Workspace.")
+            raise Exception("There is no active Slack Admin to receive your request.")
 
     def __notify_admins(self, text, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
@@ -101,6 +105,7 @@ class BaseGrantHelper(ABC):
         for admin_id in self.__admin_ids:
             admin_id = self.__bot.get_rich_identifier(admin_id, message)
             self.__bot.send(admin_id, text)
+        
 
     def __get_account(self, message):
         sender_email = self.__bot.get_sender_email(message.frm)
@@ -113,3 +118,9 @@ class BaseGrantHelper(ABC):
         else:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s similar role found: %s", execution_id, self.__grant_type, str(similar_result))
             yield f"Did you mean \"{similar_result}\"?"
+
+    def __has_active_admins(self):
+        for admin_id in self.__admin_ids:
+            if not admin_id.is_deleted:
+                return True
+        return False
