@@ -105,7 +105,6 @@ class BaseGrantHelper(ABC):
         for admin_id in self.__admin_ids:
             admin_id = self.__bot.get_rich_identifier(admin_id, message)
             self.__bot.send(admin_id, text)
-        
 
     def __get_account(self, message):
         sender_email = self.__bot.get_sender_email(message.frm)
@@ -120,7 +119,10 @@ class BaseGrantHelper(ABC):
             yield f"Did you mean \"{similar_result}\"?"
 
     def __has_active_admins(self):
-        for admin_id in self.__admin_ids:
-            if not admin_id.is_deleted:
-                return True
+        try:
+            for admin_id in self.__admin_ids:
+                if not admin_id.is_deleted:
+                    return True
+        except:
+            return len(self.__admin_ids) > 0
         return False
