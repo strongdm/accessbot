@@ -9,7 +9,7 @@ class PollerHelper:
         for request_id in self.__bot.get_grant_request_ids():
             grant_request = self.__bot.get_grant_request(request_id)
             elapsed_time = time.time() - grant_request['timestamp']
-            if elapsed_time > self.__bot.config['ADMIN_TIMEOUT']:
+            if elapsed_time >= self.__bot.config['ADMIN_TIMEOUT']:
                 self.__bot.log.info("##SDM## Cleaning grant requests, stale request_id = %s", request_id)
                 self.__notify_grant_request_denied(grant_request)
                 self.__bot.remove_grant_request(request_id)

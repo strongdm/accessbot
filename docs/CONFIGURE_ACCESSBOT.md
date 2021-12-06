@@ -3,11 +3,20 @@
 There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
-* **SLACK_APP_TOKEN**. Slack App-Level Token 
-* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
 * **SDM_ADMINS**. List of SDM Platform Admins, format: `@usernick` (for slack). Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nick (slack handle). 
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
+
+### Slack (SDM_BOT_PLATFORM='slack' / default)
+* **SLACK_APP_TOKEN**. Slack App-Level Token 
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
+
+### Slack Classic (SDM_BOT_PLATFORM='slack-classic')
+* **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
+
+### MS Teams (SDM_BOT_PLATFORM='ms-teams')
+* **AZURE_APP_ID**. Set to the **Microsoft App ID**
+* **AZURE_APP_PASSWORD**. Set to the **Secret Value** 
 
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO
@@ -48,6 +57,7 @@ See image below for more information:
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
 
 ### Using Tags
+A snippet that might help:
 
 #### Allow Resource
 ```

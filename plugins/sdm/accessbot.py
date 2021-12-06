@@ -238,8 +238,8 @@ class AccessBot(BotPlugin):
     def clean_up_message(self, message):
         return self._platform.clean_up_message(message)
 
-    def format_access_request_params(self, resource_name, sender_nick, request_id):
-        return self._platform.format_access_request_params(resource_name, sender_nick, request_id)
+    def format_access_request_params(self, resource_name, sender_nick):
+        return self._platform.format_access_request_params(resource_name, sender_nick)
 
     def format_strikethrough(self, text):
         return self._platform.format_strikethrough(text)
