@@ -3,7 +3,7 @@
 There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
-* **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. For getting user nicks, you could use the command `whoami` or the [tools/get-slack-handle.py](../tools/get-slack-handle.py) script.
+* **SDM_ADMINS**. List of SDM Platform Admins, format: `@usernick` (for slack). Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nick (slack handle). 
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
 
