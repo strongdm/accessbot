@@ -160,22 +160,17 @@ class Test_get_all_resources:
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
-    def test_with_filters(self, client, service):
+    def test_with_filter(self, client, service):
         client.resources.list = MagicMock(side_effect = filter_resources)
-        sdm_resources = service.get_all_resources(filters = "name:resource1")
+        sdm_resources = service.get_all_resources(filter = "name:resource1")
         assert len(sdm_resources) == 1
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
-    def test_no_resources_with_filters(self, client, service):
+    def test_no_resources_with_filter(self, client, service):
         client.resources.list = MagicMock(side_effect = filter_resources)
-        sdm_resources = service.get_all_resources(filters = "name:resource2")
+        sdm_resources = service.get_all_resources(filter = "name:resource2")
         assert len(sdm_resources) == 0
-
-    def test_fail_with_wrong_filters(self, client, service):
-        client.resources.list = MagicMock(side_effect = filter_resources)
-        with pytest.raises(Exception):
-            service.get_all_resources(filters = "name=resource1")
 
 
 class Test_get_all_resources_by_role:
@@ -197,12 +192,12 @@ class Test_get_all_resources_by_role:
         client.roles.list.assert_called_with(('name:"role_name"'))
         assert str(ex.value) != ""
 
-    def test_with_filters(self, client, service):
+    def test_with_filter(self, client, service):
         client.roles.list = MagicMock(return_value = get_role_iter())
         client.role_grants.list = MagicMock(return_value = get_role_grant_iter())
         client.resources.list = MagicMock(side_effect = filter_resources)
 
-        sdm_resources = service.get_all_resources_by_role("role_name", filters = f"name:{resource_name}")
+        sdm_resources = service.get_all_resources_by_role("role_name", filter = f"name:{resource_name}")
 
         client.roles.list.assert_called_with(('name:"role_name"'))
         client.role_grants.list.assert_called_with("role_id:111")
@@ -211,23 +206,18 @@ class Test_get_all_resources_by_role:
         assert sdm_resources[0].id == resource_id
         assert sdm_resources[0].name == resource_name
 
-    def test_no_resources_with_filters(self, client, service):
+    def test_no_resources_with_filter(self, client, service):
         nonexistent_resource = 'resource2'
 
         client.roles.list = MagicMock(return_value = get_role_iter())
         client.role_grants.list = MagicMock(return_value = get_role_grant_iter())
         client.resources.list = MagicMock(side_effect = filter_resources)
 
-        sdm_resources = service.get_all_resources_by_role("role_name", filters = f"name:{nonexistent_resource}")
+        sdm_resources = service.get_all_resources_by_role("role_name", filter = f"name:{nonexistent_resource}")
         client.roles.list.assert_called_with(('name:"role_name"'))
         client.role_grants.list.assert_called_with("role_id:111")
         client.resources.list.assert_called_with(f"id:1,id:2,name:{nonexistent_resource}")
         assert len(sdm_resources) == 0
-
-    def test_fail_with_wrong_filters(self, client, service):
-        client.resources.list = MagicMock(side_effect = filter_resources)
-        with pytest.raises(Exception):
-            service.get_all_resources_by_role("role_name", filters = "name=resource1")
 
 class Test_get_role_by_name:
     def test_when_resource_exists_returns_role(self, client, service):
@@ -303,12 +293,9 @@ def get_role_grant_iter():
     mock_role_grant2.resource_id = 2
     return iter([mock_role_grant1, mock_role_grant2])
 
-def filter_resources(filters = ''):
-    if '=' in filters:
-        raise Exception('You must use semicolon ":" instead of equal "=" sign.')
-    resources = get_resource_list_iter()
+def filter_resources(filter = ''):
     return [
         resource
-        for resource in resources
-        if not filters or resource.name in filters
+        for resource in get_resource_list_iter()
+        if not filter or resource.name in filter
     ]

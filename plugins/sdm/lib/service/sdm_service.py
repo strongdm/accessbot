@@ -83,17 +83,17 @@ class SdmService:
         except Exception as ex:
             raise Exception("Grant failed: " + str(ex)) from ex
 
-    def get_all_resources(self, filters = ''):
+    def get_all_resources(self, filter = ''):
         """
         Return all resources
         """
         self.__log.debug("##SDM## SdmService.get_all_resources")
         try:
-            return self.remove_none_values(self.__client.resources.list(filters))
+            return self.remove_none_values(self.__client.resources.list(filter))
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
 
-    def get_all_resources_by_role(self, role_name, filters = ''):
+    def get_all_resources_by_role(self, role_name, filter = ''):
         """
         Return all resources by role name
         """
@@ -102,8 +102,8 @@ class SdmService:
             sdm_role = self.get_role_by_name(role_name)
             sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
             resources_filter = ",".join([f"id:{rg.resource_id}" for rg in sdm_role_grants])
-            if filters:
-                resources_filter += f",{filters}"
+            if filter:
+                resources_filter += f",{filter}"
             return self.remove_none_values(self.__client.resources.list(resources_filter))
         except Exception as ex:
             raise Exception("List resources by role failed: " + str(ex)) from ex

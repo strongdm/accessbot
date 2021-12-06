@@ -8,15 +8,15 @@ class ShowResourcesHelper(BaseShowHelper):
         self.__sdm_service = bot.get_sdm_service()
         super().__init__("resources")
 
-    def get_list(self, filters = None):
+    def get_list(self, filter):
         role_name = self.__bot.config["CONTROL_RESOURCES_ROLE_NAME"]
         if role_name is not None:
-            resources = self.__sdm_service.get_all_resources_by_role(role_name, filters = filters)
+            resources = self.__sdm_service.get_all_resources_by_role(role_name, filter = filter)
         else:
-            resources = self.__sdm_service.get_all_resources(filters = filters)
+            resources = self.__sdm_service.get_all_resources(filter = filter)
         return self.__filter_resources(resources)
 
-    def get_line(self, item, message = ''):
+    def get_line(self, item, message):
         if self.is_auto_approve(item):
             return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
         return f"* {item.name} (type: {type(item).__name__})\n"

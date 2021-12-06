@@ -26,18 +26,22 @@ class Test_show_resources:
         assert "Bbb (type: DummyResource)" in message
 
     def test_show_resources_command_with_filters(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources --filter 'name:Aaa'")
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        sdm_service_mock = accessbot.get_sdm_service.return_value
+        sdm_service_mock.get_all_resources.return_value = [DummyResource("Aaa", {})]
+        mocked_testbot.push_message("show available resources --filter name:Aaa")
         message = mocked_testbot.pop_message()
+        sdm_service_mock.get_all_resources.assert_called_with(filter = 'name:Aaa')
         assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" not in message
 
-    def test_show_resources_command_with_wrong_filters(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources --filter 'name=Aaa'")
-        assert "must use semicolon" in mocked_testbot.pop_message()
-
     def test_show_resources_command_with_filters_and_no_resources(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources --filter 'name:Ccc'")
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        sdm_service_mock = accessbot.get_sdm_service.return_value
+        sdm_service_mock.get_all_resources.return_value = []
+        mocked_testbot.push_message("show available resources --filter name:Ccc")
         message = mocked_testbot.pop_message()
+        sdm_service_mock.get_all_resources.assert_called_with(filter = 'name:Ccc')
         assert "no available resources" in message
         assert "Aaa (type: DummyResource)" not in message
         assert "Bbb (type: DummyResource)" not in message
@@ -112,14 +116,22 @@ class Test_show_resources_by_role:
         assert "Bbb in role (type: DummyResource)" in message
 
     def test_show_resources_command_with_filter(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources --filter 'name:Aaa in role'")
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        sdm_service_mock = accessbot.get_sdm_service.return_value
+        sdm_service_mock.get_all_resources_by_role.return_value = [DummyResource("Aaa in role", {})]
+        mocked_testbot.push_message("show available resources --filter name:Aaa in role")
         message = mocked_testbot.pop_message()
+        sdm_service_mock.get_all_resources_by_role.assert_called_with('myrole', filter = 'name:Aaa in role')
         assert "Aaa in role (type: DummyResource)" in message
         assert "Bbb in role (type: DummyResource)" not in message
 
     def test_show_resources_command_with_filters_and_no_resources(self, mocked_testbot):
-        mocked_testbot.push_message("show available resources --filter 'name:Ccc'")
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        sdm_service_mock = accessbot.get_sdm_service.return_value
+        sdm_service_mock.get_all_resources_by_role.return_value = []
+        mocked_testbot.push_message("show available resources --filter name:Ccc")
         message = mocked_testbot.pop_message()
+        sdm_service_mock.get_all_resources_by_role.assert_called_with('myrole', filter = 'name:Ccc')
         assert "no available resources" in message
         assert "Aaa in role (type: DummyResource)" not in message
         assert "Bbb in role (type: DummyResource)" not in message
@@ -141,28 +153,7 @@ def inject_mocks(testbot, config, resources = default_dummy_resources(), resourc
 
 def create_sdm_service_mock(resources, resources_by_role):
     service_mock = MagicMock()
-    service_mock.get_all_resources = MagicMock(side_effect = get_filter_resources_func(resources))
-    service_mock.get_all_resources_by_role = MagicMock(side_effect = get_filter_resources_by_role_func(resources_by_role))
+    service_mock.get_all_resources = MagicMock(return_value = resources)
+    service_mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
     return service_mock
 
-def get_filter_resources_func(resources):
-    def filter_resources(filters = ''):
-        if filters and '=' in filters:
-            raise Exception('You must use semicolon ":" instead of equal "=" sign.')
-        return [
-            resource
-            for resource in resources
-            if not filters or resource.name in filters
-        ]
-    return filter_resources
-
-def get_filter_resources_by_role_func(resources):
-    def filter_resources(name, filters = ''):
-        if filters and '=' in filters:
-            raise Exception('You must use semicolon ":" instead of equal "=" sign.')
-        return [
-            resource
-            for resource in resources
-            if not filters or resource.name in filters
-        ]
-    return filter_resources
