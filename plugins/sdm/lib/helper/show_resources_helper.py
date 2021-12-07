@@ -32,6 +32,6 @@ class ShowResourcesHelper(BaseShowHelper):
             resource
             for resource in resources
             if not is_hidden(self.__bot.config, HiddenTagEnum.RESOURCE, resource)
-            and is_allowed(self.__bot.config, AllowedTagEnum.RESOURCE, resource)
             and not is_concealed(self.__bot.config, resource)
+            and is_allowed(self.__bot.config, AllowedTagEnum.RESOURCE, resource)
         ]
