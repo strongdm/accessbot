@@ -33,7 +33,8 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
 * **SDM_AUTO_APPROVE_ROLE_TAG**. Tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Default = None
 * **SDM_ALLOW_RESOURCE_TAG**. Tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Default = None ([see below](#using-tags) for more info about using tags)
-* **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hidden resources. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
+* **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
+* **SDM_CONCEAL_RESOURCE_TAG**. Tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Default = None
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Default = None

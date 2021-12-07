@@ -202,6 +202,33 @@ class Test_hide_resource_tag:
         assert "access request" in mocked_testbot_hide_false.pop_message()
         assert "Granting" in mocked_testbot_hide_false.pop_message()
 
+class Test_conceal_resource_tag:
+    @pytest.fixture
+    def mocked_testbot_conceal_true(self, testbot):
+        config = create_config()
+        config['CONCEAL_RESOURCE_TAG'] = "conceal-resource"
+        return inject_config(testbot, config, tags = {'conceal-resource': True})
+
+    @pytest.fixture
+    def mocked_testbot_conceal_false(self, testbot):
+        config = create_config()
+        config['CONCEAL_RESOURCE_TAG'] = "conceal-resource"
+        return inject_config(testbot, config, tags = {'conceal-resource': False})
+
+    def test_access_command_fail_for_hidden_resources(self, mocked_testbot_conceal_true):
+        push_access_request(mocked_testbot_conceal_true)
+        mocked_testbot_conceal_true.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_conceal_true.pop_message()
+        assert "access request" in mocked_testbot_conceal_true.pop_message()
+        assert "Granting" in mocked_testbot_conceal_true.pop_message()
+
+    def test_access_command_grant_when_conceal_resource_is_false(self, mocked_testbot_conceal_false):
+        push_access_request(mocked_testbot_conceal_false)
+        mocked_testbot_conceal_false.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_conceal_false.pop_message()
+        assert "access request" in mocked_testbot_conceal_false.pop_message()
+        assert "Granting" in mocked_testbot_conceal_false.pop_message()
+
 class Test_grant_timeout:
     @pytest.fixture
     def mocked_testbot(self, testbot):
