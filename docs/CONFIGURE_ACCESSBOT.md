@@ -3,11 +3,20 @@
 There are a number of variables you can use for configuring AccessBot.
 
 ## Required configuration
-* **SLACK_APP_TOKEN**. Slack App-Level Token 
-* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
-* **SDM_ADMINS**. List of Slack admins, format: `@usernick`. Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nicks. 
+* **SDM_ADMINS**. List of SDM Platform Admins, format: `@usernick` (for slack). Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nick (slack handle). 
 * **SDM_API_ACCESS_KEY**. SDM API Access Key
 * **SDM_API_SECRET_KEY**. SDM API Access Key Secret
+
+### Slack (SDM_BOT_PLATFORM='slack' / default)
+* **SLACK_APP_TOKEN**. Slack App-Level Token 
+* **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
+
+### Slack Classic (SDM_BOT_PLATFORM='slack-classic')
+* **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
+
+### MS Teams (SDM_BOT_PLATFORM='ms-teams')
+* **AZURE_APP_ID**. Set to the **Microsoft App ID**
+* **AZURE_APP_PASSWORD**. Set to the **Secret Value** 
 
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO
@@ -33,6 +42,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enabling fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
 * **SDM_EMAIL_SLACK_FIELD**. Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
+* **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Default = None
 
 See image below for more information:
 
@@ -48,6 +58,7 @@ See image below for more information:
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
 
 ### Using Tags
+A snippet that might help:
 
 #### Allow Resource
 ```

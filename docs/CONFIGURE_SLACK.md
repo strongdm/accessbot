@@ -35,3 +35,7 @@ NOTE: Use scope: `connections:write`
 ![image](https://user-images.githubusercontent.com/313803/128014877-911f5ef0-c766-43d1-8f30-6a66abc5e4e2.png)
 
 **Use "App-Level Token" for _SLACK_APP_TOKEN_ and "Bot User OAuth Token" for _SLACK_BOT_TOKEN_ variables**
+
+## Implementation details
+
+* Slack Bolt API imposes a rate limit. For that reason, users and channels are cached for 4 hours. If a user or channel is not found in the cache, the bot recreates the cache once.
