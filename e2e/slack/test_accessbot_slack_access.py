@@ -387,6 +387,32 @@ class Test_override_email:
         assert "Granting" in granting_message
         assert self.override_email in granting_message
 
+class Test_email_subaddress:
+    account_name_with_subaddress = 'myaccount+stable@test.com'
+    email_subaddress = 'stable'
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['SENDER_EMAIL_OVERRIDE'] = None
+        config['SENDER_NICK_OVERRIDE'] = None
+        config['EMAIL_SUBADDRESS'] = self.email_subaddress
+        return inject_config(testbot, config, admins=[f'@{account_name}'])
+
+    def test_email_subaddress(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            from_email=account_name,
+            from_nick=account_name
+        ))
+        push_access_request(mocked_testbot)
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        granting_message = mocked_testbot.pop_message()
+        assert "Granting" in granting_message
+        assert self.account_name_with_subaddress in granting_message
+
 class Test_custom_resource_grant_timeout:
     timeout = 1
 

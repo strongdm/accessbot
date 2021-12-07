@@ -23,7 +23,8 @@ def create_config():
         'USER_ROLES_TAG': None,
         'ENABLE_RESOURCES_FUZZY_MATCHING': True,
         'RESOURCE_GRANT_TIMEOUT_TAG': None,
-        'EMAIL_SLACK_FIELD': None
+        'EMAIL_SLACK_FIELD': None,
+        'EMAIL_SUBADDRESS': None
     }
 
 class DummyAccount:
@@ -80,13 +81,14 @@ def send_message_override(bot, raw_messages):
         bot.outgoing_message_queue.put(bot.md.convert(msg.body))
     return sm
 
-def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False):
+def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None):
     def callback_message(msg):
         frm = msg.frm
         if approver_is_admin and "yes" in msg.body:
             frm._email = admin_default_email
         else:
             frm._email = from_email
+            frm._nick = from_nick
         msg = Message(
             body=msg.body,
             frm=frm,

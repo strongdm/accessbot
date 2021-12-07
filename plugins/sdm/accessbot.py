@@ -191,7 +191,11 @@ class AccessBot(BotPlugin):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         if override:
             return override
-        return self._platform.get_sender_email(sender)
+        sender_email = self._platform.get_sender_email(sender)
+        sdm_email_subaddress = self.config['EMAIL_SUBADDRESS']
+        if sdm_email_subaddress:
+            return sender_email.replace('@', f'+{sdm_email_subaddress}@')
+        return sender_email
 
     def get_user_nick(self, user):
         return self._platform.get_user_nick(user)

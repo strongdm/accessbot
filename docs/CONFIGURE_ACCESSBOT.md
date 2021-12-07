@@ -42,6 +42,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Tag to be used for enabling fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
 * **SDM_EMAIL_SLACK_FIELD**. Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
+* **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Default = None
 
 See image below for more information:
 
