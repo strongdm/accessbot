@@ -151,31 +151,53 @@ class Test_auto_approve_tag:
         return inject_config(testbot, config, tags = {'auto-approve': True})
 
     @pytest.fixture
-    def mocked_testbot_with_group(self, testbot):
+    def mocked_testbot_account_with_group(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_TAG'] = "auto-approve"
         config['GROUPS_TAG'] = "groups"
         return inject_config(testbot, config, tags = {'auto-approve': 'test-group'}, account_tags={'groups': 'test-group'})
 
     @pytest.fixture
-    def mocked_testbot_with_another_group(self, testbot):
+    def mocked_testbot_account_with_multiple_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_TAG'] = "auto-approve"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags = {'auto-approve': 'test-group'}, account_tags={'groups': 'another-group,test-group'})
+
+    @pytest.fixture
+    def mocked_testbot_with_different_groups(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_TAG'] = "auto-approve"
         config['GROUPS_TAG'] = "groups"
         return inject_config(testbot, config, tags = {'auto-approve': 'another-group'}, account_tags={'groups': 'test-group'})
 
+    @pytest.fixture
+    def mocked_testbot_resource_with_multiple_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_TAG'] = "auto-approve"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags = {'auto-approve': 'another-group,test-group'}, account_tags={'groups': 'test-group'})
+
     def test_access_command_grant_auto_approve_for_tagged_resource(self, mocked_testbot):
         push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
 
-    def test_access_command_grant_auto_approve_for_tagged_resource_with_group(self, mocked_testbot_with_group):
-        push_access_request(mocked_testbot_with_group)
-        assert "Granting" in mocked_testbot_with_group.pop_message()
+    def test_access_command_grant_auto_approve_for_tagged_resource_with_group(self, mocked_testbot_account_with_group):
+        push_access_request(mocked_testbot_account_with_group)
+        assert "Granting" in mocked_testbot_account_with_group.pop_message()
 
-    def test_access_command_grant_without_auto_approve_for_tagged_resource_with_group(self, mocked_testbot_with_another_group):
-        push_access_request(mocked_testbot_with_another_group)
-        assert "valid request" in mocked_testbot_with_another_group.pop_message()
-        assert "access request" in mocked_testbot_with_another_group.pop_message()
+    def test_access_command_grant_auto_approve_for_account_with_multiple_groups(self, mocked_testbot_account_with_multiple_groups):
+        push_access_request(mocked_testbot_account_with_multiple_groups)
+        assert "Granting" in mocked_testbot_account_with_multiple_groups.pop_message()
+
+    def test_access_command_grant_auto_approve_for_resource_with_multiple_groups(self, mocked_testbot_resource_with_multiple_groups):
+        push_access_request(mocked_testbot_resource_with_multiple_groups)
+        assert "Granting" in mocked_testbot_resource_with_multiple_groups.pop_message()
+
+    def test_access_command_grant_without_auto_approve_for_tagged_resource_with_group(self, mocked_testbot_with_different_groups):
+        push_access_request(mocked_testbot_with_different_groups)
+        assert "valid request" in mocked_testbot_with_different_groups.pop_message()
+        assert "access request" in mocked_testbot_with_different_groups.pop_message()
 
 class Test_allow_resource_tag:
     @pytest.fixture

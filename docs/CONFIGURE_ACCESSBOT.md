@@ -29,7 +29,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Default = None (_useful for testing_)
 * **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Default = None (_useful for testing_)
 * **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
-* **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Default = None
+* **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. Its value should be `true` or a list of users groups, separated by commas, that can be auto-approved (for this you also need to configure the SDM_GROUPS_TAG var). The tag value is not ignored, delete tag or set it false to disable. Default = None
 * **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
 * **SDM_AUTO_APPROVE_ROLE_TAG**. Tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Default = None
 * **SDM_ALLOW_RESOURCE_TAG**. Tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Default = None ([see below](#using-tags) for more info about using tags)
@@ -43,6 +43,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
 * **SDM_EMAIL_SLACK_FIELD**. Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Default = None
+* **SDM_GROUPS_TAG**. Tag to be used for specifying the SDM user tag which stores its groups. Default = None
 
 See image below for more information:
 

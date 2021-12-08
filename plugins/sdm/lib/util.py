@@ -32,9 +32,11 @@ def can_auto_approve_by_tag(config, sdm_object, tag_key, sdm_account):
 
 def can_auto_approve_by_groups_tag(config, auto_approve_tag_key, sdm_object, sdm_account):
     auto_approve_groups = str(sdm_object.tags.get(config[auto_approve_tag_key])).lower().strip().split(',')
-    user_groups = sdm_account.tags[config['GROUPS_TAG']].split(',') if sdm_account.tags else []
     if 'true' in auto_approve_groups:
         return True
+    if sdm_account.tags.get(config['GROUPS_TAG']) is None:
+        return False
+    user_groups = sdm_account.tags[config['GROUPS_TAG']].split(',') if sdm_account.tags else []
     for user_group in user_groups:
         if user_group in auto_approve_groups:
             return True
