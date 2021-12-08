@@ -19,12 +19,25 @@ class ShowResourcesHelper(BaseShowHelper):
     def get_line(self, item, message):
         if self.is_auto_approve(item):
             return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
-        return f"* {item.name} (type: {type(item).__name__})\n"
+        details = [f'type: {type(item).__name__}']
+        if self.has_auto_approve_groups(item):
+            details.append(f'auto-approve: "{item.tags[self.__bot.config["AUTO_APPROVE_TAG"]]}"')
+        return f"* {item.name} ({', '.join(details)})\n"
 
     def is_auto_approve(self, item):
         return (
             self.__bot.config["AUTO_APPROVE_TAG"] is not None
             and self.__bot.config["AUTO_APPROVE_TAG"] in item.tags
+            and 'true' in item.tags[self.__bot.config["AUTO_APPROVE_TAG"]]
+        )
+
+    def has_auto_approve_groups(self, item):
+        return (
+            self.__bot.config["AUTO_APPROVE_TAG"] is not None
+            and self.__bot.config["GROUPS_TAG"] is not None
+            and self.__bot.config["AUTO_APPROVE_TAG"] in item.tags
+            and item.tags[self.__bot.config["AUTO_APPROVE_TAG"]] is not None
+            and len(str(item.tags[self.__bot.config["AUTO_APPROVE_TAG"]]))
         )
 
     def __filter_resources(self, resources):

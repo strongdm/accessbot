@@ -1,4 +1,5 @@
 from errbot import Message
+from errbot.backends.test import TestPerson
 from errbot.core import ErrBot
 
 admin_default_email = 'gbin@localhost'
@@ -24,13 +25,23 @@ def create_config():
         'ENABLE_RESOURCES_FUZZY_MATCHING': True,
         'RESOURCE_GRANT_TIMEOUT_TAG': None,
         'EMAIL_SLACK_FIELD': None,
-        'EMAIL_SUBADDRESS': None
+        'EMAIL_SUBADDRESS': None,
+        'GROUPS_TAG': None
     }
 
 class DummyAccount:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
+
+class DummyPerson(TestPerson):
+    def __init__(self, person, client=None, nick=None, fullname=None, email=None, tags={}):
+        super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
+        self._tags = tags
+
+    @property
+    def tags(self):
+        return self._tags
 
 class DummyResource:
     def __init__(self, name, tags):
@@ -49,7 +60,7 @@ class DummyConversation:
     @property
     def data(self):
         return self._request
-    
+
     @property
     def conversation_id(self):
         return self.conversation['id']
@@ -81,7 +92,7 @@ def send_message_override(bot, raw_messages):
         bot.outgoing_message_queue.put(bot.md.convert(msg.body))
     return sm
 
-def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None):
+def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, tags={}):
     def callback_message(msg):
         frm = msg.frm
         if approver_is_admin and "yes" in msg.body:
@@ -89,9 +100,10 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
         else:
             frm._email = from_email
             frm._nick = from_nick
+            frm.tags = tags
         msg = Message(
             body=msg.body,
-            frm=frm,
+            frm=DummyPerson(frm.person, client=frm.client, nick=frm.nick, fullname=frm.fullname, email=frm.email, tags=tags),
             to=msg.to,
             parent=msg.parent,
             extras={

@@ -12,6 +12,7 @@ from lib import ShowResourcesHelper
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = "plugins/sdm"
 account_name = "myaccount@test.com"
+auto_approve_group = "test-group"
 
 class Test_show_resources:
     @pytest.fixture
@@ -138,9 +139,26 @@ class Test_show_resources_by_role:
         assert "Aaa in role (type: DummyResource)" not in message
         assert "Bbb in role (type: DummyResource)" not in message
 
+class Test_show_auto_approve_resources:
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_TAG'] = "auto-approve"
+        config['GROUPS_TAG'] = "groups"
+        return inject_mocks(testbot, config, resources=dummy_auto_approve_resources())
+
+    def test_with_groups(self, mocked_testbot):
+        mocked_testbot.push_message("show available resources")
+        message = mocked_testbot.pop_message()
+        assert "Aaa (type: DummyResource)" in message
+        assert f'Bbb (type: DummyResource, auto-approve: "{auto_approve_group}")' in message
+
 
 def default_dummy_resources():
     return [ DummyResource("Bbb", {}), DummyResource("Aaa", {}) ]
+
+def dummy_auto_approve_resources():
+    return [ DummyResource("Bbb", {'auto-approve': auto_approve_group}), DummyResource("Aaa", {}) ]
 
 # pylint: disable=dangerous-default-value
 def inject_mocks(testbot, config, resources = default_dummy_resources(), resources_by_role = []):

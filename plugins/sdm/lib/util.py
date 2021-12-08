@@ -22,11 +22,23 @@ def is_allowed(config, allowed_tag_enum, sdm_entity):
         or (allowed_entity_tag in sdm_entity.tags and (sdm_entity.tags.get(allowed_entity_tag) is None
             or str(sdm_entity.tags.get(allowed_entity_tag)).lower().strip() != 'false'))
 
-def can_auto_approve_by_tag(config, sdm_object, tag_key):
+def can_auto_approve_by_tag(config, sdm_object, tag_key, sdm_account):
     auto_approve_by_tag = config[tag_key]
     return auto_approve_by_tag and \
             auto_approve_by_tag in sdm_object.tags and \
-            (sdm_object.tags.get(auto_approve_by_tag) is None or str(sdm_object.tags.get(auto_approve_by_tag)).lower().strip() != 'false')
+            (sdm_object.tags.get(auto_approve_by_tag) is None
+             or not len(str(sdm_object.tags.get(auto_approve_by_tag)))
+             or can_auto_approve_by_groups_tag(config, tag_key, sdm_object, sdm_account))
+
+def can_auto_approve_by_groups_tag(config, auto_approve_tag_key, sdm_object, sdm_account):
+    auto_approve_groups = str(sdm_object.tags.get(config[auto_approve_tag_key])).lower().strip().split(',')
+    user_groups = sdm_account.tags[config['GROUPS_TAG']].split(',') if sdm_account.tags else []
+    if 'true' in auto_approve_groups:
+        return True
+    for user_group in user_groups:
+        if user_group in auto_approve_groups:
+            return True
+    return False
 
 def fuzzy_match(term_list, searched_term):
     names = [item.name for item in term_list]

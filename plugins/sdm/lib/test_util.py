@@ -1,9 +1,13 @@
 # pylint: disable=invalid-name
-
+import sys
 from unittest.mock import MagicMock
+import pytest
 from strongdm import Postgres, Role
 
+sys.path.append('e2e/')
+
 from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed
+from test_common import DummyPerson
 
 
 class Test_is_hidden_resource:
@@ -100,32 +104,31 @@ class Test_is_hidden_role:
         assert not is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
 
 class Test_can_auto_approve_by_tag:
-    def test_auto_approve_when_tag_true(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
+
+    @pytest.fixture
+    def test_person(self):
+        return DummyPerson('@test', tags={'groups': 'test-group'})
+
+    def test_auto_approve_when_tag_true(self, test_person):
+        config = {'AUTO_APPROVE_TAG': 'auto-approve', 'GROUPS_TAG': 'groups'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'auto-approve': 'true'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
+        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG', test_person)
 
-    def test_dont_auto_approve_when_tag_false(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
+    def test_dont_auto_approve_when_tag_false(self, test_person):
+        config = {'AUTO_APPROVE_TAG': 'auto-approve', 'GROUPS_TAG': 'groups'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'auto-approve': 'false'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG') is False
+        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG', test_person) is False
 
-    def test_auto_approve_when_tag_have_no_value(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
+    def test_auto_approve_when_tag_have_no_value(self, test_person):
+        config = {'AUTO_APPROVE_TAG': 'auto-approve', 'GROUPS_TAG': 'groups'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'auto-approve': None}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
+        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG', test_person)
 
-    def test_auto_approve_when_tag_have_unexpected_value(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': 'not-a-boolean'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
-
-    def test_dont_auto_approve_when_tag_doesnt_exist(self):
-        config = {'AUTO_APPROVE_TAG': 'another-tag'}
+    def test_dont_auto_approve_when_tag_doesnt_exist(self, test_person):
+        config = {'AUTO_APPROVE_TAG': 'another-tag', 'GROUPS_TAG': 'groups'}
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'auto-approve': 'true'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG') is False
+        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG', test_person) is False
