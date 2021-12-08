@@ -6,7 +6,7 @@ from strongdm import Postgres, Role
 
 sys.path.append('e2e/')
 
-from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed
+from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed, is_concealed
 from test_common import DummyPerson
 
 
@@ -71,6 +71,38 @@ class Test_is_allowed_resource:
         sdm_resource = MagicMock(spec = Postgres)
         sdm_resource.tags = {'allow-resource': 'true'}
         assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
+
+
+class Test_is_concealed_resource:
+    def test_conceal_resource_when_tag_true(self):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        sdm_resource = MagicMock(spec = Postgres)
+        sdm_resource.tags = {'conceal-resource': 'true'}
+        assert is_concealed(config, sdm_resource)
+
+    def test_dont_conceal_resource_when_tag_false(self):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        sdm_resource = MagicMock(spec = Postgres)
+        sdm_resource.tags = {'conceal-resource': 'false'}
+        assert is_concealed(config, sdm_resource) is False
+
+    def test_conceal_resource_when_tag_have_no_value(self):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        sdm_resource = MagicMock(spec = Postgres)
+        sdm_resource.tags = {'conceal-resource': None}
+        assert is_concealed(config, sdm_resource)
+
+    def test_conceal_resource_when_tag_have_unexpected_value(self):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        sdm_resource = MagicMock(spec = Postgres)
+        sdm_resource.tags = {'conceal-resource': 'not-a-boolean'}
+        assert is_concealed(config, sdm_resource)
+
+    def test_dont_conceal_resource_when_tag_doesnt_exist(self):
+        config = {'CONCEAL_RESOURCE_TAG': 'another-tag'}
+        sdm_resource = MagicMock(spec = Postgres)
+        sdm_resource.tags = {'conceal-resource': 'true'}
+        assert is_concealed(config, sdm_resource) is False
 
 class Test_is_hidden_role:
     def test_hide_role_when_tag_true(self):

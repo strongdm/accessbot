@@ -15,6 +15,7 @@ def create_config():
         'AUTO_APPROVE_ROLE_TAG': None,
         'ALLOW_RESOURCE_TAG': None,
         'HIDE_RESOURCE_TAG': None,
+        'CONCEAL_RESOURCE_TAG': None,
         'HIDE_ROLE_TAG': None,
         'GRANT_TIMEOUT': 60,
         'CONTROL_RESOURCES_ROLE_NAME': None,
