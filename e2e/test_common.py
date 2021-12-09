@@ -1,5 +1,6 @@
 from errbot import Message
 from errbot.core import ErrBot
+from errbot.backends.test import TestPerson
 
 admin_default_email = 'gbin@localhost'
 
@@ -70,6 +71,15 @@ class DummyConversation:
             self.conversation_id,
             self.activity_id
         )
+
+class DummyPerson(TestPerson):
+    def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
+        super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
+        self._is_deleted = is_deleted
+
+    @property
+    def is_deleted(self):
+        return self._is_deleted
 
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):

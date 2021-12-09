@@ -60,3 +60,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def get_rich_identifier(self, identifier, message):
         pass
+
+    @abstractmethod
+    def channel_is_reachable(self, channel):
+        pass

@@ -64,13 +64,15 @@ class BaseGrantHelper(ABC):
         sender_nick = self.__bot.get_sender_nick(message.frm)
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
-        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
-        if not self.__needs_auto_approve(sdm_object) or self.__reached_max_auto_approve_uses(message.frm.person):
-            yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
-            self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
+        if self.__needs_auto_approve(sdm_object) and not self.__reached_max_auto_approve_uses(message.frm.person):
+            self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+            self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
+            yield from self.__bot.get_approve_helper().approve(request_id, True)
             return
-        self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
-        yield from self.__bot.get_approve_helper().approve(request_id, True)
+        self.__check_administration_availability()
+        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
+        self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
     def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id):
         self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
@@ -91,11 +93,7 @@ class BaseGrantHelper(ABC):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
         yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        if self.__has_active_admins():
-            self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
-        else:
-            self.__bot.log.error("There is no active SDM Admin user in Slack Workspace.")
-            raise Exception("There is no active Slack Admin to receive your request.")
+        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
 
     def __notify_admins(self, text, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
@@ -117,6 +115,14 @@ class BaseGrantHelper(ABC):
         else:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s similar role found: %s", execution_id, self.__grant_type, str(similar_result))
             yield f"Did you mean \"{similar_result}\"?"
+
+    def __check_administration_availability(self):
+        if not self.__has_active_admins():
+            self.__bot.log.error("There is no active SDM Admin user in Slack Workspace.")
+            raise Exception("There is no active Slack Admin to receive your request.")
+        if self.__bot.config['ADMINS_CHANNEL'] and not self.__bot.channel_is_reachable(self.__bot.config['ADMINS_CHANNEL']):
+            self.__bot.log.error("The Channel defined as Admin Channel is unreachable. Probably it's archived.")
+            raise Exception("An Admin Channel was defined but it's unreachable.")
 
     def __has_active_admins(self):
         try:

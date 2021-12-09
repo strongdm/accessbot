@@ -70,3 +70,6 @@ class MSTeamsPlatform(BasePlatform):
         conversation = message.extras.get('conversation')
         if not conversation or not conversation.data['channelData'].get('team'):
             raise Exception("You cannot execute this command via DM. Please, send a message via a team's channel.")
+
+    def channel_is_reachable(self, channel):
+        return True
