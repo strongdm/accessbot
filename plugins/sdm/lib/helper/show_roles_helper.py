@@ -7,7 +7,7 @@ class ShowRolesHelper(BaseShowHelper):
         self.__sdm_service = bot.get_sdm_service()
         super().__init__("roles")
 
-    def get_list(self):
+    def get_list(self, filters = ''):
         roles = self.__sdm_service.get_all_roles()
         return self.__filter_hidden_roles(roles)
 

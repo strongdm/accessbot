@@ -96,14 +96,16 @@ class AccessBot(BotPlugin):
         yield from self.get_approve_helper().execute(approver, access_request_id)
 
     #pylint: disable=unused-argument
-    @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources")
+    @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources [--filter expression]")
     def show_resources(self, message, match):
         """
         Show all available resources
         """
         if not self._platform.can_show_resources(message):
             return
-        yield from self.get_show_resources_helper().execute()
+        filter = self.extract_filter(message.body)
+        print("*********** " + filter)
+        yield from self.get_show_resources_helper().execute(filter=filter)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -189,7 +191,11 @@ class AccessBot(BotPlugin):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         if override:
             return override
-        return self._platform.get_sender_email(sender)
+        sender_email = self._platform.get_sender_email(sender)
+        sdm_email_subaddress = self.config['EMAIL_SUBADDRESS']
+        if sdm_email_subaddress:
+            return sender_email.replace('@', f'+{sdm_email_subaddress}@')
+        return sender_email
 
     def get_user_nick(self, user):
         return self._platform.get_user_nick(user)
@@ -221,10 +227,8 @@ class AccessBot(BotPlugin):
     def get_sdm_email_from_profile(self, sender, email_field):
         try:
             user_profile = self._bot.find_user_profile(sender.userid)
-
             if user_profile['fields'] is None:
                 return None
-
             for field in user_profile['fields'].values():
                 if field['label'] == email_field:
                     return field['value']
@@ -246,3 +250,11 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
+    
+    def extract_filter(self, message):
+        if '--filter' in message:
+            filter = re.search(r'(?<=--filter ).+', message)
+            if not filter:
+                raise Exception('You must pass the filter arguments after the "--filter" tag.')
+            return filter.group()
+        return ''
