@@ -32,6 +32,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_AUTO_APPROVE_TAG**. Tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Default = None
 * **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
 * **SDM_AUTO_APPROVE_ROLE_TAG**. Tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Default = None
+* **SDM_AUTO_APPROVE_GROUPS_TAG**. Tag to be used for auto-approve groups. The tag value should be a list of groups (see `SDM_GROUPS_TAG`) separated by comma. Default = None
 * **SDM_ALLOW_RESOURCE_TAG**. Tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Default = None ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_RESOURCE_TAG**. Tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_ROLE_TAG**. Tag to be used for hiding available roles, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-role=true`). If there's no value, it's interpreted as `true`. Default = None ([see below](#using-tags) for more info about using tags)
@@ -45,6 +46,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Tag to be used for registering the time (in minutes) that a specific resource will be made available for the user.
 * **SDM_EMAIL_SLACK_FIELD**. Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Default = None
+* **SDM_GROUPS_TAG**. Tag to be used for specifying groups. Default = None
 
 See image below for more information:
 

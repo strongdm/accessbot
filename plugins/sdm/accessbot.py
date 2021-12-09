@@ -104,7 +104,6 @@ class AccessBot(BotPlugin):
         if not self._platform.can_show_resources(message):
             return
         filter = self.extract_filter(message.body)
-        print("*********** " + filter)
         yield from self.get_show_resources_helper().execute(filter=filter)
 
     #pylint: disable=unused-argument
