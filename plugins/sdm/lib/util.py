@@ -22,6 +22,12 @@ def is_allowed(config, allowed_tag_enum, sdm_entity):
         or (allowed_entity_tag in sdm_entity.tags and (sdm_entity.tags.get(allowed_entity_tag) is None
             or str(sdm_entity.tags.get(allowed_entity_tag)).lower().strip() != 'false'))
 
+def is_concealed(config, sdm_resource):
+    conceal_resource_tag = config['CONCEAL_RESOURCE_TAG']
+    return conceal_resource_tag and \
+           conceal_resource_tag in sdm_resource.tags and \
+           (sdm_resource.tags.get(conceal_resource_tag) is None or str(sdm_resource.tags.get(conceal_resource_tag)).lower().strip() != 'false')
+
 def can_auto_approve_by_tag(config, sdm_object, tag_key):
     auto_approve_by_tag = config[tag_key]
     return auto_approve_by_tag and \
