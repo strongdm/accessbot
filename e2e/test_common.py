@@ -1,5 +1,5 @@
 from errbot import Message
-from errbot.backends.test import TestPerson
+from errbot.backends.test import TestPerson as ErrbotTestPerson
 from errbot.core import ErrBot
 
 admin_default_email = 'gbin@localhost'
@@ -35,7 +35,7 @@ class DummyAccount:
         self.name = name
         self.tags = tags
 
-class DummyPerson(TestPerson):
+class DummyPerson(ErrbotTestPerson):
     def __init__(self, person, client=None, nick=None, fullname=None, email=None, tags={}):
         super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
         self._tags = tags
