@@ -4,11 +4,12 @@ import time
 from itertools import chain
 from errbot import BotPlugin, re_botcmd
 from errbot.core import ErrBot
+from slack_sdk.errors import SlackApiError
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper, \
-    SlackPlatform, MSTeamsPlatform
+    SlackPlatform, MSTeamsPlatform, SlackClassicPlatform
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
@@ -28,6 +29,8 @@ def get_platform(bot):
     platform = bot.bot_config.BOT_PLATFORM if hasattr(bot.bot_config, 'BOT_PLATFORM') else None
     if platform == 'ms-teams':
         return MSTeamsPlatform(bot)
+    elif platform == 'slack-classic':
+        return SlackClassicPlatform(bot)
     return SlackPlatform(bot)
 
 # pylint: disable=too-many-ancestors
@@ -104,8 +107,7 @@ class AccessBot(BotPlugin):
         if not self._platform.can_show_resources(message):
             return
         filter = self.extract_filter(message.body)
-        print("*********** " + filter)
-        yield from self.get_show_resources_helper().execute(filter=filter)
+        yield from self.get_show_resources_helper().execute(message, filter=filter)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -232,11 +234,18 @@ class AccessBot(BotPlugin):
             for field in user_profile['fields'].values():
                 if field['label'] == email_field:
                     return field['value']
-        except Exception as e:
+        except SlackApiError as e:
+            if e.response['error'] == 'ratelimited':
+                self.log.error(
+                    f"Slack throwed a ratelimited error. Too many requests were made."
+                    f"\n{str(e)}."
+                )
+                raise Exception("Too many requests were made. Please, try again in 1 minute.")
             self.log.error(
                 f"I got an error when trying to get the user profile, you might want to check your account limits."
                 f"\n{str(e)}."
             )
+            raise e
         return None
 
     def clean_up_message(self, message):

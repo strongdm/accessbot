@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyResource, send_message_override, callback_message_fn
+from test_common import create_config, DummyResource, send_message_override, \
+    callback_message_fn, get_alternative_email_func
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -482,7 +483,7 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources))
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
-    accessbot._bot.find_user_profile = MagicMock(side_effect=get_alternative_email_func(alternate_email))
+    accessbot._bot.find_user_profile = MagicMock(side_effect=get_alternative_email_func(alternate_email, alternative_email, alternative_email_tag))
     return testbot
 
 def create_resource_grant_helper(accessbot):
@@ -539,18 +540,3 @@ def push_access_request(testbot):
 
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')
-
-def get_alternative_email_func(alternate_email):
-    def get_alternative_email(user_id_):
-        if alternate_email:
-            profile = {
-                'fields': {
-                    'XXX': {
-                        'value': alternative_email,
-                        'label': alternative_email_tag
-                    }
-                }
-            }
-            return profile
-        return None
-    return get_alternative_email
