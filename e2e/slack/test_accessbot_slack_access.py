@@ -169,6 +169,31 @@ class Test_auto_approve_tag:
         push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
 
+class Test_auto_approve_groups_tag:
+
+    @pytest.fixture
+    def mocked_testbot_with_intersecting_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'test-group' }, account_tags={ 'groups': 'test-group' })
+
+    @pytest.fixture
+    def mocked_testbot_with_non_intersecting_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'another-group' }, account_tags={ 'groups': 'test-group' })
+
+    def test_auto_approve_for_intersecting_group(self, mocked_testbot_with_intersecting_groups):
+        push_access_request(mocked_testbot_with_intersecting_groups)
+        assert "Granting" in mocked_testbot_with_intersecting_groups.pop_message()
+
+    def test_dont_auto_approve_for_non_intersecting_groups(self, mocked_testbot_with_non_intersecting_groups):
+        push_access_request(mocked_testbot_with_non_intersecting_groups)
+        assert "valid request" in mocked_testbot_with_non_intersecting_groups.pop_message()
+        assert "access request" in mocked_testbot_with_non_intersecting_groups.pop_message()
+
 class Test_allow_resource_tag:
     @pytest.fixture
     def mocked_testbot_allow_true(self, testbot):
@@ -503,13 +528,14 @@ class Test_change_error_message:
 
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], alternate_email = False):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
+                  resources=[], alternate_email = False, account_tags={}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     accessbot._bot.find_user_profile = MagicMock(side_effect=get_alternative_email_func(alternate_email))
@@ -523,13 +549,13 @@ def create_resource_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources):
+def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags):
     mock = MagicMock()
     if len(resources) > 0:
         mock.get_resource_by_name = MagicMock(side_effect = raise_no_resource_found)
     else:
         mock.get_resource_by_name = MagicMock(return_value = create_resource_mock(tags))
-    mock.get_account_by_email = MagicMock(return_value = create_account_mock())
+    mock.get_account_by_email = MagicMock(return_value = create_account_mock(account_tags=account_tags))
     mock.grant_temporary_access = MagicMock()
     mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
     mock.account_grant_exists = MagicMock(return_value = account_grant_exists)
@@ -543,11 +569,12 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock(account_email = account_name):
+def create_account_mock(account_email = account_name, account_tags={}):
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
     mock.email = account_email
+    mock.tags = account_tags
     return mock
 
 def create_approver_mock(account_email = account_name):

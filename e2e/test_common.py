@@ -13,6 +13,7 @@ def create_config():
         'AUTO_APPROVE_TAG': None,
         'AUTO_APPROVE_ROLE_ALL': False,
         'AUTO_APPROVE_ROLE_TAG': None,
+        'AUTO_APPROVE_GROUPS_TAG': None,
         'ALLOW_RESOURCE_TAG': None,
         'HIDE_RESOURCE_TAG': None,
         'CONCEAL_RESOURCE_TAG': None,
@@ -26,7 +27,8 @@ def create_config():
         'ENABLE_RESOURCES_FUZZY_MATCHING': True,
         'RESOURCE_GRANT_TIMEOUT_TAG': None,
         'EMAIL_SLACK_FIELD': None,
-        'EMAIL_SUBADDRESS': None
+        'EMAIL_SUBADDRESS': None,
+        'GROUPS_TAG': None
     }
 
 class DummyAccount:

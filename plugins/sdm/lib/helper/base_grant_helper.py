@@ -2,7 +2,8 @@ import shortuuid
 from abc import ABC, abstractmethod
 from typing import Any
 from ..exceptions import NotFoundException, PermissionDeniedException
-from ..util import can_auto_approve_by_tag, fuzzy_match
+from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag
+
 
 class BaseGrantHelper(ABC):
     def __init__(self, bot, sdm_service, admin_ids, grant_type, auto_approve_tag_key, auto_approve_all_key):
@@ -77,9 +78,11 @@ class BaseGrantHelper(ABC):
     def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id):
         self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
 
-    def __needs_auto_approve(self, sdm_object):
+    def __needs_auto_approve(self, sdm_object, sdm_account):
         is_auto_approve_all_enabled = self.__bot.config[self.__auto_approve_all_key]
-        return is_auto_approve_all_enabled or can_auto_approve_by_tag(self.__bot.config, sdm_object, self.__auto_approve_tag_key)
+        return is_auto_approve_all_enabled \
+               or can_auto_approve_by_tag(self.__bot.config, sdm_object, self.__auto_approve_tag_key) \
+               or can_auto_approve_by_groups_tag(self.__bot.config, sdm_object, sdm_account)
 
     def __reached_max_auto_approve_uses(self, requester_id):
         max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']
