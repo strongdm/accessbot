@@ -19,18 +19,18 @@ class ShowResourcesHelper(BaseShowHelper):
             return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
         details = [f'type: {type(item).__name__}']
         if self.has_auto_approve_groups(item):
-            details.append(f'auto-approve-groups: "{item.tags[self.__bot.config["AUTO_APPROVE_GROUPS_TAG"]]}"')
+            details.append(f'auto-approve-groups: "{item.tags[self._bot.config["AUTO_APPROVE_GROUPS_TAG"]]}"')
         return f"* {item.name} ({', '.join(details)})\n"
 
     def is_auto_approve(self, item):
-        return can_auto_approve_by_tag(self.__bot.config, item, "AUTO_APPROVE_TAG")
+        return can_auto_approve_by_tag(self._bot.config, item, "AUTO_APPROVE_TAG")
 
     def has_auto_approve_groups(self, item):
         return (
-            self.__bot.config["AUTO_APPROVE_GROUPS_TAG"] is not None
-            and self.__bot.config["GROUPS_TAG"] is not None
-            and self.__bot.config["AUTO_APPROVE_GROUPS_TAG"] in item.tags
-            and item.tags[self.__bot.config["AUTO_APPROVE_GROUPS_TAG"]] is not None
+            self._bot.config["AUTO_APPROVE_GROUPS_TAG"] is not None
+            and self._bot.config["GROUPS_TAG"] is not None
+            and self._bot.config["AUTO_APPROVE_GROUPS_TAG"] in item.tags
+            and item.tags[self._bot.config["AUTO_APPROVE_GROUPS_TAG"]] is not None
         )
 
     def __filter_resources(self, resources):
