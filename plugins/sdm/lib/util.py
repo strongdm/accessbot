@@ -61,7 +61,6 @@ def fuzzy_match(term_list, searched_term):
 
 def has_intersection(list_a, list_b):
     for a in list_a:
-        for b in list_b:
-            if a == b:
-                return True
+        if a in list_b:
+            return True
     return False
