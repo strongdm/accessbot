@@ -65,7 +65,7 @@ class BaseGrantHelper(ABC):
         sender_nick = self.__bot.get_sender_nick(message.frm)
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
-        if self.__needs_auto_approve(sdm_object) and not self.__reached_max_auto_approve_uses(message.frm.person):
+        if self.__needs_auto_approve(sdm_object, sdm_account) and not self.__reached_max_auto_approve_uses(message.frm.person):
             self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
             self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
             yield from self.__bot.get_approve_helper().approve(request_id, True)
