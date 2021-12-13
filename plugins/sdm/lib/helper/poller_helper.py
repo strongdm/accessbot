@@ -11,8 +11,8 @@ class PollerHelper:
             elapsed_time = time.time() - grant_request['timestamp']
             if elapsed_time >= self.__bot.config['ADMIN_TIMEOUT']:
                 self.__bot.log.info("##SDM## Cleaning grant requests, stale request_id = %s", request_id)
-                self.__notify_grant_request_denied(grant_request)
                 self.__bot.remove_grant_request(request_id)
+                self.__notify_grant_request_denied(grant_request)
 
     def stale_max_auto_approve_cleaner(self):
         max_auto_approve_interval = self.__bot.config['MAX_AUTO_APPROVE_INTERVAL']
@@ -24,21 +24,22 @@ class PollerHelper:
 
     def __notify_grant_request_denied(self, grant_request):
         requester_id = grant_request['message'].frm
-        self.__notify_admins(f"Request {grant_request['id']} timed out, user grant will be denied!")
-        self.__notify_requester(requester_id, f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
+        self.__notify_admins(f"Request {grant_request['id']} timed out, user grant will be denied!", grant_request['message'])
+        self.__notify_requester(requester_id, grant_request['message'], f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
 
     def __get_channel_id(self, requester_id):
         if not hasattr(requester_id, 'room'):
             return None
         return self.__bot.build_identifier(f"#{requester_id.room.name}")
 
-    def __notify_admins(self, message):
+    def __notify_admins(self, text, message):
         for admin_id in self.__admin_ids:
-            self.__bot.send(admin_id, message)
+            identifier = self.__bot.get_rich_identifier(admin_id, message)
+            self.__bot.send(identifier, text)
 
-    def __notify_requester(self, requester_id, message):
+    def __notify_requester(self, requester_id, message, text):
         channel_id = self.__get_channel_id(requester_id)
         if channel_id:
-            self.__bot.send(channel_id, message)
+            self.__bot.send(channel_id, text, in_reply_to=message)
             return
-        self.__bot.send(requester_id, message)
+        self.__bot.send(requester_id, text, in_reply_to=message)
