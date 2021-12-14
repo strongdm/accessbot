@@ -8,21 +8,21 @@ class BaseShowHelper(ABC):
 
     def execute(self, message, filter = ''):
         data = self.get_list(filter)
-        sdm_account = self.__get_sdm_account(message)
-        if len(data):
-            resources = f"Available {self.__op_desc}:\n\n"
-            for item in sorted(data, key=self.__get_key):
-                resources += self.get_line(item, sdm_account, message)
-            yield resources
+        if len(data) == 0:
+            yield f"There are no available {self.__op_desc}"
             return
-        yield f"There are no available {self.__op_desc}"
+        sdm_account = self.__get_sdm_account(message)
+        resources = f"Available {self.__op_desc}:\n\n"
+        for item in sorted(data, key=self.__get_key):
+            resources += self.get_line(item, sdm_account)
+        yield resources
 
     @abstractmethod
     def get_list(self, filter):
         pass
 
     @abstractmethod
-    def get_line(self, item, message):
+    def get_line(self, item, sdm_account):
         pass
 
     @abstractmethod

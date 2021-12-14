@@ -1,3 +1,3 @@
-from .slack_platform import SlackPlatform
-from .slack_classic_platform import SlackClassicPlatform
+from .slack_bolt_platform import SlackBoltPlatform
+from .slack_rtm_platform import SlackRTMPlatform
 from .ms_teams_platform import MSTeamsPlatform

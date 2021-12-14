@@ -9,7 +9,7 @@ class ShowRolesHelper(BaseShowHelper):
         roles = self._sdm_service.get_all_roles()
         return self.__filter_hidden_roles(roles)
 
-    def get_line(self, item, sdm_account, message = ''):
+    def get_line(self, item, sdm_account):
         permitted_roles = sdm_account.tags.get(self._bot.config["USER_ROLES_TAG"])
         if self.__can_request_access(item, permitted_roles):
             if self.is_auto_approve(item):

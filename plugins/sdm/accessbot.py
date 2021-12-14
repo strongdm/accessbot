@@ -7,9 +7,9 @@ from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
 import config_template
-from lib import ApproveHelper, create_sdm_service, PollerHelper, \
-    ShowResourcesHelper, ShowRolesHelper, ResourceGrantHelper, RoleGrantHelper, \
-    SlackPlatform, MSTeamsPlatform, SlackClassicPlatform
+from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
+    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
+    ResourceGrantHelper, RoleGrantHelper
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
@@ -30,8 +30,8 @@ def get_platform(bot):
     if platform == 'ms-teams':
         return MSTeamsPlatform(bot)
     elif platform == 'slack-classic':
-        return SlackClassicPlatform(bot)
-    return SlackPlatform(bot)
+        return SlackRTMPlatform(bot)
+    return SlackBoltPlatform(bot)
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
@@ -237,13 +237,11 @@ class AccessBot(BotPlugin):
         except SlackApiError as e:
             if e.response['error'] == 'ratelimited':
                 self.log.error(
-                    f"Slack throwed a ratelimited error. Too many requests were made."
-                    f"\n{str(e)}."
+                    f"Slack throwed a ratelimited error. Too many requests were made\n{str(e)}"
                 )
-                raise Exception("Too many requests were made. Please, try again in 1 minute.")
+                raise Exception("Too many requests were made. Please, try again in 1 minute") from e
             self.log.error(
-                f"I got an error when trying to get the user profile, you might want to check your account limits."
-                f"\n{str(e)}."
+                f"I got an error when trying to get the user profile\n{str(e)}"
             )
             raise e
         return None

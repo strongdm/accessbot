@@ -14,7 +14,7 @@ class ShowResourcesHelper(BaseShowHelper):
             resources = self._sdm_service.get_all_resources(filter = filter)
         return self.__filter_resources(resources)
 
-    def get_line(self, item, sdm_account, message):
+    def get_line(self, item, _):
         if self.is_auto_approve(item):
             return f"* **{item.name} (type: {type(item).__name__}, auto-approve)**\n"
         details = [f'type: {type(item).__name__}']
