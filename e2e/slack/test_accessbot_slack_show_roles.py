@@ -1,12 +1,14 @@
 # pylint: disable=invalid-name
+import time
 import pytest
 import sys
 from unittest.mock import MagicMock
+from slack_sdk.errors import SlackApiError
 
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyAccount, DummyRole
+from test_common import create_config, DummyAccount, DummyRole, get_rate_limited_slack_response_error
 from lib import ShowRolesHelper
 
 pytest_plugins = ["errbot.backends.test"]
@@ -66,6 +68,51 @@ class Test_not_allowed_by_tag:
         # For some reason we cannot assert the text enclosed between stars
         assert "Aaa" in message
         assert "~Bbb~ (not allowed)" in message
+
+class Test_alternative_email:
+    alternative_email_tag = 'alternative-email'
+
+    @pytest.fixture
+    def mocked_user_profile(self):
+        return {
+            'fields': {
+                'XXX': {
+                    'label': self.alternative_email_tag,
+                    'value': account_name,
+                }
+            }
+        }
+
+    @pytest.fixture
+    def mocked_testbot_with_profile(self, testbot, mocked_user_profile):
+        config = create_config()
+        config['SENDER_EMAIL_OVERRIDE'] = None
+        config['EMAIL_SLACK_FIELD'] = self.alternative_email_tag
+        testbot.bot.sender.userid = 'XXX'
+        testbot.bot.find_user_profile = MagicMock(return_value=mocked_user_profile)
+        return inject_mocks(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_with_ratelimited_error(self, testbot):
+        config = create_config()
+        config['SENDER_EMAIL_OVERRIDE'] = None
+        config['EMAIL_SLACK_FIELD'] = self.alternative_email_tag
+        testbot.bot.sender.userid = 'XXX'
+        testbot.bot.find_user_profile = MagicMock(side_effect=get_rate_limited_slack_response_error())
+        return inject_mocks(testbot, config)
+
+    def test_when_has_profile(self, mocked_testbot_with_profile):
+        mocked_testbot_with_profile.push_message("show available roles")
+        message = mocked_testbot_with_profile.pop_message()
+        assert "Aaa" in message
+        assert "Bbb" in message
+
+    def test_when_throws_ratelimited_error(self, mocked_testbot_with_ratelimited_error):
+        mocked_testbot_with_ratelimited_error.push_message("show available roles")
+        message = mocked_testbot_with_ratelimited_error.pop_message()
+        assert "An error occurred" in message
+        assert "Too many requests were made" in message
+
 
 
 def default_dummy_roles():
