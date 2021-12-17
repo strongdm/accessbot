@@ -268,3 +268,6 @@ class AccessBot(BotPlugin):
 
     def channel_is_reachable(self, channel):
         return self._platform.channel_is_reachable(channel)
+
+    def has_active_admins(self):
+        return self._platform.has_active_admins()

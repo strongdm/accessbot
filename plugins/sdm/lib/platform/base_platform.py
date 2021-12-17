@@ -63,3 +63,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def channel_is_reachable(self, channel):
         pass
+
+    @abstractmethod
+    def has_active_admins(self):
+        pass

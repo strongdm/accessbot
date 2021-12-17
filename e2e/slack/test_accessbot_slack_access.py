@@ -9,7 +9,7 @@ sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
 from test_common import DummyPerson, create_config, DummyResource, \
-    send_message_override, callback_message_fn
+    send_message_override, callback_message_fn, get_dummy_person
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -35,7 +35,7 @@ class Test_default_flow:  # manual approval
         config = create_config()
         testbot.bot.send_message = send_message_override(testbot.bot, [])
         testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
-            return_value = [DummyPerson(account_name, is_deleted=True)]
+            return_value = [get_dummy_person(account_name, is_deleted=True)]
         )
         return inject_config(testbot, config)
 
@@ -84,7 +84,6 @@ class Test_default_flow:  # manual approval
 
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         push_access_request(mocked_testbot_with_no_admin_users)
-        mocked_testbot_with_no_admin_users.push_message(f"yes {access_request_id}")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
 class Test_invalid_approver:
@@ -353,6 +352,8 @@ class Test_admin_in_channel:
         return inject_config(testbot, config)
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            return_value = get_dummy_person(f'#{self.channel_name}'))
         mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
         push_access_request(mocked_testbot_with_channels)
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
@@ -544,6 +545,9 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
                   resources=[], account_tags={}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
+    # The default implementation is not compatible with the backend identifier.
+    # Refer to: https://errbot.readthedocs.io/en/4.1/errbot.backends.test.html#errbot.backends.test.TestPerson
+    accessbot.build_identifier = MagicMock(return_value = get_dummy_person(account_name))
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string

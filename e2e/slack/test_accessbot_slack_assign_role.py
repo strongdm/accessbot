@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyRole
+from test_common import create_config, DummyRole, get_dummy_person
 from lib import ApproveHelper, RoleGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -188,7 +188,6 @@ class Test_role_grant_exists:
         service.role_grant_exists.return_value = False
         mocked_testbot.push_message("access to role Allowed Role")
         mocked_testbot.push_message(f"yes {access_request_id}")
-        time.sleep(0.2)
         assert "valid request" in mocked_testbot.pop_message()
         assert "assign request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
@@ -197,6 +196,7 @@ class Test_role_grant_exists:
 def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None, role_grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
+    accessbot.build_identifier = MagicMock(return_value = get_dummy_person(account_name))
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string

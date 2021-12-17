@@ -66,14 +66,9 @@ class BaseGrantHelper(ABC):
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
         if self.__needs_auto_approve(sdm_object, sdm_account) and not self.__reached_max_auto_approve_uses(message.frm.person):
-            self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
-            self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
-            yield from self.__bot.get_approve_helper().approve(request_id, True)
+            yield from self.__auto_approve_access_request(message, sdm_object, sdm_account, execution_id, request_id)
             return
-        self.__check_administration_availability()
-        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
-        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
-        self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
+        yield from self.__request_manual_approval(message, sdm_object, sdm_account, execution_id, request_id, sender_nick)
 
     def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id):
         self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
@@ -90,6 +85,17 @@ class BaseGrantHelper(ABC):
             return False
         auto_approve_uses = self.__bot.get_auto_approve_use(requester_id)
         return auto_approve_uses >= max_auto_approve_uses
+
+    def __auto_approve_access_request(self, message, sdm_object, sdm_account, execution_id, request_id):
+        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+        self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
+        yield from self.__bot.get_approve_helper().approve(request_id, True)
+
+    def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick):
+        self.__check_administration_availability()
+        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
+        self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message):
         team_admins = ", ".join(self.__bot.get_admins())
@@ -128,10 +134,4 @@ class BaseGrantHelper(ABC):
             raise Exception("An Admin Channel was defined but it's unreachable.")
 
     def __has_active_admins(self):
-        try:
-            for admin_id in self.__admin_ids:
-                if not admin_id.is_deleted:
-                    return True
-        except:
-            return len(self.__admin_ids) > 0
-        return False
+        return self.__bot.has_active_admins()

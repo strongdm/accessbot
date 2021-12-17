@@ -73,3 +73,6 @@ class MSTeamsPlatform(BasePlatform):
 
     def channel_is_reachable(self, channel):
         return True
+
+    def has_active_admins(self):
+        return len(self._bot.get_admins()) > 0

@@ -8,3 +8,9 @@ class SlackBoltPlatform(SlackPlatform):
             if sdm_email:
                 return sdm_email
         return sender.email
+
+    def has_active_admins(self):
+        for admin_id in self._bot.get_admin_ids():
+            if not admin_id.is_deleted:
+                return True
+        return False

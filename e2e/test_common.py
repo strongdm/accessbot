@@ -138,3 +138,6 @@ def get_rate_limited_slack_response_error():
         http_verb="",
         status_code=400
     ))
+
+def get_dummy_person(name, is_deleted = False):
+    return DummyPerson(name, is_deleted = is_deleted)
