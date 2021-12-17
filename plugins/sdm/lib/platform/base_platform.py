@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class BasePlatform(ABC):
     def __init__(self, bot):
         self._bot = bot

@@ -2,6 +2,9 @@ from errbot import Message
 from errbot.core import ErrBot
 from errbot.backends.test import TestPerson
 
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.slack_response import SlackResponse
+
 admin_default_email = 'gbin@localhost'
 
 def create_config():
@@ -124,3 +127,14 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
         )
         ErrBot.callback_message(bot, msg)
     return callback_message
+
+def get_rate_limited_slack_response_error():
+    return SlackApiError('ratelimited', SlackResponse(
+        data={'ok': False,'error': 'ratelimited'},
+        client=None,
+        headers={'retry-after': '0'},
+        req_args=None,
+        api_url="",
+        http_verb="",
+        status_code=400
+    ))

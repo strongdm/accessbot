@@ -435,12 +435,24 @@ class Test_self_approve:
 
 class Test_alternative_email:
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_user_profile(self):
+        return {
+            'fields': {
+                'XXX': {
+                    'label': alternative_email_tag,
+                    'value': alternative_email,
+                }
+            }
+        }
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot, mocked_user_profile):
         config = create_config()
         config['EMAIL_SLACK_FIELD'] = alternative_email_tag
         config['SENDER_EMAIL_OVERRIDE'] = None
         testbot.bot.sender.userid = 'XXX'
-        return inject_config(testbot, config, alternate_email = True)
+        testbot.bot.find_user_profile = MagicMock(return_value = mocked_user_profile)
+        return inject_config(testbot, config)
 
     def test_alternative_email(self, mocked_testbot):
         push_access_request(mocked_testbot)
@@ -529,7 +541,7 @@ class Test_change_error_message:
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
-                  resources=[], alternate_email = False, account_tags={}):
+                  resources=[], account_tags={}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)
@@ -538,7 +550,6 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
-    accessbot._bot.find_user_profile = MagicMock(side_effect=get_alternative_email_func(alternate_email))
     return testbot
 
 def create_resource_grant_helper(accessbot):
@@ -596,18 +607,3 @@ def push_access_request(testbot):
 
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')
-
-def get_alternative_email_func(alternate_email):
-    def get_alternative_email(user_id_):
-        if alternate_email:
-            profile = {
-                'fields': {
-                    'XXX': {
-                        'value': alternative_email,
-                        'label': alternative_email_tag
-                    }
-                }
-            }
-            return profile
-        return None
-    return get_alternative_email
