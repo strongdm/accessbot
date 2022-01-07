@@ -67,7 +67,7 @@ class AccessBot(BotPlugin):
         pass
 
     @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
-    def access_resource(self, message, match):
+    def access_resources(self, message, match):
         """
         Grant access to a resource (using the requester's email address)
         """
