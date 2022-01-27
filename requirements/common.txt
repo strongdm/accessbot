@@ -6,5 +6,5 @@ slackclient
 slack-bolt
 shortuuid
 fuzzywuzzy
-python-Levenshtein
+python-levenshtein-wheels
 memoization
