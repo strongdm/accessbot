@@ -265,3 +265,9 @@ class AccessBot(BotPlugin):
                 raise Exception('You must pass the filter arguments after the "--filter" tag.')
             return filter.group()
         return ''
+
+    def channel_is_reachable(self, channel):
+        return self._platform.channel_is_reachable(channel)
+
+    def has_active_admins(self):
+        return self._platform.has_active_admins()

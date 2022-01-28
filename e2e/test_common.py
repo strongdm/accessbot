@@ -1,5 +1,6 @@
 from errbot import Message
 from errbot.core import ErrBot
+from errbot.backends.test import TestPerson
 
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.slack_response import SlackResponse
@@ -76,6 +77,15 @@ class DummyConversation:
             self.activity_id
         )
 
+class DummyPerson(TestPerson):
+    def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
+        super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
+        self._is_deleted = is_deleted
+
+    @property
+    def is_deleted(self):
+        return self._is_deleted
+
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
     # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
@@ -128,3 +138,6 @@ def get_rate_limited_slack_response_error():
         http_verb="",
         status_code=400
     ))
+
+def get_dummy_person(name, is_deleted = False):
+    return DummyPerson(name, is_deleted = is_deleted)

@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyResource, send_message_override, callback_message_fn
+from test_common import DummyPerson, create_config, DummyResource, \
+    send_message_override, callback_message_fn, get_dummy_person
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -27,6 +28,15 @@ class Test_default_flow:  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_with_no_admin_users(self, testbot):
+        config = create_config()
+        testbot.bot.send_message = send_message_override(testbot.bot, [])
+        testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
+            return_value = [get_dummy_person(account_name, is_deleted=True)]
+        )
         return inject_config(testbot, config)
 
     def test_access_command_grant_approved(self, mocked_testbot):
@@ -71,6 +81,10 @@ class Test_default_flow:  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
+        push_access_request(mocked_testbot_with_no_admin_users)
+        assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
 class Test_invalid_approver:
     @pytest.fixture
@@ -322,27 +336,43 @@ class Test_admin_in_channel:
     raw_messages = []
 
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_testbot_with_channels(self, testbot):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
         return inject_config(testbot, config)
 
-    def test_access_command_grant_for_valid_sender_room(self, mocked_testbot):
-        mocked_testbot.bot.sender.room = create_room_mock(self.channel_name)
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Granting" in mocked_testbot.pop_message()
+    @pytest.fixture
+    def mocked_testbot_with_no_channels(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value = [])
+        return inject_config(testbot, config)
+
+    def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            return_value = get_dummy_person(f'#{self.channel_name}'))
+        mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
+        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_channels.pop_message()
+        assert "access request" in mocked_testbot_with_channels.pop_message()
+        assert "Granting" in mocked_testbot_with_channels.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
-    def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot):
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid approver" in mocked_testbot.pop_message()
+    def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
+        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_channels.pop_message()
+        assert "access request" in mocked_testbot_with_channels.pop_message()
+        assert "Invalid approver" in mocked_testbot_with_channels.pop_message()
+
+    def test_access_command_fails_for_unreachable_admin_channel(self, mocked_testbot_with_no_channels):
+        push_access_request(mocked_testbot_with_no_channels)
+        mocked_testbot_with_no_channels.push_message(f"yes {access_request_id}")
+        assert "but it's unreachable" in mocked_testbot_with_no_channels.pop_message()
 
 class Test_fuzzy_matching:
     resource_name = "Very Long name"
@@ -385,6 +415,7 @@ class Test_self_approve:
         testbot.bot.sender.room = create_room_mock(self.channel_name)
         testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
+        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
         return inject_config(testbot, config, admins = [f'@not-admin'])
 
     def test_when_approver_is_not_the_requester(self, mocked_testbot):
@@ -514,6 +545,9 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
                   resources=[], account_tags={}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
+    # The default implementation is not compatible with the backend identifier.
+    # Refer to: https://errbot.readthedocs.io/en/4.1/errbot.backends.test.html#errbot.backends.test.TestPerson
+    accessbot.build_identifier = MagicMock(return_value = get_dummy_person(account_name))
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
