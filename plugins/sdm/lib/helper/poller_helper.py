@@ -33,6 +33,11 @@ class PollerHelper:
         return self.__bot.build_identifier(f"#{requester_id.room.name}")
 
     def __notify_admins(self, text, message):
+        if self.__bot.config['ADMINS_CHANNEL']:
+            channel_id = self.__get_channel_id(self.__bot.config['ADMINS_CHANNEL'])
+            self.__bot.send(channel_id, text, in_reply_to=message)
+            return
+
         for admin_id in self.__admin_ids:
             identifier = self.__bot.get_rich_identifier(admin_id, message)
             self.__bot.send(identifier, text)
