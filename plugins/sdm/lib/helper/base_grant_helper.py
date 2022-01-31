@@ -98,10 +98,13 @@ class BaseGrantHelper(ABC):
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
     def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message):
-        team_admins = ", ".join(self.__bot.get_admins())
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
-        yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
+        if self.__bot.config['ADMINS_CHANNEL']:
+            yield f"Thanks {formatted_sender_nick}, that is a valid request. I have created a request for approval in the configured admin channel.\nYour request id is **{request_id}**"
+        else:
+            team_admins = ", ".join(self.__bot.get_admins())
+            yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
         self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
 
     def __notify_admins(self, text, message):
