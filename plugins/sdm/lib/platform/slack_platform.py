@@ -1,5 +1,5 @@
 from .base_platform import BasePlatform
-
+from abc import abstractmethod
 
 class SlackPlatform(BasePlatform):
     def activate(self):
@@ -26,13 +26,9 @@ class SlackPlatform(BasePlatform):
     def get_sender_id(self, sender):
         return self._bot.get_sender_nick(sender)
 
+    @abstractmethod
     def get_sender_email(self, sender):
-        email_slack_field = self._bot.config['EMAIL_SLACK_FIELD']
-        if email_slack_field:
-            sdm_email = self._bot.get_sdm_email_from_profile(sender, email_slack_field)
-            if sdm_email:
-                return sdm_email
-        return sender.email
+        pass
 
     def get_user_nick(self, approver):
         return f'@{approver.nick}'
@@ -48,3 +44,10 @@ class SlackPlatform(BasePlatform):
 
     def get_rich_identifier(self, identifier, message):
         return identifier
+
+    def channel_is_reachable(self, channel):
+        channel_list = self._bot._bot.channels()
+        for item in channel_list:
+            if f"#{item['name']}" == channel:
+                return True
+        return False

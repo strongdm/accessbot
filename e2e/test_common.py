@@ -1,5 +1,9 @@
 from errbot import Message
 from errbot.core import ErrBot
+from errbot.backends.test import TestPerson
+
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.slack_response import SlackResponse
 
 admin_default_email = 'gbin@localhost'
 
@@ -12,6 +16,7 @@ def create_config():
         'AUTO_APPROVE_TAG': None,
         'AUTO_APPROVE_ROLE_ALL': False,
         'AUTO_APPROVE_ROLE_TAG': None,
+        'AUTO_APPROVE_GROUPS_TAG': None,
         'ALLOW_RESOURCE_TAG': None,
         'HIDE_RESOURCE_TAG': None,
         'CONCEAL_RESOURCE_TAG': None,
@@ -25,7 +30,8 @@ def create_config():
         'ENABLE_RESOURCES_FUZZY_MATCHING': True,
         'RESOURCE_GRANT_TIMEOUT_TAG': None,
         'EMAIL_SLACK_FIELD': None,
-        'EMAIL_SUBADDRESS': None
+        'EMAIL_SUBADDRESS': None,
+        'GROUPS_TAG': None
     }
 
 class DummyAccount:
@@ -71,6 +77,15 @@ class DummyConversation:
             self.activity_id
         )
 
+class DummyPerson(TestPerson):
+    def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
+        super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
+        self._is_deleted = is_deleted
+
+    @property
+    def is_deleted(self):
+        return self._is_deleted
+
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
     # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
@@ -112,3 +127,17 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
         )
         ErrBot.callback_message(bot, msg)
     return callback_message
+
+def get_rate_limited_slack_response_error():
+    return SlackApiError('ratelimited', SlackResponse(
+        data={'ok': False,'error': 'ratelimited'},
+        client=None,
+        headers={'retry-after': '0'},
+        req_args=None,
+        api_url="",
+        http_verb="",
+        status_code=400
+    ))
+
+def get_dummy_person(name, is_deleted = False):
+    return DummyPerson(name, is_deleted = is_deleted)

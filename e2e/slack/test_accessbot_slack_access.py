@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyResource, send_message_override, callback_message_fn
+from test_common import DummyPerson, create_config, DummyResource, \
+    send_message_override, callback_message_fn, get_dummy_person
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -27,6 +28,15 @@ class Test_default_flow:  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_with_no_admin_users(self, testbot):
+        config = create_config()
+        testbot.bot.send_message = send_message_override(testbot.bot, [])
+        testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
+            return_value = [get_dummy_person(account_name, is_deleted=True)]
+        )
         return inject_config(testbot, config)
 
     def test_access_command_grant_approved(self, mocked_testbot):
@@ -71,6 +81,10 @@ class Test_default_flow:  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
+        push_access_request(mocked_testbot_with_no_admin_users)
+        assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
 class Test_invalid_approver:
     @pytest.fixture
@@ -153,6 +167,31 @@ class Test_auto_approve_tag:
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
         push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
+
+class Test_auto_approve_groups_tag:
+
+    @pytest.fixture
+    def mocked_testbot_with_intersecting_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'test-group' }, account_tags={ 'groups': 'test-group' })
+
+    @pytest.fixture
+    def mocked_testbot_with_non_intersecting_groups(self, testbot):
+        config = create_config()
+        config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
+        config['GROUPS_TAG'] = "groups"
+        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'another-group' }, account_tags={ 'groups': 'test-group' })
+
+    def test_auto_approve_for_intersecting_group(self, mocked_testbot_with_intersecting_groups):
+        push_access_request(mocked_testbot_with_intersecting_groups)
+        assert "Granting" in mocked_testbot_with_intersecting_groups.pop_message()
+
+    def test_dont_auto_approve_for_non_intersecting_groups(self, mocked_testbot_with_non_intersecting_groups):
+        push_access_request(mocked_testbot_with_non_intersecting_groups)
+        assert "valid request" in mocked_testbot_with_non_intersecting_groups.pop_message()
+        assert "access request" in mocked_testbot_with_non_intersecting_groups.pop_message()
 
 class Test_allow_resource_tag:
     @pytest.fixture
@@ -297,27 +336,43 @@ class Test_admin_in_channel:
     raw_messages = []
 
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_testbot_with_channels(self, testbot):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
         return inject_config(testbot, config)
 
-    def test_access_command_grant_for_valid_sender_room(self, mocked_testbot):
-        mocked_testbot.bot.sender.room = create_room_mock(self.channel_name)
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Granting" in mocked_testbot.pop_message()
+    @pytest.fixture
+    def mocked_testbot_with_no_channels(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value = [])
+        return inject_config(testbot, config)
+
+    def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            return_value = get_dummy_person(f'#{self.channel_name}'))
+        mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
+        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_channels.pop_message()
+        assert "access request" in mocked_testbot_with_channels.pop_message()
+        assert "Granting" in mocked_testbot_with_channels.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
-    def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot):
-        push_access_request(mocked_testbot)
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid approver" in mocked_testbot.pop_message()
+    def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
+        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_channels.pop_message()
+        assert "access request" in mocked_testbot_with_channels.pop_message()
+        assert "Invalid approver" in mocked_testbot_with_channels.pop_message()
+
+    def test_access_command_fails_for_unreachable_admin_channel(self, mocked_testbot_with_no_channels):
+        push_access_request(mocked_testbot_with_no_channels)
+        mocked_testbot_with_no_channels.push_message(f"yes {access_request_id}")
+        assert "but it's unreachable" in mocked_testbot_with_no_channels.pop_message()
 
 class Test_fuzzy_matching:
     resource_name = "Very Long name"
@@ -360,6 +415,7 @@ class Test_self_approve:
         testbot.bot.sender.room = create_room_mock(self.channel_name)
         testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
+        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
         return inject_config(testbot, config, admins = [f'@not-admin'])
 
     def test_when_approver_is_not_the_requester(self, mocked_testbot):
@@ -380,12 +436,24 @@ class Test_self_approve:
 
 class Test_alternative_email:
     @pytest.fixture
-    def mocked_testbot(self, testbot):
+    def mocked_user_profile(self):
+        return {
+            'fields': {
+                'XXX': {
+                    'label': alternative_email_tag,
+                    'value': alternative_email,
+                }
+            }
+        }
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot, mocked_user_profile):
         config = create_config()
         config['EMAIL_SLACK_FIELD'] = alternative_email_tag
         config['SENDER_EMAIL_OVERRIDE'] = None
         testbot.bot.sender.userid = 'XXX'
-        return inject_config(testbot, config, alternate_email = True)
+        testbot.bot.find_user_profile = MagicMock(return_value = mocked_user_profile)
+        return inject_config(testbot, config)
 
     def test_alternative_email(self, mocked_testbot):
         push_access_request(mocked_testbot)
@@ -473,16 +541,19 @@ class Test_change_error_message:
 
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], alternate_email = False):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
+                  resources=[], account_tags={}):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
+    # The default implementation is not compatible with the backend identifier.
+    # Refer to: https://errbot.readthedocs.io/en/4.1/errbot.backends.test.html#errbot.backends.test.TestPerson
+    accessbot.build_identifier = MagicMock(return_value = get_dummy_person(account_name))
     accessbot.get_admins = MagicMock(return_value = admins)
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
-    accessbot._bot.find_user_profile = MagicMock(side_effect=get_alternative_email_func(alternate_email))
     return testbot
 
 def create_resource_grant_helper(accessbot):
@@ -493,13 +564,13 @@ def create_resource_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources):
+def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags):
     mock = MagicMock()
     if len(resources) > 0:
         mock.get_resource_by_name = MagicMock(side_effect = raise_no_resource_found)
     else:
         mock.get_resource_by_name = MagicMock(return_value = create_resource_mock(tags))
-    mock.get_account_by_email = MagicMock(return_value = create_account_mock())
+    mock.get_account_by_email = MagicMock(return_value = create_account_mock(account_tags=account_tags))
     mock.grant_temporary_access = MagicMock()
     mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
     mock.account_grant_exists = MagicMock(return_value = account_grant_exists)
@@ -513,11 +584,12 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock(account_email = account_name):
+def create_account_mock(account_email = account_name, account_tags={}):
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
     mock.email = account_email
+    mock.tags = account_tags
     return mock
 
 def create_approver_mock(account_email = account_name):
@@ -539,18 +611,3 @@ def push_access_request(testbot):
 
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')
-
-def get_alternative_email_func(alternate_email):
-    def get_alternative_email(user_id_):
-        if alternate_email:
-            profile = {
-                'fields': {
-                    'XXX': {
-                        'value': alternative_email,
-                        'label': alternative_email_tag
-                    }
-                }
-            }
-            return profile
-        return None
-    return get_alternative_email

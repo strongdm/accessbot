@@ -7,4 +7,3 @@ services:
       - env-file
     ports:
       - 3141:3141
-
