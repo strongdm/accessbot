@@ -98,7 +98,7 @@ class Test_invalid_approver:
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid approver" in mocked_testbot.pop_message()
+        assert "Invalid evaluator" in mocked_testbot.pop_message()
 
 class Test_auto_approve_all:
     @pytest.fixture
@@ -367,7 +367,7 @@ class Test_admin_in_channel:
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
         assert "access request" in mocked_testbot_with_channels.pop_message()
-        assert "Invalid approver" in mocked_testbot_with_channels.pop_message()
+        assert "Invalid evaluator" in mocked_testbot_with_channels.pop_message()
 
     def test_access_command_fails_for_unreachable_admin_channel(self, mocked_testbot_with_no_channels):
         push_access_request(mocked_testbot_with_no_channels)

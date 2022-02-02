@@ -13,7 +13,7 @@ from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
-DENY_REGEX = r"\*{0,2}no (\w{4,4}) ?(.*)"
+DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.*)"
 ASSIGN_ROLE_REGEX = r"\*{0,2}access to role (.+)"
 SHOW_RESOURCES_REGEX = r"\*{0,2}show available resources\*{0,2}"
 SHOW_ROLES_REGEX = r"\*{0,2}show available roles\*{0,2}"

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 sys.path.append('plugins/sdm')
 sys.path.append('e2e/')
 
-from test_common import create_config, DummyResource, send_message_override, callback_message_fn
-from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
+from test_common import create_config, get_dummy_person
+from lib import ApproveHelper, ResourceGrantHelper
 
 pytest_plugins = ["errbot.backends.test"]
 extra_plugin_dir = 'plugins/sdm'
@@ -25,6 +25,9 @@ class Test_default_flow:  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
+        testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
+            return_value = [get_dummy_person(account_name, is_deleted=False)]
+        )
         return inject_config(testbot, config)
 
     def test_access_command_grant_denied(self, mocked_testbot):
@@ -32,7 +35,7 @@ class Test_default_flow:  # manual approval
         mocked_testbot.push_message(f"no {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        assert "request has been denied" in mocked_testbot.pop_message()
+        assert f"request {access_request_id} has been denied" in mocked_testbot.pop_message()
 
     def test_access_command_grant_denied_with_reason(self, mocked_testbot):
         push_access_request(mocked_testbot)
@@ -41,7 +44,7 @@ class Test_default_flow:  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         denied_response_message = mocked_testbot.pop_message()
-        assert "request has been denied" in denied_response_message
+        assert f"request {access_request_id} has been denied" in denied_response_message
         assert "with the following reason" in denied_response_message
         assert denial_reason in denied_response_message
 
@@ -50,6 +53,9 @@ class Test_invalid_user:
     def mocked_testbot(self, testbot):
         config = create_config()
         config['SENDER_NICK_OVERRIDE'] = 'not-admin'
+        testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
+            return_value = [get_dummy_person(account_name, is_deleted=False)]
+        )
         return inject_config(testbot, config)
 
     def test_deny_command_fail_when_user_not_admin(self, mocked_testbot):
@@ -57,13 +63,16 @@ class Test_invalid_user:
         mocked_testbot.push_message(f"no {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid user" in mocked_testbot.pop_message()
+        assert "Invalid evaluator" in mocked_testbot.pop_message()
 
 class Test_invalid_request_id:
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
         config['SENDER_NICK_OVERRIDE'] = 'not-admin'
+        testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
+            return_value = [get_dummy_person(account_name, is_deleted=False)]
+        )
         return inject_config(testbot, config)
 
     def test_deny_command_fail_when_request_id_is_invalid(self, mocked_testbot):
