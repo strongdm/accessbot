@@ -40,5 +40,5 @@ class BaseEvaluateRequestHelper(ABC):
         return self._bot.get_sender_id(evaluator) in self._bot.get_admins()
 
     @abstractmethod
-    def evaluate(request_id, evaluator, **kwargs):
+    def evaluate(request_id, **kwargs):
         pass
