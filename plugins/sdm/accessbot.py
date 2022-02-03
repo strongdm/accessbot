@@ -33,6 +33,7 @@ def get_platform(bot):
         return SlackRTMPlatform(bot)
     return SlackBoltPlatform(bot)
 
+
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __grant_requests = {}
@@ -40,6 +41,7 @@ class AccessBot(BotPlugin):
 
     def activate(self):
         super().activate()
+        self.__setup_command_methods()
         self._platform = get_platform(self)
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
@@ -62,6 +64,15 @@ class AccessBot(BotPlugin):
         else:
             config = config_template.get()
         super(AccessBot, self).configure(config)
+
+    def __setup_command_methods(self):
+        self._command_methods = {
+            'access_resource': self.access_resource,
+            'approve': self.approve,
+            'assign_role': self.assign_role,
+            'show_resources': self.show_resources,
+            'show_roles': self.show_roles
+        }
 
     def check_configuration(self, configuration):
         pass
@@ -118,6 +129,16 @@ class AccessBot(BotPlugin):
         if not self._platform.can_show_roles(message):
             return
         yield from self.get_show_roles_helper().execute(message)
+
+    @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False)
+    def match_alias(self, message, match):
+        message.body = self._bot.plugin_manager.plugins['AccessBot'].clean_up_message(message.body)
+        for command, alias in self.bot_config.BOT_COMMANDS_ALIASES.items():
+            if alias is None:
+                continue
+            if self.alias_match(command, alias, message.body):
+                yield from self.invoke_method(command, message, alias)
+                break
 
     @staticmethod
     def get_admins():
@@ -185,7 +206,7 @@ class AccessBot(BotPlugin):
     def get_sender_nick(self, sender):
         override = self.config['SENDER_NICK_OVERRIDE']
         return override if override else f"@{sender.nick}"
-    
+
     def get_sender_id(self, sender):
         return self._platform.get_sender_id(sender)
 
@@ -257,7 +278,7 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
-    
+
     def extract_filter(self, message):
         if '--filter' in message:
             filter = re.search(r'(?<=--filter ).+', message)
@@ -271,3 +292,33 @@ class AccessBot(BotPlugin):
 
     def has_active_admins(self):
         return self._platform.has_active_admins()
+
+    def alias_match(self, command, alias, text):
+        alias_regex = self.get_alias_regex(command, alias)
+        alias_compiled_regex = re.compile(alias_regex)
+        alias_match = alias_compiled_regex.match(text)
+        return alias_match is not None
+
+    def get_alias_regex(self, command, alias):
+        full_command_regex = self._command_methods[command]._err_command_syntax
+        command_args_regex = r' (.+)' if '(.+)' in full_command_regex else ''
+        return r'^' + alias + command_args_regex + r'$'
+
+    def invoke_method(self, method_name, message, alias):
+        message.body = self.convert_alias_message_to_full_command_message(alias, method_name, message)
+        match = self.get_full_command_message_match(method_name, message.body)
+        yield from self._command_methods[method_name](message, match)
+
+    def convert_alias_message_to_full_command_message(self, alias, command, message):
+        alias_regex = self.get_alias_regex(command, alias)
+        full_command_regex = self._command_methods[command]._err_command_syntax
+        if '(.+)' in full_command_regex:
+            arg = re.sub(alias_regex, r"\1", message.body)
+            return full_command_regex.replace('(.+)', arg).replace('\\*{0,2}', '')
+        else:
+            return full_command_regex
+
+    def get_full_command_message_match(self, command, text):
+        full_command_regex = self._command_methods[command]._err_command_syntax
+        method_regex_compiled = re.compile(full_command_regex)
+        return method_regex_compiled.match(text)
