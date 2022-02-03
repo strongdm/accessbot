@@ -21,7 +21,8 @@ There are a number of variables you can use for configuring AccessBot.
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO
 * **SDM_DOCKERIZED**. Logging type. Default = true (_when using docker_), meaning logs go to STDOUT
-* **SDM_COMMANDS_ENABLED**. AccessBot commands to be enabled. Default = access_resource assign_role show_resources show_roles approve
+* **SDM_COMMANDS_ENABLED**. AccessBot commands to be enabled. Default = `access_resource assign_role show_resources show_roles approve`
+    - You can also specify an alias for specific commands. You only need to add a `:alias` after the command name. E.g.: `access_resource:acres show_resources:sares`
 
 ## Bot configuration
 The following variables can be changed at runtime via slack -by an SDM_ADMIN- using the `plugin config AccessBot` command:
