@@ -131,8 +131,10 @@ class AccessBot(BotPlugin):
         yield from self.get_show_roles_helper().execute(message)
 
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False)
-    def match_alias(self, message, match):
-        message.body = self._bot.plugin_manager.plugins['AccessBot'].clean_up_message(message.body)
+    def match_alias(self, message, _):
+        if not hasattr(self.bot_config, 'BOT_COMMANDS_ALIASES'):
+            return
+
         for command, alias in self.bot_config.BOT_COMMANDS_ALIASES.items():
             if alias is None:
                 continue
