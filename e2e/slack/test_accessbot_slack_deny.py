@@ -63,7 +63,7 @@ class Test_invalid_user:
         mocked_testbot.push_message(f"no {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid evaluator" in mocked_testbot.pop_message()
+        assert "Invalid user" in mocked_testbot.pop_message()
 
 class Test_invalid_request_id:
     @pytest.fixture

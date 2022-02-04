@@ -5,7 +5,7 @@ class BaseEvaluateRequestHelper(ABC):
     def __init__(self, bot):
         self._bot = bot
 
-    def execute(self, evaluator, request_id, reason=''):
+    def execute(self, user, request_id, reason=''):
         execution_id = shortuuid.ShortUUID().random(length=6)
         self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute request_id: %s", execution_id, request_id)
 
@@ -14,18 +14,18 @@ class BaseEvaluateRequestHelper(ABC):
             yield f"Invalid access request id = {request_id}"
             return
 
-        if not self.__is_allowed_to_evaluate(request_id, evaluator):
-            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute invalid evaluator, not an admin to self approve or deny: %s", execution_id, str(evaluator))
-            yield "Invalid evaluator, not an admin to self approve or deny"
+        if not self.__is_allowed_to_evaluate(request_id, user):
+            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin to self approve or deny: %s", execution_id, str(user))
+            yield "Invalid user, not an admin to self approve or deny"
             return
 
-        if not self.__is_admin(evaluator):
-            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute invalid evaluator, not an admin: %s", execution_id, str(evaluator))
-            yield "Invalid evaluator, not an admin or using the wrong channel"
+        if not self.__is_admin(user):
+            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin: %s", execution_id, str(user))
+            yield "Invalid user, not an admin or using the wrong channel"
             return
 
         self._bot.log.info("##SDM## %s EvaluateRequestHelper.execute concluding evaluation for access request id: %s", execution_id, request_id)
-        yield from self.evaluate(request_id, admin=evaluator, reason=reason)
+        yield from self.evaluate(request_id, admin=user, reason=reason)
 
     def __is_allowed_to_evaluate(self, request_id, evaluator):
         grant_request = self._bot.get_grant_request(request_id)
