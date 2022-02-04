@@ -3,9 +3,7 @@ You can use the “access to resource-name” command for obtaining 1 hour acces
 
 The default configuration relies on a “manual approval” workflow, which delegates access request approvals to the bot admins (`SDM_ADMINS`).
 
-When an access request is registered, the bot assigns an `access_request_id` and notifies all the admins. In order to
-approve or deny a request,
-it’s enough that one of the admins sends to the accessbot one of the following messages before the timeout (`SDM_ADMIN_TIMEOUT`) expires:
+When an access request is registered, the bot assigns an `access_request_id` and notifies all the admins. In order to approve or deny a request, an admin needs to send one of the following messages in a DM or the configured admin channel, before the request times out (`SDM_ADMIN_TIMEOUT`):
 
 - For approve: **yes `access_request_id`**
 - For deny: **no `access_request_id` [optional-reason]**
