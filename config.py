@@ -2,7 +2,7 @@ import os
 import re
 
 def get_commands_enabled():
-    return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve").split(" ")
+    return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny").split(" ")
 
 def get_access_controls():
     commands_enabled = get_commands_enabled()
@@ -13,6 +13,7 @@ def get_access_controls():
         'AccessBot:access_resource': allow_all if 'access_resource' in commands_enabled else deny_all,
         'AccessBot:approve': allow_all if 'approve' in commands_enabled else deny_all,
         'AccessBot:assign_role': allow_all if 'assign_role' in commands_enabled else deny_all,
+        'AccessBot:deny': allow_all if 'deny' in commands_enabled else deny_all,
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
         'AccessBot:show_roles': allow_all if 'show_roles' in commands_enabled else deny_all,
         'help': { 'allowusers': ('*') },
