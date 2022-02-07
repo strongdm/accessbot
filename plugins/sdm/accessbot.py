@@ -9,11 +9,11 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
-APPROVE_REGEX = r"\*{0,2}yes (.+)"
-DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.*)"
+APPROVE_REGEX = r"\*{0,2}yes (\w{4})"
+DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.+)?"
 ASSIGN_ROLE_REGEX = r"\*{0,2}access to role (.+)"
 SHOW_RESOURCES_REGEX = r"\*{0,2}show available resources\*{0,2}"
 SHOW_ROLES_REGEX = r"\*{0,2}show available roles\*{0,2}"
@@ -71,6 +71,7 @@ class AccessBot(BotPlugin):
             'access_resource': self.access_resource,
             'approve': self.approve,
             'assign_role': self.assign_role,
+            'deny': self.deny,
             'show_resources': self.show_resources,
             'show_roles': self.show_roles
         }
@@ -143,15 +144,7 @@ class AccessBot(BotPlugin):
 
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False)
     def match_alias(self, message, _):
-        if not hasattr(self.bot_config, 'BOT_COMMANDS_ALIASES'):
-            return
-
-        for command, alias in self.bot_config.BOT_COMMANDS_ALIASES.items():
-            if alias is None:
-                continue
-            if self.alias_match(command, alias, message.body):
-                yield from self.invoke_method(command, message, alias)
-                break
+        yield from self.get_command_alias_helper().execute(message)
 
     @staticmethod
     def get_admins():
@@ -185,6 +178,9 @@ class AccessBot(BotPlugin):
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
+
+    def get_command_alias_helper(self):
+        return CommandAliasHelper(self)
 
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
@@ -308,33 +304,3 @@ class AccessBot(BotPlugin):
 
     def has_active_admins(self):
         return self._platform.has_active_admins()
-
-    def alias_match(self, command, alias, text):
-        alias_regex = self.get_alias_regex(command, alias)
-        alias_compiled_regex = re.compile(alias_regex)
-        alias_match = alias_compiled_regex.match(text)
-        return alias_match is not None
-
-    def get_alias_regex(self, command, alias):
-        full_command_regex = self._command_methods[command]._err_command_syntax
-        command_args_regex = r' (.+)' if '(.+)' in full_command_regex else ''
-        return r'^' + alias + command_args_regex + r'$'
-
-    def invoke_method(self, method_name, message, alias):
-        message.body = self.convert_alias_message_to_full_command_message(alias, method_name, message)
-        match = self.get_full_command_message_match(method_name, message.body)
-        yield from self._command_methods[method_name](message, match)
-
-    def convert_alias_message_to_full_command_message(self, alias, command, message):
-        alias_regex = self.get_alias_regex(command, alias)
-        full_command_regex = self._command_methods[command]._err_command_syntax
-        if '(.+)' in full_command_regex:
-            arg = re.sub(alias_regex, r"\1", message.body)
-            return full_command_regex.replace('(.+)', arg).replace('\\*{0,2}', '')
-        else:
-            return full_command_regex
-
-    def get_full_command_message_match(self, command, text):
-        full_command_regex = self._command_methods[command]._err_command_syntax
-        method_regex_compiled = re.compile(full_command_regex)
-        return method_regex_compiled.match(text)

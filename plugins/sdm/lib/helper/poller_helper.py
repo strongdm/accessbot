@@ -28,6 +28,8 @@ class PollerHelper:
         self.__notify_requester(requester_id, grant_request['message'], f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
 
     def __get_channel_id(self, requester_id):
+        if type(requester_id) == str:
+            return self.__bot.build_identifier(requester_id)
         if not hasattr(requester_id, 'room'):
             return None
         return self.__bot.build_identifier(f"#{requester_id.room.name}")
@@ -35,7 +37,7 @@ class PollerHelper:
     def __notify_admins(self, text, message):
         if self.__bot.config['ADMINS_CHANNEL']:
             channel_id = self.__get_channel_id(self.__bot.config['ADMINS_CHANNEL'])
-            self.__bot.send(channel_id, text, in_reply_to=message)
+            self.__bot.send(channel_id, text)
             return
 
         for admin_id in self.__admin_ids:
