@@ -130,7 +130,7 @@ class BaseGrantHelper(ABC):
             self.__bot.log.error("There is no active SDM Admin user in Slack Workspace.")
             raise Exception("There is no active Slack Admin to receive your request.")
         if self.__bot.config['ADMINS_CHANNEL'] and not self.__bot.channel_is_reachable(self.__bot.config['ADMINS_CHANNEL']):
-            self.__bot.log.error("The Channel defined as Admin Channel is unreachable. Probably it's archived.")
+            self.__bot.log.error(f"The Channel {self.__bot.config['ADMINS_CHANNEL']} defined as Admin Channel is unreachable. Probably it's archived.")
             raise Exception("An Admin Channel was defined but it's unreachable.")
 
     def __has_active_admins(self):
