@@ -89,7 +89,7 @@ class BaseGrantHelper(ABC):
     def __auto_approve_access_request(self, message, sdm_object, sdm_account, execution_id, request_id):
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
-        yield from self.__bot.get_approve_helper().approve(request_id, True)
+        yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick):
         self.__check_administration_availability()
@@ -105,7 +105,8 @@ class BaseGrantHelper(ABC):
         else:
             team_admins = ", ".join(self.__bot.get_admins())
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}! To approve, enter: **yes {request_id}**", message)
+        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}!" +
+                             f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**", message)
 
     def __notify_admins(self, text, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

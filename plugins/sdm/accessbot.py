@@ -9,10 +9,11 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper
 
 ACCESS_REGEX = r"\*{0,2}access to (.+)"
 APPROVE_REGEX = r"\*{0,2}yes (.+)"
+DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.*)"
 ASSIGN_ROLE_REGEX = r"\*{0,2}access to role (.+)"
 SHOW_RESOURCES_REGEX = r"\*{0,2}show available resources\*{0,2}"
 SHOW_ROLES_REGEX = r"\*{0,2}show available roles\*{0,2}"
@@ -98,6 +99,16 @@ class AccessBot(BotPlugin):
         approver = message.frm
         yield from self.get_approve_helper().execute(approver, access_request_id)
 
+    @re_botcmd(pattern=DENY_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
+    def deny(self, message, match):
+        """
+        Deny a grant request (resource or role)
+        """
+        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""))
+        denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""))
+        admin = message.frm
+        yield from self.get_deny_helper().execute(admin, access_request_id, denial_reason)
+
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources [--filter expression]")
     def show_resources(self, message, match):
@@ -142,6 +153,9 @@ class AccessBot(BotPlugin):
 
     def get_approve_helper(self):
         return ApproveHelper(self)
+
+    def get_deny_helper(self):
+        return DenyHelper(self)
 
     def get_poller_helper(self):
         return PollerHelper(self)
