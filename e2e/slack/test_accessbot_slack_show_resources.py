@@ -4,17 +4,16 @@ import sys
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, DummyResource
+from test_common import create_config, DummyResource, ErrBotExtraTestSettings
 from lib import ShowResourcesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = "plugins/sdm"
 account_name = "myaccount@test.com"
 group = "test-group"
 
-class Test_show_resources:
+class Test_show_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -48,7 +47,7 @@ class Test_show_resources:
         assert "Aaa (type: DummyResource)" not in message
         assert "Bbb (type: DummyResource)" not in message
 
-class Test_show_allowed_resources:
+class Test_show_allowed_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_allow_resource_true(self, testbot):
         config = create_config()
@@ -76,7 +75,7 @@ class Test_show_allowed_resources:
         assert "Aaa (type: DummyResource)" not in message
         assert "Bbb (type: DummyResource)" not in message
 
-class Test_not_show_hidden_resources:
+class Test_not_show_hidden_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_hide_resource_true(self, testbot):
         config = create_config()
@@ -103,7 +102,7 @@ class Test_not_show_hidden_resources:
         assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" in message
 
-class Test_show_resources_by_role:
+class Test_show_resources_by_role(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -140,7 +139,7 @@ class Test_show_resources_by_role:
         assert "Bbb in role (type: DummyResource)" not in message
 
 
-class Test_show_resources_with_concealed_resources:
+class Test_show_resources_with_concealed_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_conceal_resource_true(self, testbot):
         config = create_config()
@@ -167,7 +166,7 @@ class Test_show_resources_with_concealed_resources:
         assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" in message
 
-class Test_show_auto_approve_groups_resources:
+class Test_show_auto_approve_groups_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

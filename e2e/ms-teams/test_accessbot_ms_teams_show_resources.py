@@ -3,18 +3,16 @@ import pytest
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm/')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import DummyResource, create_config, callback_message_fn
+from test_common import DummyResource, create_config, callback_message_fn, \
+    MSTeamsErrBotExtraTestSettings
 from lib import ShowResourcesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = "plugins/sdm"
 account_name = "myaccount@test.com"
 
-class Test_show_resources:
-    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
-
+class Test_show_resources(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

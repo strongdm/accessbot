@@ -1,6 +1,8 @@
 import re
 
 class CommandAliasHelper:
+    regex_group_request_id = "(\\w{4})"
+
     def __init__(self, bot):
         self.__bot = bot
 
@@ -22,7 +24,7 @@ class CommandAliasHelper:
         return alias_match is not None
 
     def __get_original_regex_from_command(self, command):
-        return self.__bot._command_methods[command]._err_command_syntax
+        return getattr(self.__bot, command)._err_command_syntax
 
     def __build_alias_regex(self, command, alias):
         request_id_regex = self.__get_request_id_regex(command)
@@ -31,7 +33,7 @@ class CommandAliasHelper:
 
     def __get_request_id_regex(self, command):
         full_command_regex = self.__get_original_regex_from_command(command)
-        command_expects_request_id = '(\\w{4})' in full_command_regex
+        command_expects_request_id = self.regex_group_request_id in full_command_regex
         return r' (\w{4})' if command_expects_request_id else ''
 
     def __get_command_argument_regex(self, command):
@@ -45,17 +47,17 @@ class CommandAliasHelper:
     def __invoke_method_from_command(self, command, message, alias):
         message.body = self.__convert_alias_message_to_full_command_message(alias, command, message)
         match = self.__get_full_command_message_match(command, message.body)
-        command_method = self.__bot._command_methods[command]
+        command_method = getattr(self.__bot, command)
         yield from command_method(message, match)
 
     def __convert_alias_message_to_full_command_message(self, alias, command, message):
         alias_regex = self.__build_alias_regex(command, alias)
         full_command_regex = self.__get_original_regex_from_command(command)
-        converted_message = full_command_regex.replace('\\*{0,2}', '')
-        command_expects_request_id = '(\\w{4})' in full_command_regex
+        converted_message = full_command_regex
+        command_expects_request_id = self.regex_group_request_id in full_command_regex
         if command_expects_request_id:
             request_id = self.__extract_value_from_regex_group(alias_regex, r"\1", message.body)
-            converted_message = converted_message.replace('(\\w{4})', request_id)
+            converted_message = converted_message.replace(self.regex_group_request_id, request_id)
         command_expects_argument = '(.+)' in full_command_regex
         if command_expects_argument:
             argument_regex_group = r"\1" if not command_expects_request_id else r"\2"

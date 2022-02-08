@@ -6,13 +6,12 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, callback_message_fn
+from test_common import create_config, callback_message_fn, MSTeamsErrBotExtraTestSettings
 from lib import ApproveHelper, RoleGrantHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 role_id = 111
 role_name = "role-name"
@@ -22,9 +21,7 @@ account_id = 1
 account_name = "myaccount@test.com"
 access_request_id = "12ab"
 
-class Test_assign_role:
-    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
-
+class Test_assign_role(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

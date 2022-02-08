@@ -11,17 +11,21 @@ from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper
 
-ACCESS_REGEX = r"\*{0,2}access to (.+)"
-APPROVE_REGEX = r"\*{0,2}yes (\w{4})"
-DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.+)?"
-ASSIGN_ROLE_REGEX = r"\*{0,2}access to role (.+)"
-SHOW_RESOURCES_REGEX = r"\*{0,2}show available resources\*{0,2}"
-SHOW_ROLES_REGEX = r"\*{0,2}show available roles\*{0,2}"
+ACCESS_REGEX = r"access to (.+)"
+APPROVE_REGEX = r"yes (\w{4})"
+DENY_REGEX = r"no (\w{4}) ?(.+)?"
+ASSIGN_ROLE_REGEX = r"access to role (.+)"
+SHOW_RESOURCES_REGEX = r"show available resources"
+SHOW_ROLES_REGEX = r"show available roles"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
 
 def get_callback_message_fn(bot):
     def callback_message(msg):
+        """
+        Executes before the plugin command verification.
+        Clears the message removing platform and bold symbols.
+        """
         msg.body = bot.plugin_manager.plugins['AccessBot'].clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
@@ -42,7 +46,6 @@ class AccessBot(BotPlugin):
 
     def activate(self):
         super().activate()
-        self.__setup_command_methods()
         self._platform = get_platform(self)
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
@@ -65,16 +68,6 @@ class AccessBot(BotPlugin):
         else:
             config = config_template.get()
         super(AccessBot, self).configure(config)
-
-    def __setup_command_methods(self):
-        self._command_methods = {
-            'access_resource': self.access_resource,
-            'approve': self.approve,
-            'assign_role': self.assign_role,
-            'deny': self.deny,
-            'show_resources': self.show_resources,
-            'show_roles': self.show_roles
-        }
 
     def check_configuration(self, configuration):
         pass

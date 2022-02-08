@@ -4,13 +4,12 @@ import pytest
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, DummyResource, get_dummy_person, DummyRole
+from test_common import create_config, DummyResource, get_dummy_person, DummyRole, ErrBotExtraTestSettings
 from lib import ShowResourcesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 show_resources_command = 'show available resources'
 show_resources_alias = 'sares'
@@ -24,16 +23,7 @@ account_id = 1
 account_name = "myaccount@test.com"
 access_request_id = "12ab"
 
-
-class Test_match_alias:
-    extra_config = {
-        'BOT_COMMANDS_ALIASES': {
-            'show_resources': show_resources_alias,
-            'access_resource': access_to_resource_alias,
-            'assign_role': None
-        }
-    }
-
+class Test_match_alias(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -81,6 +71,11 @@ def inject_config(testbot, config):
     accessbot.config = config
     # The default implementation is not compatible with the backend identifier.
     # Refer to: https://errbot.readthedocs.io/en/4.1/errbot.backends.test.html#errbot.backends.test.TestPerson
+    accessbot.bot_config.BOT_COMMANDS_ALIASES = {
+        'show_resources': show_resources_alias,
+        'access_resource': access_to_resource_alias,
+        'assign_role': None
+    }
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
