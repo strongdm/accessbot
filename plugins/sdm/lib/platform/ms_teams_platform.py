@@ -43,7 +43,8 @@ class MSTeamsPlatform(BasePlatform):
         return approver.email
 
     def clean_up_message(self, text):
-        return re.sub(r'<at>.+</at>', '', text).strip()
+        unbolded_text = text.replace('*', '')
+        return re.sub(r'<at>.+</at>', '', unbolded_text).strip()
 
     def format_access_request_params(self, resource_name, sender_nick):
         return f'**{resource_name}**', f'**{sender_nick}**'

@@ -34,7 +34,7 @@ class SlackPlatform(BasePlatform):
         return f'@{approver.nick}'
 
     def clean_up_message(self, text):
-        return text
+        return text.replace('*', '')
 
     def format_access_request_params(self, resource_name, sender_nick):
         return r"\`" + resource_name + r"\`", r"\`" + sender_nick + r"\`"

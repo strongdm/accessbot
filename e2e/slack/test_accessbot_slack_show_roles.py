@@ -1,22 +1,20 @@
 # pylint: disable=invalid-name
-import time
 import pytest
 import sys
 from unittest.mock import MagicMock
-from slack_sdk.errors import SlackApiError
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, DummyAccount, DummyRole, get_rate_limited_slack_response_error
+from test_common import create_config, DummyAccount, DummyRole, \
+    get_rate_limited_slack_response_error, ErrBotExtraTestSettings
 from lib import ShowRolesHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = "plugins/sdm"
 account_name = "myaccount@test.com"
 account_roles_tag = 'sdm-roles'
 
-class Test_show_roles:
+class Test_show_roles(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -28,7 +26,7 @@ class Test_show_roles:
         assert "Aaa" in message
         assert "Bbb" in message
 
-class Test_show_roles_except_hidden_roles:
+class Test_show_roles_except_hidden_roles(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -41,7 +39,7 @@ class Test_show_roles_except_hidden_roles:
         assert "Aaa" not in message
         assert "Bbb" in message
 
-class Test_auto_approve_by_tag:
+class Test_auto_approve_by_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -55,7 +53,7 @@ class Test_auto_approve_by_tag:
         assert "Aaa (auto-approve)" in message
         assert "Bbb" in message
 
-class Test_not_allowed_by_tag:
+class Test_not_allowed_by_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -69,7 +67,7 @@ class Test_not_allowed_by_tag:
         assert "Aaa" in message
         assert "~Bbb~ (not allowed)" in message
 
-class Test_alternative_email:
+class Test_alternative_email(ErrBotExtraTestSettings):
     alternative_email_tag = 'alternative-email'
 
     @pytest.fixture

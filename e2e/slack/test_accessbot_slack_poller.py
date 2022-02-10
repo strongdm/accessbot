@@ -2,20 +2,20 @@
 import os
 import pytest
 import sys
-import time
 from errbot.backends.base import Message
 from unittest.mock import MagicMock
 
-from test_common import create_config, send_message_override
+sys.path.append('e2e')
 sys.path.append('plugins/sdm')
+
+from test_common import create_config, send_message_override, ErrBotExtraTestSettings
 from lib import PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 access_request_id = "12ab"
 
-class Test_stale_grant_requests_cleaner:
+class Test_stale_grant_requests_cleaner(ErrBotExtraTestSettings):
     sdm_admin = "gbin@localhost"
     channel_name = 'testroom'
     raw_messages = []
@@ -61,7 +61,7 @@ class Test_stale_grant_requests_cleaner:
         assert self.raw_messages[0].to.person == self.sdm_admin
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
-class Test_stale_max_auto_approve_cleaner:
+class Test_stale_max_auto_approve_cleaner(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

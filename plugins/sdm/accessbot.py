@@ -9,19 +9,23 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper
 
-ACCESS_REGEX = r"\*{0,2}access to (.+)"
-APPROVE_REGEX = r"\*{0,2}yes (.+)"
-DENY_REGEX = r"\*{0,2}no (\w{4}) ?(.*)"
-ASSIGN_ROLE_REGEX = r"\*{0,2}access to role (.+)"
-SHOW_RESOURCES_REGEX = r"\*{0,2}show available resources\*{0,2}"
-SHOW_ROLES_REGEX = r"\*{0,2}show available roles\*{0,2}"
+ACCESS_REGEX = r"access to (.+)"
+APPROVE_REGEX = r"yes (\w{4})"
+DENY_REGEX = r"no (\w{4}) ?(.+)?"
+ASSIGN_ROLE_REGEX = r"access to role (.+)"
+SHOW_RESOURCES_REGEX = r"show available resources"
+SHOW_ROLES_REGEX = r"show available roles"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
 
 def get_callback_message_fn(bot):
     def callback_message(msg):
+        """
+        Executes before the plugin command verification.
+        Clears the message removing platform and bold symbols.
+        """
         msg.body = bot.plugin_manager.plugins['AccessBot'].clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
@@ -33,6 +37,7 @@ def get_platform(bot):
     elif platform == 'slack-classic':
         return SlackRTMPlatform(bot)
     return SlackBoltPlatform(bot)
+
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
@@ -130,6 +135,10 @@ class AccessBot(BotPlugin):
             return
         yield from self.get_show_roles_helper().execute(message)
 
+    @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
+    def match_alias(self, message, _):
+        yield from self.get_command_alias_helper().execute(message)
+
     @staticmethod
     def get_admins():
         return os.getenv("SDM_ADMINS", "").split(" ")
@@ -162,6 +171,9 @@ class AccessBot(BotPlugin):
 
     def get_show_resources_helper(self):
         return ShowResourcesHelper(self)
+
+    def get_command_alias_helper(self):
+        return CommandAliasHelper(self)
 
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
@@ -199,7 +211,7 @@ class AccessBot(BotPlugin):
     def get_sender_nick(self, sender):
         override = self.config['SENDER_NICK_OVERRIDE']
         return override if override else f"@{sender.nick}"
-    
+
     def get_sender_id(self, sender):
         return self._platform.get_sender_id(sender)
 
@@ -271,7 +283,7 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
-    
+
     def extract_filter(self, message):
         if '--filter' in message:
             filter = re.search(r'(?<=--filter ).+', message)
