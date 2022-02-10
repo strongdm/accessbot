@@ -5,8 +5,7 @@ def get_commands_enabled():
     return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny").split(" ")
 
 def get_access_controls():
-    commands_enabled = get_commands_enabled()
-    commands_enabled = [re.sub(r':[\w-]+', '', cmd) for cmd in commands_enabled]
+    commands_enabled = [re.sub(r':[\w-]+', '', cmd) for cmd in get_commands_enabled()]
     allow_all = { 'allowusers': ('*') }
     deny_all = { 'denyusers': ('*') }
     return { # The order in this dict matters!
