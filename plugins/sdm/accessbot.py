@@ -135,7 +135,7 @@ class AccessBot(BotPlugin):
             return
         yield from self.get_show_roles_helper().execute(message)
 
-    @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False)
+    @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
 
