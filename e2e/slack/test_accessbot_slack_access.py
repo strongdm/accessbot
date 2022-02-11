@@ -538,6 +538,31 @@ class Test_change_error_message(ErrBotExtraTestSettings):
         push_access_request(mocked_testbot)
         assert "An error occurred" in mocked_testbot.pop_message()
 
+class Test_acknowledgement_message:
+    @pytest.fixture
+    def mocked_testbot_with_admins_channel(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = 'channel'
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_without_admin_channel(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = None
+        return inject_config(testbot, config)
+
+    def Test_acknowledgement_message_when_admins_channel_is_configured(self, mocked_testbot_with_admins_channel):
+        push_access_request(mocked_testbot_with_admins_channel)
+        acknowledgement_message = mocked_testbot_with_admins_channel.pop_message()
+        assert "valid request" in acknowledgement_message
+        assert "configured admin channel" in acknowledgement_message
+
+    def Test_acknowledgement_message_when_team_admins_is_configured(self, mocked_testbot_with_admins_channel):
+        push_access_request(mocked_testbot_with_admins_channel)
+        acknowledgement_message = mocked_testbot_with_admins_channel.pop_message()
+        assert "valid request" in acknowledgement_message
+        assert "team admins" in acknowledgement_message
+
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
