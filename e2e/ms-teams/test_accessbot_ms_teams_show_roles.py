@@ -5,19 +5,17 @@ import re
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
 from lib import ShowRolesHelper
-from test_common import create_config, DummyAccount, DummyRole, callback_message_fn
+from test_common import create_config, DummyAccount, DummyRole, \
+    callback_message_fn, MSTeamsErrBotExtraTestSettings
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = "plugins/sdm"
 account_name = "myaccount@test.com"
 account_roles_tag = 'sdm-roles'
 
-class Test_show_roles:
-    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
-
+class Test_show_roles(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -38,9 +36,7 @@ class Test_show_roles:
         assert "Aaa" in message
         assert "Bbb" in message
 
-class Test_not_allowed_by_tag:
-    extra_config = { 'BOT_PLATFORM': 'ms-teams' }
-
+class Test_not_allowed_by_tag(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

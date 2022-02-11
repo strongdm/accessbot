@@ -6,15 +6,14 @@ import time
 from unittest.mock import MagicMock, patch
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import DummyPerson, create_config, DummyResource, \
-    send_message_override, callback_message_fn, get_dummy_person
+from test_common import create_config, DummyResource, send_message_override, \
+    callback_message_fn, get_dummy_person, ErrBotExtraTestSettings
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 resource_id = 1
 resource_name = "myresource"
@@ -24,7 +23,7 @@ access_request_id = "12ab"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
 
-class Test_default_flow:  # manual approval
+class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -86,7 +85,7 @@ class Test_default_flow:  # manual approval
         push_access_request(mocked_testbot_with_no_admin_users)
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
-class Test_invalid_approver:
+class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -100,7 +99,7 @@ class Test_invalid_approver:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid user" in mocked_testbot.pop_message()
 
-class Test_auto_approve_all:
+class Test_auto_approve_all(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -143,7 +142,7 @@ class Test_auto_approve_all:
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
-class Test_multiple_admins_flow:
+class Test_multiple_admins_flow(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -157,7 +156,7 @@ class Test_multiple_admins_flow:
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
-class Test_auto_approve_tag:
+class Test_auto_approve_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -168,7 +167,7 @@ class Test_auto_approve_tag:
         push_access_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
 
-class Test_auto_approve_groups_tag:
+class Test_auto_approve_groups_tag(ErrBotExtraTestSettings):
 
     @pytest.fixture
     def mocked_testbot_with_intersecting_groups(self, testbot):
@@ -193,7 +192,7 @@ class Test_auto_approve_groups_tag:
         assert "valid request" in mocked_testbot_with_non_intersecting_groups.pop_message()
         assert "access request" in mocked_testbot_with_non_intersecting_groups.pop_message()
 
-class Test_allow_resource_tag:
+class Test_allow_resource_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_allow_true(self, testbot):
         config = create_config()
@@ -217,7 +216,7 @@ class Test_allow_resource_tag:
         assert "access request" in mocked_testbot_allow_true.pop_message()
         assert "Granting" in mocked_testbot_allow_true.pop_message()
 
-class Test_hide_resource_tag:
+class Test_hide_resource_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_hide_true(self, testbot):
         config = create_config()
@@ -241,7 +240,7 @@ class Test_hide_resource_tag:
         assert "access request" in mocked_testbot_hide_false.pop_message()
         assert "Granting" in mocked_testbot_hide_false.pop_message()
 
-class Test_conceal_resource_tag:
+class Test_conceal_resource_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_conceal_true(self, testbot):
         config = create_config()
@@ -268,7 +267,7 @@ class Test_conceal_resource_tag:
         assert "access request" in mocked_testbot_conceal_false.pop_message()
         assert "Granting" in mocked_testbot_conceal_false.pop_message()
 
-class Test_grant_timeout:
+class Test_grant_timeout(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -294,7 +293,7 @@ class Test_grant_timeout:
             valid_until = datetime.datetime(2021, 5, 12, 0, 1)
             grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
-class Test_resources_by_role:
+class Test_resources_by_role(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -313,7 +312,7 @@ class Test_resources_by_role:
         mocked_testbot.push_message("access to Yyy")
         assert "not available" in mocked_testbot.pop_message()
 
-class Test_acount_grant_exists:
+class Test_acount_grant_exists(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -331,7 +330,7 @@ class Test_acount_grant_exists:
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
-class Test_admin_in_channel:
+class Test_admin_in_channel(ErrBotExtraTestSettings):
     channel_name = 'testroom'
     raw_messages = []
 
@@ -374,7 +373,7 @@ class Test_admin_in_channel:
         mocked_testbot_with_no_channels.push_message(f"yes {access_request_id}")
         assert "but it's unreachable" in mocked_testbot_with_no_channels.pop_message()
 
-class Test_fuzzy_matching:
+class Test_fuzzy_matching(ErrBotExtraTestSettings):
     resource_name = "Very Long name"
 
     @pytest.fixture
@@ -404,7 +403,7 @@ class Test_fuzzy_matching:
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
 # pylint: disable=protected-access
-class Test_self_approve:
+class Test_self_approve(ErrBotExtraTestSettings):
     channel_name = 'testroom'
 
     @pytest.fixture
@@ -434,7 +433,7 @@ class Test_self_approve:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid" in mocked_testbot.pop_message()
 
-class Test_alternative_email:
+class Test_alternative_email(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_user_profile(self):
         return {
@@ -464,7 +463,7 @@ class Test_alternative_email:
         assert "Granting" in granting_message
         assert alternative_email in granting_message
 
-class Test_override_email:
+class Test_override_email(ErrBotExtraTestSettings):
     override_email = 'override@email.com'
 
     @pytest.fixture
@@ -482,7 +481,7 @@ class Test_override_email:
         assert "Granting" in granting_message
         assert self.override_email in granting_message
 
-class Test_email_subaddress:
+class Test_email_subaddress(ErrBotExtraTestSettings):
     account_name_with_subaddress = 'myaccount+stable@test.com'
     email_subaddress = 'stable'
 
@@ -508,7 +507,7 @@ class Test_email_subaddress:
         assert "Granting" in granting_message
         assert self.account_name_with_subaddress in granting_message
 
-class Test_custom_resource_grant_timeout:
+class Test_custom_resource_grant_timeout(ErrBotExtraTestSettings):
     timeout = 1
 
     @pytest.fixture
@@ -527,7 +526,7 @@ class Test_custom_resource_grant_timeout:
         assert "Granting" in granting_message
         assert f"{self.timeout} minutes" in granting_message
 
-class Test_change_error_message:
+class Test_change_error_message(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         return inject_config(testbot, create_config())

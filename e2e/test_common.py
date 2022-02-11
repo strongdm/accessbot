@@ -1,11 +1,21 @@
 from errbot import Message
 from errbot.core import ErrBot
-from errbot.backends.test import TestPerson
+from errbot.backends.test import TestPerson as DummyErrbotPerson
 
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.slack_response import SlackResponse
 
 admin_default_email = 'gbin@localhost'
+
+
+class ErrBotExtraTestSettings:
+    extra_config = {'BOT_ASYNC': False}
+    extra_plugin_dir = "plugins/sdm"
+
+class MSTeamsErrBotExtraTestSettings:
+    extra_config = {'BOT_ASYNC': False, 'BOT_PLATFORM': 'ms-teams'}
+    extra_plugin_dir = "plugins/sdm"
+
 
 def create_config():
     return {
@@ -77,7 +87,7 @@ class DummyConversation:
             self.activity_id
         )
 
-class DummyPerson(TestPerson):
+class DummyPerson(DummyErrbotPerson):
     def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
         super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
         self._is_deleted = is_deleted

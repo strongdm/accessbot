@@ -5,13 +5,12 @@ import time
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, get_dummy_person
+from test_common import create_config, get_dummy_person, ErrBotExtraTestSettings
 from lib import ApproveHelper, ResourceGrantHelper
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 resource_id = 1
 resource_name = "myresource"
@@ -21,7 +20,7 @@ access_request_id = "12ab"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
 
-class Test_default_flow:  # manual approval
+class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -48,7 +47,7 @@ class Test_default_flow:  # manual approval
         assert "with the following reason" in denied_response_message
         assert denial_reason in denied_response_message
 
-class Test_invalid_user:
+class Test_invalid_user(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -65,7 +64,7 @@ class Test_invalid_user:
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid user" in mocked_testbot.pop_message()
 
-class Test_invalid_request_id:
+class Test_invalid_request_id(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()

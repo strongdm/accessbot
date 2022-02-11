@@ -6,14 +6,13 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 sys.path.append('plugins/sdm')
-sys.path.append('e2e/')
+sys.path.append('e2e')
 
-from test_common import create_config, DummyRole, get_dummy_person
+from test_common import create_config, DummyRole, get_dummy_person, ErrBotExtraTestSettings
 from lib import ApproveHelper, RoleGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
 pytest_plugins = ["errbot.backends.test"]
-extra_plugin_dir = 'plugins/sdm'
 
 role_id = 111
 role_name = "role-name"
@@ -23,7 +22,7 @@ account_id = 1
 account_name = "myaccount@test.com"
 access_request_id = "12ab"
 
-class Test_assign_role:
+class Test_assign_role(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -48,7 +47,7 @@ class Test_assign_role:
             valid_until = datetime.datetime(2021, 5, 12, 1, 0)
             grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
-class Test_auto_approve_all:
+class Test_auto_approve_all(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -91,7 +90,7 @@ class Test_auto_approve_all:
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
-class Test_auto_approve_tag:
+class Test_auto_approve_tag(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
@@ -102,7 +101,7 @@ class Test_auto_approve_tag:
         push_access_role_request(mocked_testbot)
         assert "Granting" in mocked_testbot.pop_message()
 
-class Test_role_fuzzy_matching:
+class Test_role_fuzzy_matching(ErrBotExtraTestSettings):
     role = "Very Long Role"
 
     @pytest.fixture
@@ -124,7 +123,7 @@ class Test_role_fuzzy_matching:
         time.sleep(0.2)
         assert "cannot find that role" in mocked_testbot.pop_message()
 
-class Test_control_role_by_tag:
+class Test_control_role_by_tag(ErrBotExtraTestSettings):
     no_allowed_role = "Very Long Role"
     allowed_role = "Second Role"
     roles = [DummyRole("Very Long Role", {}), DummyRole("Second Role", {})]
@@ -150,7 +149,7 @@ class Test_control_role_by_tag:
         time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
-class Test_control_role_by_tag_without_roles:
+class Test_control_role_by_tag_without_roles(ErrBotExtraTestSettings):
     no_allowed_role = "Very Long Role"
     allowed_role = "Second Role"
     roles = [DummyRole("Very Long Role", {}), DummyRole("Second Role", {})]
@@ -168,7 +167,7 @@ class Test_control_role_by_tag_without_roles:
         time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
-class Test_role_grant_exists:
+class Test_role_grant_exists(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
