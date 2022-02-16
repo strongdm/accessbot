@@ -91,6 +91,16 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert request_reason in request_message
         assert "Granting" in mocked_testbot.pop_message()
 
+    def test_access_command_grant_access_with_duration_message(self, mocked_testbot):
+        duration = '120'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}m")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert f"{duration} minutes" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
