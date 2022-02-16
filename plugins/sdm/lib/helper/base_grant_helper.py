@@ -66,12 +66,12 @@ class BaseGrantHelper(ABC):
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
         if self.__needs_auto_approve(sdm_object, sdm_account) and not self.__reached_max_auto_approve_uses(message.frm.person):
-            yield from self.__auto_approve_access_request(message, sdm_object, sdm_account, execution_id, request_id)
+            yield from self.__auto_approve_access_request(message, sdm_object, sdm_account, execution_id, request_id, flags)
             return
         yield from self.__request_manual_approval(message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags)
 
-    def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id):
-        self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
+    def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id, flags: dict = None):
+        self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type, flags=flags)
 
     def __needs_auto_approve(self, sdm_object, sdm_account):
         is_auto_approve_all_enabled = self.__bot.config[self.__auto_approve_all_key]
@@ -86,14 +86,14 @@ class BaseGrantHelper(ABC):
         auto_approve_uses = self.__bot.get_auto_approve_use(requester_id)
         return auto_approve_uses >= max_auto_approve_uses
 
-    def __auto_approve_access_request(self, message, sdm_object, sdm_account, execution_id, request_id):
-        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+    def __auto_approve_access_request(self, message, sdm_object, sdm_account, execution_id, request_id, flags: dict):
+        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
         yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         self.__check_administration_availability()
-        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
+        self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
@@ -105,8 +105,10 @@ class BaseGrantHelper(ABC):
         else:
             team_admins = ", ".join(self.__bot.get_admins())
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}!"
-        reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags['reason'] else ''
+        duration = flags['duration'][:-1] if flags and flags.get('duration') else None
+        duration_details = f" for {duration} minutes" if duration else ''
+        request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}{duration_details}!"
+        reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
         self.__notify_admins(request_details + reason + approval_instructions, message)
 

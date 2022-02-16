@@ -9,7 +9,7 @@ class FlagsHelper:
         return arguments[0:command_end_idx].strip()
 
     @staticmethod
-    def extract_flags(arguments: str):
+    def extract_flags(arguments: str, validators: dict = {}):
         flags = {}
         flag_matches = list(re.finditer(r'--[^ ]+', arguments))
         for idx, match in enumerate(flag_matches):
@@ -18,5 +18,7 @@ class FlagsHelper:
             flag_value_start_idx = match.end() + 1
             flag_value_end_idx = next_match.start() if next_match else None
             flag_value = arguments[flag_value_start_idx:flag_value_end_idx].strip()
-            flags[flag_name] = flag_value
+            validator = validators.get(flag_name)
+            if not validator or validator(flag_value):
+                flags[flag_name] = flag_value
         return flags

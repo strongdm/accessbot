@@ -1,3 +1,4 @@
+import re
 import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
@@ -47,3 +48,29 @@ class ResourceGrantHelper(BaseGrantHelper):
     def __is_resource_in_role(self, resource_name, role_name):
         sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
         return any(r.name == resource_name for r in sdm_resources_by_role)
+
+    @staticmethod
+    def get_flags_validators():
+        return {
+            'reason': ResourceGrantHelper.reason_flag_validator,
+            'duration': ResourceGrantHelper.duration_flag_validator,
+        }
+
+    @staticmethod
+    def reason_flag_validator(value: str):
+        if len(value) == 0:
+            raise Exception('You need to pass the reason after the "--reason" flag.')
+        return True
+
+    @staticmethod
+    def duration_flag_validator(value: str):
+        match = re.match(r'^\d+m$', value)
+        if not match:
+            raise Exception('The duration must be informed in minutes, e.g.: "--duration 30m"')
+        duration = int(match.string[:-1])
+        if duration < 10:
+            raise Exception('The duration must be equal or greater than 10 minutes')
+        elif duration > 1440:
+            raise Exception('The duration must be equal or less than 1440 minutes')
+        return True
+

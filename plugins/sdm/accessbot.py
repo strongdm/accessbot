@@ -85,7 +85,7 @@ class AccessBot(BotPlugin):
         if not self._platform.can_access_resource(message):
             return
         resource_name = FlagsHelper.remove_flags(arguments)
-        flags = FlagsHelper.extract_flags(arguments)
+        flags = FlagsHelper.extract_flags(arguments, validators=ResourceGrantHelper.get_flags_validators())
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
@@ -188,7 +188,7 @@ class AccessBot(BotPlugin):
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
 
-    def enter_grant_request(self, request_id, message, sdm_object, sdm_account, grant_request_type):
+    def enter_grant_request(self, request_id, message, sdm_object, sdm_account, grant_request_type, flags: dict = None):
         self.__grant_requests[request_id] = {
             'id': request_id,
             'status': 'PENDING', # TODO Remove?
@@ -196,7 +196,8 @@ class AccessBot(BotPlugin):
             'message': message, # cannot be persisted in errbot state
             'sdm_object': sdm_object,
             'sdm_account': sdm_account,
-            'type': grant_request_type
+            'type': grant_request_type,
+            'flags': flags,
         }
 
     def remove_grant_request(self, request_id):
