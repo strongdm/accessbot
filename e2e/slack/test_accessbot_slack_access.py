@@ -39,21 +39,21 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         return inject_config(testbot, config)
 
     def test_access_command_grant_approved(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_access_command_grant_timed_out(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
 
     def test_access_command_grant_not_approved(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message("no") # Anything but yes
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -61,14 +61,14 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "not approved" in mocked_testbot.pop_message()
 
     def test_access_command_grant_bolded_yes_message(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"**yes {access_request_id}**")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_access_command_grant_bolded_request_id_in_yes_message(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes *{access_request_id}*")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -92,7 +92,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
-        push_access_request(mocked_testbot_with_no_admin_users)
+        mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
 class Test_invalid_approver(ErrBotExtraTestSettings):
@@ -103,7 +103,7 @@ class Test_invalid_approver(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_access_command_fail_when_user_not_admin(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -124,31 +124,31 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         return mocked_testbot
 
     def test_auto_all(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_with_remaining_approvals_message(self, mocked_with_max_auto_approve):
-        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message("access to Xxx")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
     def test_default_flow_once_exhausted_auto_approvals(self, mocked_with_max_auto_approve):
-        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message("access to Xxx")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
-        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message("access to Xxx")
         mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_with_max_auto_approve.pop_message()
         assert "access request" in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
 
     def test_keep_remaining_approvals_when_cleaner_passes(self, mocked_with_max_auto_approve):
-        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message("access to Xxx")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
         accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
         PollerHelper(accessbot).stale_max_auto_approve_cleaner()
-        push_access_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message("access to Xxx")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
@@ -159,7 +159,7 @@ class Test_multiple_admins_flow(ErrBotExtraTestSettings):
         return inject_config(testbot, config, admins = ["gbin@localhost",  "user1"])
 
     def test_access_command_grant_multiple_admins(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -174,7 +174,7 @@ class Test_auto_approve_tag(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags = {'auto-approve': True})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "Granting" in mocked_testbot.pop_message()
 
 class Test_auto_approve_groups_tag(ErrBotExtraTestSettings):
@@ -194,11 +194,11 @@ class Test_auto_approve_groups_tag(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags={ 'auto-approve-groups': 'another-group' }, account_tags={ 'groups': 'test-group' })
 
     def test_auto_approve_for_intersecting_group(self, mocked_testbot_with_intersecting_groups):
-        push_access_request(mocked_testbot_with_intersecting_groups)
+        mocked_testbot_with_intersecting_groups.push_message("access to Xxx")
         assert "Granting" in mocked_testbot_with_intersecting_groups.pop_message()
 
     def test_dont_auto_approve_for_non_intersecting_groups(self, mocked_testbot_with_non_intersecting_groups):
-        push_access_request(mocked_testbot_with_non_intersecting_groups)
+        mocked_testbot_with_non_intersecting_groups.push_message("access to Xxx")
         assert "valid request" in mocked_testbot_with_non_intersecting_groups.pop_message()
         assert "access request" in mocked_testbot_with_non_intersecting_groups.pop_message()
 
@@ -216,11 +216,11 @@ class Test_allow_resource_tag(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags = {'allow-resource': False})
 
     def test_access_command_fail_for_not_allowed_resources(self, mocked_testbot_allow_false):
-        push_access_request(mocked_testbot_allow_false)
+        mocked_testbot_allow_false.push_message("access to Xxx")
         assert "not available" in mocked_testbot_allow_false.pop_message()
 
     def test_access_command_grant_when_allowed_resource(self, mocked_testbot_allow_true):
-        push_access_request(mocked_testbot_allow_true)
+        mocked_testbot_allow_true.push_message("access to Xxx")
         mocked_testbot_allow_true.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_allow_true.pop_message()
         assert "access request" in mocked_testbot_allow_true.pop_message()
@@ -240,11 +240,11 @@ class Test_hide_resource_tag(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags = {'hide-resource': False})
 
     def test_access_command_fail_for_hidden_resources(self, mocked_testbot_hide_true):
-        push_access_request(mocked_testbot_hide_true)
+        mocked_testbot_hide_true.push_message("access to Xxx")
         assert "not available" in mocked_testbot_hide_true.pop_message()
 
     def test_access_command_grant_when_hide_resource_is_false(self, mocked_testbot_hide_false):
-        push_access_request(mocked_testbot_hide_false)
+        mocked_testbot_hide_false.push_message("access to Xxx")
         mocked_testbot_hide_false.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_hide_false.pop_message()
         assert "access request" in mocked_testbot_hide_false.pop_message()
@@ -264,14 +264,14 @@ class Test_conceal_resource_tag(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags = {'conceal-resource': False})
 
     def test_access_command_fail_for_hidden_resources(self, mocked_testbot_conceal_true):
-        push_access_request(mocked_testbot_conceal_true)
+        mocked_testbot_conceal_true.push_message("access to Xxx")
         mocked_testbot_conceal_true.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_conceal_true.pop_message()
         assert "access request" in mocked_testbot_conceal_true.pop_message()
         assert "Granting" in mocked_testbot_conceal_true.pop_message()
 
     def test_access_command_grant_when_conceal_resource_is_false(self, mocked_testbot_conceal_false):
-        push_access_request(mocked_testbot_conceal_false)
+        mocked_testbot_conceal_false.push_message("access to Xxx")
         mocked_testbot_conceal_false.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_conceal_false.pop_message()
         assert "access request" in mocked_testbot_conceal_false.pop_message()
@@ -293,7 +293,7 @@ class Test_grant_timeout(ErrBotExtraTestSettings):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            push_access_request(mocked_testbot)
+            mocked_testbot.push_message("access to Xxx")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "access request" in mocked_testbot.pop_message()
@@ -312,7 +312,7 @@ class Test_resources_by_role(ErrBotExtraTestSettings):
         return inject_config(testbot, config, resources_by_role = resources_by_role)
 
     def test_access_command_grant_for_valid_resource(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -329,14 +329,14 @@ class Test_acount_grant_exists(ErrBotExtraTestSettings):
         return inject_config(testbot, config, account_grant_exists = True)
 
     def test_when_grant_exists(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "already have access" in mocked_testbot.pop_message()
 
     def test_when_grant_doesnt_exists(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         service = accessbot.get_sdm_service()
         service.account_grant_exists.return_value = False
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
@@ -364,7 +364,7 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
             return_value = get_dummy_person(f'#{self.channel_name}'))
         mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
-        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
         assert "access request" in mocked_testbot_with_channels.pop_message()
@@ -372,14 +372,14 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
-        push_access_request(mocked_testbot_with_channels)
+        mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
         assert "access request" in mocked_testbot_with_channels.pop_message()
         assert "Invalid user" in mocked_testbot_with_channels.pop_message()
 
     def test_access_command_fails_for_unreachable_admin_channel(self, mocked_testbot_with_no_channels):
-        push_access_request(mocked_testbot_with_no_channels)
+        mocked_testbot_with_no_channels.push_message("access to Xxx")
         mocked_testbot_with_no_channels.push_message(f"yes {access_request_id}")
         assert "but it's unreachable" in mocked_testbot_with_no_channels.pop_message()
 
@@ -394,7 +394,6 @@ class Test_fuzzy_matching(ErrBotExtraTestSettings):
 
     def test_find_fuzzy_matching(self, mocked_testbot):
         mocked_testbot.push_message("access to Long name")
-        time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
         recommendation = mocked_testbot.pop_message()
         assert "Did you mean" in recommendation
@@ -402,14 +401,12 @@ class Test_fuzzy_matching(ErrBotExtraTestSettings):
 
     def test_fail_find_fuzzy_matching(self, mocked_testbot):
         mocked_testbot.push_message("access to name") # it's to short, the threshold is not good enough
-        time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
     def test_find_with_disabled_fuzzy_matching(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['ENABLE_RESOURCES_FUZZY_MATCHING'] = False
         mocked_testbot.push_message("access to Long name")
-        time.sleep(0.2)
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
 # pylint: disable=protected-access
@@ -428,7 +425,7 @@ class Test_self_approve(ErrBotExtraTestSettings):
         return inject_config(testbot, config, admins = [f'@not-admin'])
 
     def test_when_approver_is_not_the_requester(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -437,7 +434,7 @@ class Test_self_approve(ErrBotExtraTestSettings):
     def test_when_approver_is_requester(self, mocked_testbot):
         mocked_testbot.bot.sender._email = account_name
         mocked_testbot.bot.sender._nick = account_name
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -465,7 +462,7 @@ class Test_alternative_email(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_alternative_email(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -483,7 +480,7 @@ class Test_override_email(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_override_email(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -509,7 +506,7 @@ class Test_email_subaddress(ErrBotExtraTestSettings):
             from_email=account_name,
             from_nick=account_name
         ))
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -528,7 +525,7 @@ class Test_custom_resource_grant_timeout(ErrBotExtraTestSettings):
         return inject_config(testbot, config, tags={timeout_grant_tag: f'{self.timeout}'})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f'yes {access_request_id}')
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -545,7 +542,7 @@ class Test_change_error_message(ErrBotExtraTestSettings):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.get_sdm_service().get_account_by_email = MagicMock(side_effect = Exception('Something failed'))
 
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "An error occurred" in mocked_testbot.pop_message()
 
 class Test_acknowledgement_message:
@@ -562,13 +559,13 @@ class Test_acknowledgement_message:
         return inject_config(testbot, config)
 
     def Test_acknowledgement_message_when_admins_channel_is_configured(self, mocked_testbot_with_admins_channel):
-        push_access_request(mocked_testbot_with_admins_channel)
+        mocked_testbot_with_admins_channel.push_message("access to Xxx")
         acknowledgement_message = mocked_testbot_with_admins_channel.pop_message()
         assert "valid request" in acknowledgement_message
         assert "configured admin channel" in acknowledgement_message
 
     def Test_acknowledgement_message_when_team_admins_is_configured(self, mocked_testbot_with_admins_channel):
-        push_access_request(mocked_testbot_with_admins_channel)
+        mocked_testbot_with_admins_channel.push_message("access to Xxx")
         acknowledgement_message = mocked_testbot_with_admins_channel.pop_message()
         assert "valid request" in acknowledgement_message
         assert "team admins" in acknowledgement_message
@@ -636,12 +633,6 @@ def create_room_mock(channel_name):
     mock = MagicMock()
     mock.name = channel_name
     return mock
-
-def push_access_request(testbot):
-    testbot.push_message("access to Xxx")
-    # gives some time to process
-    # needed in slow environments, e.g. github actions
-    time.sleep(0.2)
 
 def raise_no_resource_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that resource!')

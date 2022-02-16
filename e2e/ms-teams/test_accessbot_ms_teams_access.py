@@ -24,12 +24,12 @@ class Test_default_flow(MSTeamsErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_fail_access_command_when_sent_via_dm(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         assert "cannot execute this command via DM" in mocked_testbot.pop_message()
 
     def test_access_command_grant_when_self_approved(self, mocked_testbot):
         mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -41,7 +41,7 @@ class Test_default_flow(MSTeamsErrBotExtraTestSettings):
             from_email=account_name,
             approver_is_admin=True
         ))
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -52,7 +52,7 @@ class Test_default_flow(MSTeamsErrBotExtraTestSettings):
             mocked_testbot._bot,
             from_email=account_name
         ))
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -107,10 +107,3 @@ def create_approver_mock(account_email = account_name):
     mock.email = account_email
     mock.nick = account_email
     return mock
-
-def push_access_request(testbot):
-    testbot.push_message("access to Xxx")
-    # gives some time to process
-    # needed in slow environments, e.g. github actions
-    time.sleep(0.2)
-

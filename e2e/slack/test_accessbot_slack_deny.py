@@ -30,14 +30,14 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         return inject_config(testbot, config)
 
     def test_access_command_grant_denied(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"no {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert f"request {access_request_id} has been denied" in mocked_testbot.pop_message()
 
     def test_access_command_grant_denied_with_reason(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         denial_reason = 'this is a denial reason'
         mocked_testbot.push_message(f"no {access_request_id} {denial_reason}")
         assert "valid request" in mocked_testbot.pop_message()
@@ -58,7 +58,7 @@ class Test_invalid_user(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_deny_command_fail_when_user_not_admin(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"no {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -75,7 +75,7 @@ class Test_invalid_request_id(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_deny_command_fail_when_request_id_is_invalid(self, mocked_testbot):
-        push_access_request(mocked_testbot)
+        mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"no xxxx")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -124,9 +124,3 @@ def create_account_mock(account_email = account_name):
     mock.name = account_name
     mock.email = account_email
     return mock
-
-def push_access_request(testbot):
-    testbot.push_message("access to Xxx")
-    # gives some time to process
-    # needed in slow environments, e.g. github actions
-    time.sleep(0.2)
