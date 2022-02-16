@@ -9,13 +9,14 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, FlagsHelper
+from lib.util import normalize_utf8
 
 ACCESS_REGEX = r"access to (.+)"
 APPROVE_REGEX = r"yes (\w{4})"
 DENY_REGEX = r"no (\w{4}) ?(.+)?"
 ASSIGN_ROLE_REGEX = r"access to role (.+)"
-SHOW_RESOURCES_REGEX = r"show available resources"
+SHOW_RESOURCES_REGEX = r"show available resources ?(.+)?"
 SHOW_ROLES_REGEX = r"show available roles"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
@@ -72,18 +73,20 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text]")
     def access_resource(self, message, match):
         """
         Grant access to a resource (using the requester's email address)
         """
-        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        if re.match("^role (.*)", resource_name):
+        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        if re.match("^role (.*)", arguments):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         if not self._platform.can_access_resource(message):
             return
-        yield from self.get_resource_grant_helper().request_access(message, resource_name)
+        resource_name = FlagsHelper.remove_flags(arguments)
+        flags = FlagsHelper.extract_flags(arguments)
+        yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
     def assign_role(self, message, match):
@@ -122,7 +125,8 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_show_resources(message):
             return
-        filter = self.extract_filter(message.body)
+        flags = FlagsHelper.extract_flags(message.body)
+        filter = flags.get('filter') or ''
         yield from self.get_show_resources_helper().execute(message, filter=filter)
 
     #pylint: disable=unused-argument
@@ -273,7 +277,7 @@ class AccessBot(BotPlugin):
         return None
 
     def clean_up_message(self, message):
-        return self._platform.clean_up_message(message)
+        return self._platform.clean_up_message(normalize_utf8(message))
 
     def format_access_request_params(self, resource_name, sender_nick):
         return self._platform.format_access_request_params(resource_name, sender_nick)
@@ -283,14 +287,6 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
-
-    def extract_filter(self, message):
-        if '--filter' in message:
-            filter = re.search(r'(?<=--filter ).+', message)
-            if not filter:
-                raise Exception('You must pass the filter arguments after the "--filter" tag.')
-            return filter.group()
-        return ''
 
     def channel_is_reachable(self, channel):
         return self._platform.channel_is_reachable(channel)

@@ -1,6 +1,7 @@
 import re
 
 from .base_platform import BasePlatform
+from ..util import remove_bold_symbols
 
 
 class MSTeamsPlatform(BasePlatform):
@@ -43,7 +44,7 @@ class MSTeamsPlatform(BasePlatform):
         return approver.email
 
     def clean_up_message(self, text):
-        unbolded_text = text.replace('*', '')
+        unbolded_text = remove_bold_symbols(text)
         return re.sub(r'<at>.+</at>', '', unbolded_text).strip()
 
     def format_access_request_params(self, resource_name, sender_nick):

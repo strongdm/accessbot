@@ -14,7 +14,7 @@ class BaseGrantHelper(ABC):
         self.__auto_approve_tag_key = auto_approve_tag_key
         self.__auto_approve_all_key = auto_approve_all_key
 
-    def request_access(self, message, searched_name):
+    def request_access(self, message, searched_name, flags: dict = None):
         execution_id = shortuuid.ShortUUID().random(length=6)
         operation_desc = self.get_operation_desc()
         self.__bot.log.info("##SDM## %s GrantHelper.access_%s new %s request for resource_name: %s", execution_id, self.__grant_type, operation_desc, searched_name)
@@ -23,7 +23,7 @@ class BaseGrantHelper(ABC):
             sdm_account = self.__get_account(message)
             self.check_permission(sdm_resource, sdm_account, searched_name)
             request_id = self.generate_grant_request_id()
-            yield from self.__grant_access(message, sdm_resource, sdm_account, execution_id, request_id)
+            yield from self.__grant_access(message, sdm_resource, sdm_account, execution_id, request_id, flags)
         except NotFoundException as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s request failed %s", execution_id, self.__grant_type, operation_desc, str(ex))
             yield str(ex)
@@ -61,14 +61,14 @@ class BaseGrantHelper(ABC):
     def can_try_fuzzy_matching(self):
         pass
 
-    def __grant_access(self, message, sdm_object, sdm_account, execution_id, request_id):
+    def __grant_access(self, message, sdm_object, sdm_account, execution_id, request_id, flags: dict):
         sender_nick = self.__bot.get_sender_nick(message.frm)
         sender_email = sdm_account.email
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
         if self.__needs_auto_approve(sdm_object, sdm_account) and not self.__reached_max_auto_approve_uses(message.frm.person):
             yield from self.__auto_approve_access_request(message, sdm_object, sdm_account, execution_id, request_id)
             return
-        yield from self.__request_manual_approval(message, sdm_object, sdm_account, execution_id, request_id, sender_nick)
+        yield from self.__request_manual_approval(message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags)
 
     def __enter_grant_request(self, message, sdm_object, sdm_account, grant_request_type, request_id):
         self.__bot.enter_grant_request(request_id, message, sdm_object, sdm_account, grant_request_type)
@@ -91,13 +91,13 @@ class BaseGrantHelper(ABC):
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
         yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
 
-    def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick):
+    def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         self.__check_administration_availability()
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id)
-        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
-    def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message):
+    def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message, flags: dict):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
         if self.__bot.config['ADMINS_CHANNEL']:
@@ -105,8 +105,10 @@ class BaseGrantHelper(ABC):
         else:
             team_admins = ", ".join(self.__bot.get_admins())
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        self.__notify_admins(f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}!" +
-                             f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**", message)
+        request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}!"
+        reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags['reason'] else ''
+        approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
+        self.__notify_admins(request_details + reason + approval_instructions, message)
 
     def __notify_admins(self, text, message):
         admins_channel = self.__bot.config['ADMINS_CHANNEL']

@@ -1,4 +1,7 @@
 import enum
+import re
+import unicodedata
+
 from fuzzywuzzy import fuzz
 
 FUZZY_MATCH_THRESHOLD = 50 # Base 100
@@ -64,3 +67,19 @@ def has_intersection(list_a, list_b):
         if a in list_b:
             return True
     return False
+
+def remove_bold_symbols(text: str):
+    first_flag_match = re.search(r'--\w', text)
+    command_end_idx = first_flag_match.start() if first_flag_match else None
+    cleaned_text = text[0:command_end_idx].replace('*', '')
+    if command_end_idx:
+        cleaned_text += text[command_end_idx:]
+    return cleaned_text
+
+def normalize_utf8(text: str):
+    '''
+    This method normalizes text to UTF-8. During the normalization process,
+    if a character is not present in the ASCII table, it is going to be ignored.
+    See: https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize
+    '''
+    return unicodedata.normalize("NFKD", text).encode('ascii', 'ignore').decode('UTF-8')

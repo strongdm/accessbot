@@ -81,6 +81,16 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+    def test_access_command_grant_access_with_reason_message(self, mocked_testbot):
+        request_reason = 'please, accept this request'
+        mocked_testbot.push_message(f"access to Xxx --reason {request_reason}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert request_reason in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         push_access_request(mocked_testbot_with_no_admin_users)
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
