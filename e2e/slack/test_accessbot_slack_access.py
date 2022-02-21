@@ -93,7 +93,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
 
     def test_access_command_dont_grant_access_when_reason_flag_has_no_value(self, mocked_testbot):
         mocked_testbot.push_message(f"access to Xxx --reason")
-        assert "You need to pass the reason" in mocked_testbot.pop_message()
+        assert "You need to enter a valid reason" in mocked_testbot.pop_message()
 
     def test_access_command_grant_access_with_duration_flag(self, mocked_testbot):
         duration = '45'
@@ -167,18 +167,20 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
 
     def test_access_command_dont_grant_access_when_empty_duration_flag(self, mocked_testbot):
         mocked_testbot.push_message(f"access to Xxx --duration")
-        assert "Invalid duration format" in mocked_testbot.pop_message()
+        assert "You need to enter a valid duration" in mocked_testbot.pop_message()
 
     def test_access_command_dont_grant_access_when_duration_flag_has_invalid_unit(self, mocked_testbot):
         duration = '30'
         invalid_unit = 'x'
         mocked_testbot.push_message(f"access to Xxx --duration {duration}{invalid_unit}")
-        assert "Invalid time unit" in mocked_testbot.pop_message()
+        invalid_unit_message = mocked_testbot.pop_message()
+        assert "You need to enter a valid duration unit" in invalid_unit_message
+        assert "Valid units are: m, h, d, w" in invalid_unit_message
 
     def test_access_command_dont_grant_access_when_duration_flag_has_duration_equals_to_zero(self, mocked_testbot):
         duration = '0'
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
-        assert "The duration cannot be zero" in mocked_testbot.pop_message()
+        assert "You need to enter a duration greater than zero" in mocked_testbot.pop_message()
 
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")

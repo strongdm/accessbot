@@ -57,20 +57,20 @@ class ResourceGrantHelper(BaseGrantHelper):
 
     def reason_flag_validator(self, value: str):
         if len(value) == 0:
-            raise Exception('You need to pass the reason after the "--reason" flag.')
+            raise Exception('You need to enter a valid reason after the "--reason" flag.')
         return True
 
     def duration_flag_validator(self, value: str):
         match = re.match(r'^\d+[a-zA-Z]?$', value)
         if not match:
-            raise Exception('Invalid duration format. The duration must be informed as an integer, followed by a time unit (optional).')
+            raise Exception('You need to enter a valid duration, e.g. 60m, 2h, etc.')
         time_unit_match = re.search(r'[a-zA-Z]', value)
         short_time_unit = time_unit_match.group() if time_unit_match else 'm'
         if not VALID_TIME_UNITS.get(short_time_unit):
             formatted_valid_time_units = ', '.join(VALID_TIME_UNITS.keys())
-            raise Exception(f'Invalid time unit. Valid time units are: {formatted_valid_time_units}')
+            raise Exception(f'You need to enter a valid duration unit. Valid units are: {formatted_valid_time_units}.')
         duration = int(re.search(r'\d+', value).group())
         if duration == 0:
-            raise Exception('The duration cannot be zero.')
+            raise Exception('You need to enter a duration greater than zero.')
         return True
 
