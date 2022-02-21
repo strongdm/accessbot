@@ -9,7 +9,7 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, FlagsHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -85,8 +85,8 @@ class AccessBot(BotPlugin):
             return
         if not self._platform.can_access_resource(message):
             return
-        resource_name = self.get_flags_helper().remove_flags(arguments)
-        flags = self.get_flags_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
+        resource_name = self.get_arguments_helper().remove_flags(arguments)
+        flags = self.get_arguments_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
@@ -126,7 +126,7 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_show_resources(message):
             return
-        flags = self.get_flags_helper().extract_flags(message.body)
+        flags = self.get_arguments_helper().extract_flags(message.body)
         yield from self.get_show_resources_helper().execute(message, flags=flags)
 
     #pylint: disable=unused-argument
@@ -182,8 +182,8 @@ class AccessBot(BotPlugin):
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
 
-    def get_flags_helper(self):
-        return FlagsHelper()
+    def get_arguments_helper(self):
+        return ArgumentsHelper()
 
     def get_admin_ids(self):
         return self._platform.get_admin_ids()

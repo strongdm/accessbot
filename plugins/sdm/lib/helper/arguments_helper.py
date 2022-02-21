@@ -1,8 +1,10 @@
 import re
 
-
-class FlagsHelper:
+class ArgumentsHelper:
     def remove_flags(self, arguments: str):
+        """
+        Remove all flags from the arguments string
+        """
         first_flag_match = re.search(r'--\w', arguments)
         command_end_idx = first_flag_match.start() if first_flag_match else None
         return arguments[0:command_end_idx].strip()
