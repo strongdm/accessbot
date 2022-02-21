@@ -2,7 +2,8 @@ import shortuuid
 from abc import ABC, abstractmethod
 from typing import Any
 from ..exceptions import NotFoundException, PermissionDeniedException
-from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag
+from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string,\
+    convert_duration_flag_to_timedelta
 
 
 class BaseGrantHelper(ABC):
@@ -14,7 +15,7 @@ class BaseGrantHelper(ABC):
         self.__auto_approve_tag_key = auto_approve_tag_key
         self.__auto_approve_all_key = auto_approve_all_key
 
-    def request_access(self, message, searched_name, flags: dict = None):
+    def request_access(self, message, searched_name, flags: dict = {}):
         execution_id = shortuuid.ShortUUID().random(length=6)
         operation_desc = self.get_operation_desc()
         self.__bot.log.info("##SDM## %s GrantHelper.access_%s new %s request for resource_name: %s", execution_id, self.__grant_type, operation_desc, searched_name)
@@ -105,8 +106,8 @@ class BaseGrantHelper(ABC):
         else:
             team_admins = ", ".join(self.__bot.get_admins())
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
-        duration = flags['duration'][:-1] if flags and flags.get('duration') else None
-        duration_details = f" for {duration} minutes" if duration else ''
+        duration = convert_duration_flag_to_timedelta(flags.get('duration')) if flags.get('duration') else None
+        duration_details = f" for {get_formatted_duration_string(duration)}" if duration else ''
         request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}{duration_details}!"
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"

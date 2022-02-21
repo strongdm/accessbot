@@ -91,15 +91,94 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert request_reason in request_message
         assert "Granting" in mocked_testbot.pop_message()
 
-    def test_access_command_grant_access_with_duration_message(self, mocked_testbot):
-        duration = '120'
-        mocked_testbot.push_message(f"access to Xxx --duration {duration}m")
+    def test_access_command_dont_grant_access_when_reason_flag_has_no_value(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to Xxx --reason")
+        assert "You need to pass the reason" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_access_with_duration_flag(self, mocked_testbot):
+        duration = '45'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         request_message = mocked_testbot.pop_message()
         assert "access request" in request_message
         assert f"{duration} minutes" in request_message
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_access_with_duration_flag_with_minutes(self, mocked_testbot):
+        duration = '45'
+        short_unit = 'm'
+        full_unit = 'minutes'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{short_unit}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert f"{duration} {full_unit}" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_access_with_duration_flag_with_hours(self, mocked_testbot):
+        duration = '6'
+        short_unit = 'h'
+        full_unit = 'hours'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{short_unit}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert f"{duration} {full_unit}" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_access_with_duration_flag_with_days(self, mocked_testbot):
+        duration = '2'
+        short_unit = 'd'
+        full_unit = 'days'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{short_unit}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert f"{duration} {full_unit}" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_grant_access_with_duration_flag_with_weeks(self, mocked_testbot):
+        duration = '3'
+        short_unit = 'w'
+        full_unit = 'weeks'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{short_unit}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert f"{duration} {full_unit}" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+        
+    def test_access_command_grant_access_with_duration_flag_with_converted_units(self, mocked_testbot):
+        duration = '90'
+        short_unit = 'm'
+        converted_duration = '1 hours 30 minutes'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{short_unit}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert converted_duration in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_dont_grant_access_when_empty_duration_flag(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to Xxx --duration")
+        assert "Invalid duration format" in mocked_testbot.pop_message()
+
+    def test_access_command_dont_grant_access_when_duration_flag_has_invalid_unit(self, mocked_testbot):
+        duration = '30'
+        invalid_unit = 'x'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}{invalid_unit}")
+        assert "Invalid time unit" in mocked_testbot.pop_message()
+
+    def test_access_command_dont_grant_access_when_duration_flag_has_duration_equals_to_zero(self, mocked_testbot):
+        duration = '0'
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "The duration cannot be zero" in mocked_testbot.pop_message()
 
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")

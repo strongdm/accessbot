@@ -3,7 +3,7 @@ import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
-from ..util import is_hidden, HiddenTagEnum, AllowedTagEnum, is_allowed
+from ..util import is_hidden, HiddenTagEnum, AllowedTagEnum, is_allowed, VALID_TIME_UNITS
 
 
 class ResourceGrantHelper(BaseGrantHelper):
@@ -49,28 +49,28 @@ class ResourceGrantHelper(BaseGrantHelper):
         sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
         return any(r.name == resource_name for r in sdm_resources_by_role)
 
-    @staticmethod
-    def get_flags_validators():
+    def get_flags_validators(self):
         return {
-            'reason': ResourceGrantHelper.reason_flag_validator,
-            'duration': ResourceGrantHelper.duration_flag_validator,
+            'reason': self.reason_flag_validator,
+            'duration': self.duration_flag_validator,
         }
 
-    @staticmethod
-    def reason_flag_validator(value: str):
+    def reason_flag_validator(self, value: str):
         if len(value) == 0:
             raise Exception('You need to pass the reason after the "--reason" flag.')
         return True
 
-    @staticmethod
-    def duration_flag_validator(value: str):
-        match = re.match(r'^\d+m$', value)
+    def duration_flag_validator(self, value: str):
+        match = re.match(r'^\d+[a-zA-Z]?$', value)
         if not match:
-            raise Exception('The duration must be informed in minutes, e.g.: "--duration 30m"')
-        duration = int(match.string[:-1])
-        if duration < 10:
-            raise Exception('The duration must be equal or greater than 10 minutes')
-        elif duration > 1440:
-            raise Exception('The duration must be equal or less than 1440 minutes')
+            raise Exception('Invalid duration format. The duration must be informed as an integer, followed by a time unit (optional).')
+        time_unit_match = re.search(r'[a-zA-Z]', value)
+        short_time_unit = time_unit_match.group() if time_unit_match else 'm'
+        if not VALID_TIME_UNITS.get(short_time_unit):
+            formatted_valid_time_units = ', '.join(VALID_TIME_UNITS.keys())
+            raise Exception(f'Invalid time unit. Valid time units are: {formatted_valid_time_units}')
+        duration = int(re.search(r'\d+', value).group())
+        if duration == 0:
+            raise Exception('The duration cannot be zero.')
         return True
 

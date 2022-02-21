@@ -1,10 +1,14 @@
 import enum
 import re
 import unicodedata
+from datetime import timedelta
 
 from fuzzywuzzy import fuzz
 
+# ToDo extract methods/constants from different context to their own util files
+
 FUZZY_MATCH_THRESHOLD = 50 # Base 100
+VALID_TIME_UNITS = {"m": "minutes", "h": "hours", "d": "days", "w": "weeks"}
 
 class HiddenTagEnum(enum.Enum):
     RESOURCE = 'HIDE_RESOURCE_TAG'
@@ -83,3 +87,26 @@ def normalize_utf8(text: str):
     See: https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize
     '''
     return unicodedata.normalize("NFKD", text).encode('ascii', 'ignore').decode('UTF-8')
+
+def convert_duration_flag_to_timedelta(duration_flag: str):
+    has_time_unit = VALID_TIME_UNITS.get(duration_flag[-1]) is not None
+    count = int(duration_flag[:-1]) if has_time_unit else int(duration_flag)
+    unit = VALID_TIME_UNITS.get(duration_flag[-1]) or 'minutes'
+    return timedelta(**{unit: count})
+
+
+def get_formatted_duration_string(timedelta_obj: timedelta):
+    seconds = timedelta_obj.seconds
+    days = timedelta_obj.days
+    specific_durations = {
+        'minutes': (seconds // 60) % 60,
+        'hours': seconds // 3600,
+        'days': days % 7,
+        'weeks': days // 7
+    }
+    formatted_string = ''
+    for unit in reversed(specific_durations.keys()):
+        duration = specific_durations[unit]
+        if duration > 0:
+            formatted_string += f'{duration} {unit} '
+    return formatted_string.strip()

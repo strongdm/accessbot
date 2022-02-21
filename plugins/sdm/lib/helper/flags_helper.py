@@ -2,14 +2,12 @@ import re
 
 
 class FlagsHelper:
-    @staticmethod
-    def remove_flags(arguments: str):
+    def remove_flags(self, arguments: str):
         first_flag_match = re.search(r'--\w', arguments)
         command_end_idx = first_flag_match.start() if first_flag_match else None
         return arguments[0:command_end_idx].strip()
 
-    @staticmethod
-    def extract_flags(arguments: str, validators: dict = {}):
+    def extract_flags(self, arguments: str, validators: dict = {}):
         flags = {}
         flag_matches = list(re.finditer(r'--[^ ]+', arguments))
         for idx, match in enumerate(flag_matches):

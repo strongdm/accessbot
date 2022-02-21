@@ -73,7 +73,7 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text]")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text] [--duration duration]")
     def access_resource(self, message, match):
         """
         Grant access to a resource (using the requester's email address)
@@ -84,8 +84,8 @@ class AccessBot(BotPlugin):
             return
         if not self._platform.can_access_resource(message):
             return
-        resource_name = FlagsHelper.remove_flags(arguments)
-        flags = FlagsHelper.extract_flags(arguments, validators=ResourceGrantHelper.get_flags_validators())
+        resource_name = self.get_flags_helper().remove_flags(arguments)
+        flags = self.get_flags_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
@@ -125,8 +125,8 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_show_resources(message):
             return
-        flags = FlagsHelper.extract_flags(message.body)
-        filter = flags.get('filter') or ''
+        flags = self.get_flags_helper().extract_flags(message.body)
+        filter = flags.get('filter') or '' # ToDo
         yield from self.get_show_resources_helper().execute(message, filter=filter)
 
     #pylint: disable=unused-argument
@@ -181,6 +181,9 @@ class AccessBot(BotPlugin):
 
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
+
+    def get_flags_helper(self):
+        return FlagsHelper()
 
     def get_admin_ids(self):
         return self._platform.get_admin_ids()

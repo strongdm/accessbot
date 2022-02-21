@@ -63,7 +63,7 @@ You would expect to see no error in your logs and the messages **Yes I am alive*
 If that's the case, enter any of the following commands:
 * `help`. Show available commands 
 * `show available resources [--filter expression]`. Show available resources - all or the ones assigned to a role. Filters are optional. Please refer to the following [doc](https://www.strongdm.com/docs/automation/getting-started/filters) for getting the list of available filters.
-* `access to resource-name [--reason text] [--duration minutes]`. Grant temporary access to a resource. Reason and Duration are optional.
+* `access to resource-name [--reason text] [--duration duration]`. Grant temporary access to a resource. Reason and Duration are optional.
 * `show available roles`. Show all roles
 * `access to resource-name`. Grant temporary access to all resources assigned to a role
 

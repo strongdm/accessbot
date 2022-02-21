@@ -1,5 +1,5 @@
 # pylint: disable=invalid-name
-
+from datetime import timedelta
 from unittest.mock import MagicMock
 
 import sys
@@ -10,7 +10,7 @@ sys.path.append('e2e/')
 
 from test_common import DummyAccount
 from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed, is_concealed, \
-    can_auto_approve_by_groups_tag, has_intersection
+    can_auto_approve_by_groups_tag, has_intersection, convert_duration_flag_to_timedelta, get_formatted_duration_string
 
 
 class Test_is_hidden_resource:
@@ -229,3 +229,69 @@ class Test_has_intersection:
         list_a = []
         list_b = []
         assert has_intersection(list_a, list_b) is False
+
+class Test_convert_duration_flag_to_timedelta:
+    def test_convert_without_time_unit(self):
+        duration_flag_value = '50'
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        converted_minutes = converted_timedelta.seconds / 60
+        assert converted_minutes == 50
+
+    def test_convert_with_minutes(self):
+        duration_flag_value = '50m'
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        converted_minutes = converted_timedelta.seconds / 60
+        assert converted_minutes == 50
+        
+    def test_convert_with_hours(self):
+        duration_flag_value = '17h'
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        converted_hours = converted_timedelta.seconds / (60 * 60)
+        assert converted_hours == 17
+    
+    def test_convert_with_days(self):
+        duration_flag_value = "3d"
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        assert converted_timedelta.days == 3
+
+    def test_convert_with_weeks(self):
+        duration_flag_value = '3w'
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        converted_weeks = converted_timedelta.days / 7
+        assert converted_weeks == 3
+
+    def test_convert_between_different_units(self):
+        duration_flag_value = '48h'
+        converted_timedelta = convert_duration_flag_to_timedelta(duration_flag_value)
+        assert converted_timedelta.days == 2
+
+class Test_get_formatted_duration_string:
+    def test_format_with_minutes(self):
+        timedelta_obj = timedelta(minutes=30)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '30 minutes'
+
+    def test_format_with_hours(self):
+        timedelta_obj = timedelta(hours=3)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '3 hours'
+
+    def test_format_with_days(self):
+        timedelta_obj = timedelta(days=5)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '5 days'
+
+    def test_format_with_weeks(self):
+        timedelta_obj = timedelta(weeks=5)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '5 weeks'
+
+    def test_format_with_different_units(self):
+        timedelta_obj = timedelta(minutes=120)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '2 hours'
+
+    def test_format_with_multiple_units(self):
+        timedelta_obj = timedelta(minutes=90)
+        formatted_str = get_formatted_duration_string(timedelta_obj)
+        assert formatted_str == '1 hours 30 minutes'
