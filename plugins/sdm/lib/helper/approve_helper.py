@@ -41,7 +41,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
                 continue
             self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
-    def __grant_temporal_access(self, resource, account_id, duration: str):
+    def __grant_temporal_access(self, resource, account_id: str, duration: str):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__get_resource_grant_timeout(resource, duration=duration))
         self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)

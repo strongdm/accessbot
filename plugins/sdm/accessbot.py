@@ -11,6 +11,7 @@ from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, FlagsHelper
 from lib.util import normalize_utf8
+from grant_request_type import GrantRequestType
 
 ACCESS_REGEX = r"access to (.+)"
 APPROVE_REGEX = r"yes (\w{4})"
@@ -126,8 +127,7 @@ class AccessBot(BotPlugin):
         if not self._platform.can_show_resources(message):
             return
         flags = self.get_flags_helper().extract_flags(message.body)
-        filter = flags.get('filter') or '' # ToDo
-        yield from self.get_show_resources_helper().execute(message, filter=filter)
+        yield from self.get_show_resources_helper().execute(message, flags=flags)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -191,7 +191,7 @@ class AccessBot(BotPlugin):
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
 
-    def enter_grant_request(self, request_id, message, sdm_object, sdm_account, grant_request_type, flags: dict = None):
+    def enter_grant_request(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
         self.__grant_requests[request_id] = {
             'id': request_id,
             'status': 'PENDING', # TODO Remove?
