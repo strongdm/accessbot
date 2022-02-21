@@ -6,7 +6,8 @@ class BaseShowHelper(ABC):
         self._sdm_service = bot.get_sdm_service()
         self.__op_desc = op_desc
 
-    def execute(self, message, filter = ''):
+    def execute(self, message, flags: dict = {}):
+        filter = flags.get('filter') or ''
         data = self.get_list(filter)
         if len(data) == 0:
             yield f"There are no available {self.__op_desc}"

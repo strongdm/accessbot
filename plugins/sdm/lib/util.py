@@ -1,7 +1,14 @@
 import enum
+import re
+import unicodedata
+from datetime import timedelta
+
 from fuzzywuzzy import fuzz
 
+# ToDo extract methods/constants from different context to their own util files
+
 FUZZY_MATCH_THRESHOLD = 50 # Base 100
+VALID_TIME_UNITS = {"m": "minutes", "h": "hours", "d": "days", "w": "weeks"}
 
 class HiddenTagEnum(enum.Enum):
     RESOURCE = 'HIDE_RESOURCE_TAG'
@@ -64,3 +71,42 @@ def has_intersection(list_a, list_b):
         if a in list_b:
             return True
     return False
+
+def remove_bold_symbols(text: str):
+    first_flag_match = re.search(r'--\w', text)
+    command_end_idx = first_flag_match.start() if first_flag_match else None
+    cleaned_text = text[0:command_end_idx].replace('*', '')
+    if command_end_idx:
+        cleaned_text += text[command_end_idx:]
+    return cleaned_text
+
+def normalize_utf8(text: str):
+    '''
+    This method normalizes text to UTF-8. During the normalization process,
+    if a character is not present in the ASCII table, it is going to be ignored.
+    See: https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize
+    '''
+    return unicodedata.normalize("NFKD", text).encode('ascii', 'ignore').decode('UTF-8')
+
+def convert_duration_flag_to_timedelta(duration_flag: str):
+    has_time_unit = VALID_TIME_UNITS.get(duration_flag[-1]) is not None
+    count = int(duration_flag[:-1]) if has_time_unit else int(duration_flag)
+    unit = VALID_TIME_UNITS.get(duration_flag[-1]) or 'minutes'
+    return timedelta(**{unit: count})
+
+
+def get_formatted_duration_string(timedelta_obj: timedelta):
+    seconds = timedelta_obj.seconds
+    days = timedelta_obj.days
+    specific_durations = {
+        'minutes': (seconds // 60) % 60,
+        'hours': seconds // 3600,
+        'days': days % 7,
+        'weeks': days // 7
+    }
+    formatted_string = ''
+    for unit in reversed(specific_durations.keys()):
+        duration = specific_durations[unit]
+        if duration > 0:
+            formatted_string += f'{duration} {unit} '
+    return formatted_string.strip()

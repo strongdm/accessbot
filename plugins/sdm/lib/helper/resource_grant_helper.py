@@ -1,8 +1,9 @@
+import re
 import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
-from ..util import is_hidden, HiddenTagEnum, AllowedTagEnum, is_allowed
+from ..util import is_hidden, HiddenTagEnum, AllowedTagEnum, is_allowed, VALID_TIME_UNITS
 
 
 class ResourceGrantHelper(BaseGrantHelper):
@@ -47,3 +48,29 @@ class ResourceGrantHelper(BaseGrantHelper):
     def __is_resource_in_role(self, resource_name, role_name):
         sdm_resources_by_role = self.__sdm_service.get_all_resources_by_role(role_name)
         return any(r.name == resource_name for r in sdm_resources_by_role)
+
+    def get_flags_validators(self):
+        return {
+            'reason': self.reason_flag_validator,
+            'duration': self.duration_flag_validator,
+        }
+
+    def reason_flag_validator(self, value: str):
+        if len(value) == 0:
+            raise Exception('You need to enter a valid reason after the "--reason" flag.')
+        return True
+
+    def duration_flag_validator(self, value: str):
+        match = re.match(r'^\d+[a-zA-Z]?$', value)
+        if not match:
+            raise Exception('You need to enter a valid duration, e.g. 60m, 2h, etc.')
+        time_unit_match = re.search(r'[a-zA-Z]', value)
+        short_time_unit = time_unit_match.group() if time_unit_match else 'm'
+        if not VALID_TIME_UNITS.get(short_time_unit):
+            formatted_valid_time_units = ', '.join(VALID_TIME_UNITS.keys())
+            raise Exception(f'You need to enter a valid duration unit. Valid units are: {formatted_valid_time_units}.')
+        duration = int(re.search(r'\d+', value).group())
+        if duration == 0:
+            raise Exception('You need to enter a duration greater than zero.')
+        return True
+

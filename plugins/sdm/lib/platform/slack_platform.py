@@ -1,6 +1,9 @@
 from .base_platform import BasePlatform
 from abc import abstractmethod
 
+from ..util import remove_bold_symbols
+
+
 class SlackPlatform(BasePlatform):
     def activate(self):
         pass
@@ -34,7 +37,7 @@ class SlackPlatform(BasePlatform):
         return f'@{approver.nick}'
 
     def clean_up_message(self, text):
-        return text.replace('*', '')
+        return remove_bold_symbols(text)
 
     def format_access_request_params(self, resource_name, sender_nick):
         return r"\`" + resource_name + r"\`", r"\`" + sender_nick + r"\`"

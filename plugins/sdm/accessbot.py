@@ -9,13 +9,15 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper
+from lib.util import normalize_utf8
+from grant_request_type import GrantRequestType
 
 ACCESS_REGEX = r"access to (.+)"
 APPROVE_REGEX = r"yes (\w{4})"
 DENY_REGEX = r"no (\w{4}) ?(.+)?"
 ASSIGN_ROLE_REGEX = r"access to role (.+)"
-SHOW_RESOURCES_REGEX = r"show available resources"
+SHOW_RESOURCES_REGEX = r"show available resources ?(.+)?"
 SHOW_ROLES_REGEX = r"show available roles"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
@@ -72,18 +74,20 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text] [--duration duration]")
     def access_resource(self, message, match):
         """
         Grant access to a resource (using the requester's email address)
         """
-        resource_name = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        if re.match("^role (.*)", resource_name):
+        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
+        if re.match("^role (.*)", arguments):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         if not self._platform.can_access_resource(message):
             return
-        yield from self.get_resource_grant_helper().request_access(message, resource_name)
+        resource_name = self.get_arguments_helper().remove_flags(arguments)
+        flags = self.get_arguments_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
+        yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
     def assign_role(self, message, match):
@@ -122,8 +126,8 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_show_resources(message):
             return
-        filter = self.extract_filter(message.body)
-        yield from self.get_show_resources_helper().execute(message, filter=filter)
+        flags = self.get_arguments_helper().extract_flags(message.body)
+        yield from self.get_show_resources_helper().execute(message, flags=flags)
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -178,13 +182,16 @@ class AccessBot(BotPlugin):
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
 
+    def get_arguments_helper(self):
+        return ArgumentsHelper()
+
     def get_admin_ids(self):
         return self._platform.get_admin_ids()
 
     def is_valid_grant_request_id(self, request_id):
         return request_id in self.__grant_requests
 
-    def enter_grant_request(self, request_id, message, sdm_object, sdm_account, grant_request_type):
+    def enter_grant_request(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
         self.__grant_requests[request_id] = {
             'id': request_id,
             'status': 'PENDING', # TODO Remove?
@@ -192,7 +199,8 @@ class AccessBot(BotPlugin):
             'message': message, # cannot be persisted in errbot state
             'sdm_object': sdm_object,
             'sdm_account': sdm_account,
-            'type': grant_request_type
+            'type': grant_request_type,
+            'flags': flags,
         }
 
     def remove_grant_request(self, request_id):
@@ -273,7 +281,7 @@ class AccessBot(BotPlugin):
         return None
 
     def clean_up_message(self, message):
-        return self._platform.clean_up_message(message)
+        return self._platform.clean_up_message(normalize_utf8(message))
 
     def format_access_request_params(self, resource_name, sender_nick):
         return self._platform.format_access_request_params(resource_name, sender_nick)
@@ -283,14 +291,6 @@ class AccessBot(BotPlugin):
 
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
-
-    def extract_filter(self, message):
-        if '--filter' in message:
-            filter = re.search(r'(?<=--filter ).+', message)
-            if not filter:
-                raise Exception('You must pass the filter arguments after the "--filter" tag.')
-            return filter.group()
-        return ''
 
     def channel_is_reachable(self, channel):
         return self._platform.channel_is_reachable(channel)
