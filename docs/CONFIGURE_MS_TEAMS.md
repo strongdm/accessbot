@@ -5,6 +5,7 @@ In order to configure AccessBot integration with Slack follow the next steps:
 ## Create Azure Bot
 
 1. Create an Azure Bot in [Azure Portal](https://portal.azure.com/)
+when creating the Azure bot ensure under Mirosoft App ID that you select Multi Tenant from the drop down. This is what creates the application with the secret value needed in further steps. 
 
 ![image](https://user-images.githubusercontent.com/313803/141980020-414d2355-79a7-40d1-a672-8e12b3afd559.png)
 
@@ -12,9 +13,10 @@ In order to configure AccessBot integration with Slack follow the next steps:
 
 ![image](https://user-images.githubusercontent.com/313803/141983651-d6e3bd0b-65be-4e65-a018-2247ab2b79c9.png)
 
-3. Get the **Secret Value** from the vault created with the App
+3. Get the **Secret Value** from the key vault created with the App
 
 * Configure access policies
+Add yourself as the principle with at get & list Secret Permissions
 
 ![image](https://user-images.githubusercontent.com/313803/141981299-05caf3e2-36e4-4f99-9bae-17cf5f5a17fd.png)
 

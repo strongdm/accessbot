@@ -33,7 +33,7 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
             return cls(2021, 5, 12)
 
     def test_fail_assign_role_command_when_sent_via_dm(self, mocked_testbot):
-        push_access_role_request(mocked_testbot)
+        mocked_testbot.push_message(f"access to role {role_name}")
         assert "cannot execute this command via DM" in mocked_testbot.pop_message()
 
     def test_assign_role_command(self, mocked_testbot):
@@ -41,7 +41,7 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
         mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"access to role {role_name}")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
@@ -56,7 +56,7 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
         mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True)
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"access to role {role_name}")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
@@ -70,7 +70,7 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot, from_email=account_name)
         with patch('datetime.datetime', new = self.NewDate):
-            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"access to role {role_name}")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
@@ -126,9 +126,3 @@ def create_mock_resources():
     mock_resource.id = resource_id
     mock_resource.name = resource_name
     return [mock_resource]
-
-def push_access_role_request(testbot):
-    testbot.push_message(f"access to role {role_name}")
-    # gives some time to process
-    # needed in slow environments, e.g. github actions
-    time.sleep(0.2)

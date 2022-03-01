@@ -37,7 +37,7 @@ class Test_assign_role(ErrBotExtraTestSettings):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
-            push_access_role_request(mocked_testbot)
+            mocked_testbot.push_message(f"access to role {role_name}")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
             assert "assign request" in mocked_testbot.pop_message()
@@ -62,31 +62,31 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         return mocked_testbot
 
     def test_auto_all(self, mocked_testbot):
-        push_access_role_request(mocked_testbot)
+        mocked_testbot.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_with_remaining_approvals_message(self, mocked_with_max_auto_approve):
-        push_access_role_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
     def test_default_flow_once_exhausted_auto_approvals(self, mocked_with_max_auto_approve):
-        push_access_role_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
-        push_access_role_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_with_max_auto_approve.pop_message()
         assert "assign request" in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
 
     def test_keep_remaining_approvals_when_cleaner_passes(self, mocked_with_max_auto_approve):
-        push_access_role_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
         accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
         PollerHelper(accessbot).stale_max_auto_approve_cleaner()
-        push_access_role_request(mocked_with_max_auto_approve)
+        mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
@@ -98,7 +98,7 @@ class Test_auto_approve_tag(ErrBotExtraTestSettings):
         return inject_mocks(testbot, config, role_tags = {'auto-approve-role': ''})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
-        push_access_role_request(mocked_testbot)
+        mocked_testbot.push_message(f"access to role {role_name}")
         assert "Granting" in mocked_testbot.pop_message()
 
 class Test_role_fuzzy_matching(ErrBotExtraTestSettings):
@@ -112,7 +112,6 @@ class Test_role_fuzzy_matching(ErrBotExtraTestSettings):
 
     def test_find_role_fuzzy_matching(self, mocked_testbot):
         mocked_testbot.push_message("access to role Long name")
-        time.sleep(0.2)
         assert "cannot find that role" in mocked_testbot.pop_message()
         recommendation = mocked_testbot.pop_message()
         assert "Did you mean" in recommendation
@@ -120,7 +119,6 @@ class Test_role_fuzzy_matching(ErrBotExtraTestSettings):
 
     def test_fail_role_find_fuzzy_matching(self, mocked_testbot):
         mocked_testbot.push_message("access to role name") # it's too short, the threshold is not good enough
-        time.sleep(0.2)
         assert "cannot find that role" in mocked_testbot.pop_message()
 
 class Test_control_role_by_tag(ErrBotExtraTestSettings):
@@ -139,14 +137,12 @@ class Test_control_role_by_tag(ErrBotExtraTestSettings):
     def test_success_get_access(self, mocked_testbot):
         mocked_testbot.push_message(f"access to role {self.allowed_role}")
         mocked_testbot.push_message(f"yes {access_request_id}")
-        time.sleep(0.2)
         assert "valid request" in mocked_testbot.pop_message()
         assert "assign request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
     def test_fail_get_access(self, mocked_testbot):
         mocked_testbot.push_message(f"access to role {self.no_allowed_role}")
-        time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
 class Test_control_role_by_tag_without_roles(ErrBotExtraTestSettings):
@@ -164,7 +160,6 @@ class Test_control_role_by_tag_without_roles(ErrBotExtraTestSettings):
 
     def test_with_sdm_roles_empty(self, mocked_testbot):
         mocked_testbot.push_message(f"access to role {self.allowed_role}")
-        time.sleep(0.2)
         assert "not allowed" in mocked_testbot.pop_message()
 
 class Test_role_grant_exists(ErrBotExtraTestSettings):
@@ -176,7 +171,6 @@ class Test_role_grant_exists(ErrBotExtraTestSettings):
     def test_when_grant_exists(self, mocked_testbot):
         mocked_testbot.push_message("access to role Granted Role")
         mocked_testbot.push_message(f"yes {access_request_id}")
-        time.sleep(0.2)
         assert "valid request" in mocked_testbot.pop_message()
         assert "assign request" in mocked_testbot.pop_message()
         assert "already have access" in mocked_testbot.pop_message()
@@ -245,12 +239,6 @@ def create_mock_resources():
     mock_resource.id = resource_id
     mock_resource.name = resource_name
     return [mock_resource]
-
-def push_access_role_request(testbot):
-    testbot.push_message(f"access to role {role_name}")
-    # gives some time to process
-    # needed in slow environments, e.g. github actions
-    time.sleep(0.2)
 
 def raise_no_role_found(message = '', match = ''):
     raise NotFoundException('Sorry, cannot find that role!')
