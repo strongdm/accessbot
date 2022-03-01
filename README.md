@@ -2,7 +2,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/strongdm/accessbot)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/strongdm/accessbot/accessbot?label=tests)
 
-AccessBot is a chatbot that manages access to strongDM (SDM) resources, initially via Slack
+AccessBot is a chatbot that manages access to strongDM (SDM) resources, initially via Slack. A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
 
 **Important**: This repo hosts two versions of AccessBot with the same set of funcionalities and corresponding documentation:
 * v1.0.x ([branch](https://github.com/strongdm/accessbot/tree/1.0.x)). Uses the old Slack API (RTM) - _requires a Slack Classic App_
