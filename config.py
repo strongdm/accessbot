@@ -89,3 +89,8 @@ HIDE_RESTRICTED_COMMANDS = True
 HIDE_RESTRICTED_ACCESS = True
 
 BOT_COMMANDS_ALIASES = get_commands_aliases()
+
+ACCESS_FORM_BOT_INFO = {
+    "bot_id": None,  # will be initialized in SlackBoltBackend.resolve_access_form_bot_id method
+    "nickname": os.getenv("SDM_ACCESS_FORM_BOT_NICKNAME")
+}

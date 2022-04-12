@@ -9,11 +9,19 @@ admin_default_email = 'gbin@localhost'
 
 
 class ErrBotExtraTestSettings:
-    extra_config = {'BOT_ASYNC': False}
+    extra_config = {
+        'BOT_ASYNC': False,
+        'ACCESS_FORM_BOT_INFO': {}
+    }
     extra_plugin_dir = "plugins/sdm"
 
+
 class MSTeamsErrBotExtraTestSettings:
-    extra_config = {'BOT_ASYNC': False, 'BOT_PLATFORM': 'ms-teams'}
+    extra_config = {
+        'BOT_ASYNC': False,
+        'BOT_PLATFORM': 'ms-teams',
+        'ACCESS_FORM_BOT_INFO': {}
+    }
     extra_plugin_dir = "plugins/sdm"
 
 
@@ -44,20 +52,24 @@ def create_config():
         'GROUPS_TAG': None
     }
 
+
 class DummyAccount:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
+
 
 class DummyResource:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
 
+
 class DummyRole:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
+
 
 class DummyConversation:
     def __init__(self, request):
@@ -66,7 +78,7 @@ class DummyConversation:
     @property
     def data(self):
         return self._request
-    
+
     @property
     def conversation_id(self):
         return self.conversation['id']
@@ -87,6 +99,7 @@ class DummyConversation:
             self.activity_id
         )
 
+
 class DummyPerson(DummyErrbotPerson):
     def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
         super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
@@ -95,6 +108,13 @@ class DummyPerson(DummyErrbotPerson):
     @property
     def is_deleted(self):
         return self._is_deleted
+
+
+class DummyRoom:
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
 
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
@@ -105,11 +125,18 @@ def send_message_override(bot, raw_messages):
         super(type(bot), bot).send_message(msg)
         raw_messages.append(msg)
         bot.outgoing_message_queue.put(bot.md.convert(msg.body))
+
     return sm
 
-def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None):
+
+def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, bot_id=None,
+                        room_id=None, room_name=None):
     def callback_message(msg):
         frm = msg.frm
+        if bot_id is not None:
+            frm.id = bot_id
+        if room_id is not None or room_name is not None:
+            frm.room = DummyRoom(room_id, room_name)
         if approver_is_admin and "yes" in msg.body:
             frm._email = admin_default_email
         else:
@@ -136,11 +163,13 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
             }
         )
         ErrBot.callback_message(bot, msg)
+
     return callback_message
+
 
 def get_rate_limited_slack_response_error():
     return SlackApiError('ratelimited', SlackResponse(
-        data={'ok': False,'error': 'ratelimited'},
+        data={'ok': False, 'error': 'ratelimited'},
         client=None,
         headers={'retry-after': '0'},
         req_args=None,
@@ -149,5 +178,6 @@ def get_rate_limited_slack_response_error():
         status_code=400
     ))
 
-def get_dummy_person(name, is_deleted = False):
-    return DummyPerson(name, is_deleted = is_deleted)
+
+def get_dummy_person(name, is_deleted=False):
+    return DummyPerson(name, is_deleted=is_deleted)

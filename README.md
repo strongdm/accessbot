@@ -24,6 +24,8 @@ For Slack platform, you need to provide the following required variables:
 * **SLACK_APP_TOKEN**. Slack App-Level Token
 * **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
 
+    > If you want to use the AccessBot resource access form, please read this [docs](docs/CONFIGURE_ACCESSBOT_FORM.md). 
+
 ### MS Teams Installation
 For MS Teams platform, you need to provide the following required variables:
 * **AZURE_APP_ID**. Azure Bot application ID
