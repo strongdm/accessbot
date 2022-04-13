@@ -20,3 +20,5 @@ After that, use this nickname to set the environment variable mentioned above.
 ## Usage Example
 
 The following gif shows an example of how to use the AccessBot form to request a resource from StrongDM.
+
+![accessbot-form](https://user-images.githubusercontent.com/82273420/163173633-243771d8-a31c-4f79-aaf6-102eb4265286.gif)
