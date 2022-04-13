@@ -10,3 +10,4 @@ docker-compose copy.yaml
 README copy.md
 .idea/
 docker-compose david.yaml
+.pytest_cache

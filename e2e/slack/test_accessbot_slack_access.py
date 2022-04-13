@@ -22,6 +22,9 @@ account_name = "myaccount@test.com"
 access_request_id = "12ab"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
+access_form_bot_id = "B0000000000"
+room_id = "C00000000"
+room_name = "myroom"
 
 class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     @pytest.fixture
@@ -34,7 +37,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         config = create_config()
         testbot.bot.send_message = send_message_override(testbot.bot, [])
         testbot.bot.plugin_manager.plugins['AccessBot'].get_admin_ids = MagicMock(
-            return_value = [get_dummy_person(account_name, is_deleted=True)]
+            return_value=[get_dummy_person(account_name, is_deleted=True)]
         )
         return inject_config(testbot, config)
 
@@ -55,7 +58,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
 
     def test_access_command_grant_not_approved(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
-        mocked_testbot.push_message("no") # Anything but yes
+        mocked_testbot.push_message("no")  # Anything but yes
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "timed out" in mocked_testbot.pop_message()
@@ -153,7 +156,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "access request" in request_message
         assert f"{duration} {full_unit}" in request_message
         assert "Granting" in mocked_testbot.pop_message()
-        
+
     def test_access_command_grant_access_with_duration_flag_with_converted_units(self, mocked_testbot):
         duration = '90'
         short_unit = 'm'
@@ -186,6 +189,25 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
+
+    def test_access_command_from_access_form_bot(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            bot_id=access_form_bot_id,
+            room_id=room_id,
+            room_name=room_name
+        ))
+        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
+        mocked_testbot.push_message(f"access to Xxx --requester @user")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to Xxx --requester @user")
+        assert "You cannot use the requester flag." in mocked_testbot.pop_message()
 
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
@@ -248,7 +270,7 @@ class Test_multiple_admins_flow(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        return inject_config(testbot, config, admins = ["gbin@localhost",  "user1"])
+        return inject_config(testbot, config, admins=["gbin@localhost", "user1"])
 
     def test_access_command_grant_multiple_admins(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -263,7 +285,7 @@ class Test_auto_approve_tag(ErrBotExtraTestSettings):
     def mocked_testbot(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_TAG'] = "auto-approve"
-        return inject_config(testbot, config, tags = {'auto-approve': True})
+        return inject_config(testbot, config, tags={'auto-approve': True})
 
     def test_access_command_grant_auto_approved_for_tagged_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -276,14 +298,16 @@ class Test_auto_approve_groups_tag(ErrBotExtraTestSettings):
         config = create_config()
         config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
         config['GROUPS_TAG'] = "groups"
-        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'test-group' }, account_tags={ 'groups': 'test-group' })
+        return inject_config(testbot, config, tags={'auto-approve-groups': 'test-group'},
+                             account_tags={'groups': 'test-group'})
 
     @pytest.fixture
     def mocked_testbot_with_non_intersecting_groups(self, testbot):
         config = create_config()
         config['AUTO_APPROVE_GROUPS_TAG'] = "auto-approve-groups"
         config['GROUPS_TAG'] = "groups"
-        return inject_config(testbot, config, tags={ 'auto-approve-groups': 'another-group' }, account_tags={ 'groups': 'test-group' })
+        return inject_config(testbot, config, tags={'auto-approve-groups': 'another-group'},
+                             account_tags={'groups': 'test-group'})
 
     def test_auto_approve_for_intersecting_group(self, mocked_testbot_with_intersecting_groups):
         mocked_testbot_with_intersecting_groups.push_message("access to Xxx")
@@ -299,13 +323,13 @@ class Test_allow_resource_tag(ErrBotExtraTestSettings):
     def mocked_testbot_allow_true(self, testbot):
         config = create_config()
         config['ALLOW_RESOURCE_TAG'] = "allow-resource"
-        return inject_config(testbot, config, tags = {'allow-resource': True})
+        return inject_config(testbot, config, tags={'allow-resource': True})
 
     @pytest.fixture
     def mocked_testbot_allow_false(self, testbot):
         config = create_config()
         config['ALLOW_RESOURCE_TAG'] = "allow-resource"
-        return inject_config(testbot, config, tags = {'allow-resource': False})
+        return inject_config(testbot, config, tags={'allow-resource': False})
 
     def test_access_command_fail_for_not_allowed_resources(self, mocked_testbot_allow_false):
         mocked_testbot_allow_false.push_message("access to Xxx")
@@ -323,13 +347,13 @@ class Test_hide_resource_tag(ErrBotExtraTestSettings):
     def mocked_testbot_hide_true(self, testbot):
         config = create_config()
         config['HIDE_RESOURCE_TAG'] = "hide-resource"
-        return inject_config(testbot, config, tags = {'hide-resource': True})
+        return inject_config(testbot, config, tags={'hide-resource': True})
 
     @pytest.fixture
     def mocked_testbot_hide_false(self, testbot):
         config = create_config()
         config['HIDE_RESOURCE_TAG'] = "hide-resource"
-        return inject_config(testbot, config, tags = {'hide-resource': False})
+        return inject_config(testbot, config, tags={'hide-resource': False})
 
     def test_access_command_fail_for_hidden_resources(self, mocked_testbot_hide_true):
         mocked_testbot_hide_true.push_message("access to Xxx")
@@ -347,13 +371,13 @@ class Test_conceal_resource_tag(ErrBotExtraTestSettings):
     def mocked_testbot_conceal_true(self, testbot):
         config = create_config()
         config['CONCEAL_RESOURCE_TAG'] = "conceal-resource"
-        return inject_config(testbot, config, tags = {'conceal-resource': True})
+        return inject_config(testbot, config, tags={'conceal-resource': True})
 
     @pytest.fixture
     def mocked_testbot_conceal_false(self, testbot):
         config = create_config()
         config['CONCEAL_RESOURCE_TAG'] = "conceal-resource"
-        return inject_config(testbot, config, tags = {'conceal-resource': False})
+        return inject_config(testbot, config, tags={'conceal-resource': False})
 
     def test_access_command_fail_for_hidden_resources(self, mocked_testbot_conceal_true):
         mocked_testbot_conceal_true.push_message("access to Xxx")
@@ -384,7 +408,7 @@ class Test_grant_timeout(ErrBotExtraTestSettings):
     def test_access_command_grant_with_custom_timeout(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
-        with patch('datetime.datetime', new = self.NewDate):
+        with patch('datetime.datetime', new=self.NewDate):
             mocked_testbot.push_message("access to Xxx")
             mocked_testbot.push_message(f"yes {access_request_id}")
             assert "valid request" in mocked_testbot.pop_message()
@@ -401,7 +425,7 @@ class Test_resources_by_role(ErrBotExtraTestSettings):
         config = create_config()
         config['CONTROL_RESOURCES_ROLE_NAME'] = 'myrole'
         resources_by_role = [DummyResource("Xxx", {})]
-        return inject_config(testbot, config, resources_by_role = resources_by_role)
+        return inject_config(testbot, config, resources_by_role=resources_by_role)
 
     def test_access_command_grant_for_valid_resource(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -418,7 +442,7 @@ class Test_acount_grant_exists(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        return inject_config(testbot, config, account_grant_exists = True)
+        return inject_config(testbot, config, account_grant_exists=True)
 
     def test_when_grant_exists(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -441,7 +465,7 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
-        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name}])
         return inject_config(testbot, config)
 
     @pytest.fixture
@@ -449,12 +473,12 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
-        testbot.bot.channels = MagicMock(return_value = [])
+        testbot.bot.channels = MagicMock(return_value=[])
         return inject_config(testbot, config)
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
         mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
-            return_value = get_dummy_person(f'#{self.channel_name}'))
+            return_value=get_dummy_person(f'#{self.channel_name}'))
         mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
         mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
@@ -481,8 +505,8 @@ class Test_fuzzy_matching(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        resources = [ DummyResource(self.resource_name, {}) ]
-        return inject_config(testbot, config, resources = resources)
+        resources = [DummyResource(self.resource_name, {})]
+        return inject_config(testbot, config, resources=resources)
 
     def test_find_fuzzy_matching(self, mocked_testbot):
         mocked_testbot.push_message("access to Long name")
@@ -492,7 +516,7 @@ class Test_fuzzy_matching(ErrBotExtraTestSettings):
         assert self.resource_name in recommendation
 
     def test_fail_find_fuzzy_matching(self, mocked_testbot):
-        mocked_testbot.push_message("access to name") # it's to short, the threshold is not good enough
+        mocked_testbot.push_message("access to name")  # it's to short, the threshold is not good enough
         assert "cannot find that resource" in mocked_testbot.pop_message()
 
     def test_find_with_disabled_fuzzy_matching(self, mocked_testbot):
@@ -513,8 +537,8 @@ class Test_self_approve(ErrBotExtraTestSettings):
         testbot.bot.sender.room = create_room_mock(self.channel_name)
         testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
-        testbot.bot.channels = MagicMock(return_value = [{'name': self.channel_name}])
-        return inject_config(testbot, config, admins = [f'@not-admin'])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name}])
+        return inject_config(testbot, config, admins=[f'@not-admin'])
 
     def test_when_approver_is_not_the_requester(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -550,7 +574,7 @@ class Test_alternative_email(ErrBotExtraTestSettings):
         config['EMAIL_SLACK_FIELD'] = alternative_email_tag
         config['SENDER_EMAIL_OVERRIDE'] = None
         testbot.bot.sender.userid = 'XXX'
-        testbot.bot.find_user_profile = MagicMock(return_value = mocked_user_profile)
+        testbot.bot.find_user_profile = MagicMock(return_value=mocked_user_profile)
         return inject_config(testbot, config)
 
     def test_alternative_email(self, mocked_testbot):
@@ -632,7 +656,7 @@ class Test_change_error_message(ErrBotExtraTestSettings):
 
     def test_error_message(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.get_sdm_service().get_account_by_email = MagicMock(side_effect = Exception('Something failed'))
+        accessbot.get_sdm_service().get_account_by_email = MagicMock(side_effect=Exception('Something failed'))
 
         mocked_testbot.push_message("access to Xxx")
         assert "An error occurred" in mocked_testbot.pop_message()
@@ -670,18 +694,20 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.config = config
     # The default implementation is not compatible with the backend identifier.
     # Refer to: https://errbot.readthedocs.io/en/4.1/errbot.backends.test.html#errbot.backends.test.TestPerson
-    accessbot.build_identifier = MagicMock(return_value = get_dummy_person(account_name))
-    accessbot.get_admins = MagicMock(return_value = admins)
-    accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
-    accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==")  # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
-    accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
-    accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
+    accessbot.build_identifier = MagicMock(return_value=get_dummy_person(account_name))
+    accessbot.get_admins = MagicMock(return_value=admins)
+    accessbot.get_api_access_key = MagicMock(return_value="api-access_key")
+    accessbot.get_api_secret_key = MagicMock(return_value="c2VjcmV0LWtleQ==")  # valid base64 string
+    accessbot.get_sdm_service = MagicMock(
+        return_value=create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
+    accessbot.get_resource_grant_helper = MagicMock(return_value=create_resource_grant_helper(accessbot))
+    accessbot.get_approve_helper = MagicMock(return_value=create_approve_helper(accessbot))
+    testbot._bot.init_access_form_bot = MagicMock(return_value=None)
     return testbot
 
 def create_resource_grant_helper(accessbot):
     helper = ResourceGrantHelper(accessbot)
-    helper.generate_grant_request_id = MagicMock(return_value = access_request_id)
+    helper.generate_grant_request_id = MagicMock(return_value=access_request_id)
     return helper
 
 def create_approve_helper(accessbot):
@@ -690,14 +716,14 @@ def create_approve_helper(accessbot):
 def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags):
     mock = MagicMock()
     if len(resources) > 0:
-        mock.get_resource_by_name = MagicMock(side_effect = raise_no_resource_found)
+        mock.get_resource_by_name = MagicMock(side_effect=raise_no_resource_found)
     else:
-        mock.get_resource_by_name = MagicMock(return_value = create_resource_mock(tags))
-    mock.get_account_by_email = MagicMock(return_value = create_account_mock(account_tags=account_tags))
+        mock.get_resource_by_name = MagicMock(return_value=create_resource_mock(tags))
+    mock.get_account_by_email = MagicMock(return_value=create_account_mock(account_tags=account_tags))
     mock.grant_temporary_access = MagicMock()
-    mock.get_all_resources_by_role = MagicMock(return_value = resources_by_role)
-    mock.account_grant_exists = MagicMock(return_value = account_grant_exists)
-    mock.get_all_resources = MagicMock(return_value = resources)
+    mock.get_all_resources_by_role = MagicMock(return_value=resources_by_role)
+    mock.account_grant_exists = MagicMock(return_value=account_grant_exists)
+    mock.get_all_resources = MagicMock(return_value=resources)
     return mock
 
 def create_resource_mock(tags):
@@ -707,7 +733,7 @@ def create_resource_mock(tags):
     mock.tags = tags
     return mock
 
-def create_account_mock(account_email = account_name, account_tags={}):
+def create_account_mock(account_email=account_name, account_tags={}):
     mock = MagicMock()
     mock.id = account_id
     mock.name = account_name
@@ -715,7 +741,7 @@ def create_account_mock(account_email = account_name, account_tags={}):
     mock.tags = account_tags
     return mock
 
-def create_approver_mock(account_email = account_name):
+def create_approver_mock(account_email=account_name):
     mock = MagicMock()
     mock.email = account_email
     mock.nick = account_email
@@ -726,5 +752,5 @@ def create_room_mock(channel_name):
     mock.name = channel_name
     return mock
 
-def raise_no_resource_found(message = '', match = ''):
+def raise_no_resource_found(message='', match=''):
     raise NotFoundException('Sorry, cannot find that resource!')

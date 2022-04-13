@@ -2,7 +2,7 @@ import os
 import re
 import time
 from itertools import chain
-from errbot import BotPlugin, re_botcmd
+from errbot import BotPlugin, re_botcmd, Message
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
@@ -51,6 +51,7 @@ class AccessBot(BotPlugin):
         self._platform = get_platform(self)
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
+        self.init_access_form_bot()
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
@@ -60,6 +61,10 @@ class AccessBot(BotPlugin):
     def deactivate(self):
         self._platform.deactivate()
         super().deactivate()
+
+    def init_access_form_bot(self):
+        if self._bot.bot_config.ACCESS_FORM_BOT_INFO.get('nickname') is not None:
+            self._bot.resolve_access_form_bot_id()
 
     def get_configuration_template(self):
         return config_template.get()
@@ -87,6 +92,7 @@ class AccessBot(BotPlugin):
             return
         resource_name = self.get_arguments_helper().remove_flags(arguments)
         flags = self.get_arguments_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
+        self.check_requester_flag(message, flags.get('requester'))
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
@@ -297,3 +303,12 @@ class AccessBot(BotPlugin):
 
     def has_active_admins(self):
         return self._platform.has_active_admins()
+
+    def check_requester_flag(self, message: Message, requester: str):
+        if requester is not None:
+            if hasattr(message.frm, "id") and message.frm.id == self._bot.bot_config.ACCESS_FORM_BOT_INFO.get('bot_id'):
+                previous_channel_id = message.frm.room.id
+                message.frm = self.build_identifier(requester)
+                message.frm._channelid = previous_channel_id
+            else:
+                raise Exception("You cannot use the requester flag.")
