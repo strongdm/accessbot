@@ -1,4 +1,5 @@
-# SLACK_BOT_TOKEN=
-# SLACK_SIGNING_SECRET=
-# SLACK_CHANNEL_ID=
-# SDM_ACCESS_FORM_BOT_NICKNAME=@accessform # By default the AccessForm nickname is this.
+SLACK_BOT_TOKEN=
+SLACK_SIGNING_SECRET=
+SLACK_CHANNEL_ID=
+SDM_ACCESS_FORM_BOT_NICKNAME=@accessform # By default the AccessForm nickname is this.
+
