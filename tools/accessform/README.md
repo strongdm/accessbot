@@ -2,16 +2,20 @@
 
 AccessForm is the free way to request access to a resource using a form within Slack.
 
+## Create AccessForm
+
+In order to configure the form, you'd need to create a new Slack App, take a look [here](accessform-manifest.yaml)
+
 ## Installation and configuration
 
 1. After downloading the repository and [configuring AccessBot](https://github.com/strongdm/accessbot) on your machine, you can start configuring the AccessForm backend;
-3. In order for the AccessForm server to be visible across the internet, you must tunnel between your computer and a link using [localtunnel](https://github.com/localtunnel/localtunnel) (I strongly suggest that you read the README of the localtunnel project to better understand how to create a tunnel):
+2. In order for the AccessForm server to be visible across the internet, you must tunnel between your computer and a link using [localtunnel](https://github.com/localtunnel/localtunnel) (I strongly suggest that you read the README of the localtunnel project to better understand how to create a tunnel):
     1. Install localtunnel by running the command `npm install -g localtunnel` (you may need administrator powers);
     2. Create the tunnel by running the command `lt --port 3000 --subdomain accessform`;
         > Confirm that the returned link is `https://accessform.loca.lt`. Otherwise, contact an AccessForm collaborator.
 
         > The localtunnel project is under the MIT license and its source code and contributors can be seen in its [repository on GitHub](https://github.com/localtunnel/localtunnel).
-4. In another terminal, inside the `accessform` folder (which is inside the `accessbot/tools/` folder):
+3. In another terminal, inside the `accessform` folder (which is inside the `accessbot/tools/` folder):
     1. Run the command `python3 -m venv .venv` to create the application's virtual environment;
     2. Activate the application's virtual environment by running `source .venv/bin/activate`;
     3. Run `pip install -r requirements.txt` to install project dependencies;
