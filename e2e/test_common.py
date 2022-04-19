@@ -133,8 +133,7 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
                         room_id=None, room_name=None):
     def callback_message(msg):
         frm = msg.frm
-        if bot_id is not None:
-            frm.bot_id = bot_id
+        frm.bot_id = bot_id
         if room_id is not None or room_name is not None:
             frm.room = DummyRoom(room_id, room_name)
         if approver_is_admin and "yes" in msg.body:
