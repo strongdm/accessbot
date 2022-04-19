@@ -49,7 +49,8 @@ def create_config():
         'RESOURCE_GRANT_TIMEOUT_TAG': None,
         'EMAIL_SLACK_FIELD': None,
         'EMAIL_SUBADDRESS': None,
-        'GROUPS_TAG': None
+        'GROUPS_TAG': None,
+        'REQUIRED_FLAGS': ""
     }
 
 
