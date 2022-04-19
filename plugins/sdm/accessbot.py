@@ -306,7 +306,8 @@ class AccessBot(BotPlugin):
 
     def check_requester_flag(self, message: Message, requester: str):
         if requester is not None:
-            if hasattr(message.frm, "id") and message.frm.id is not None and message.frm.id == self._bot.bot_config.ACCESS_FORM_BOT_INFO.get('bot_id'):
+            if hasattr(message.frm, "bot_id") and message.frm.bot_id is not None \
+                    and message.frm.bot_id == self._bot.bot_config.ACCESS_FORM_BOT_INFO.get('bot_id'):
                 previous_channel_id = message.frm.room.id
                 message.frm = self.build_identifier(requester)
                 message.frm._channelid = previous_channel_id
