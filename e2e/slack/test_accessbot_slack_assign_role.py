@@ -185,6 +185,30 @@ class Test_role_grant_exists(ErrBotExtraTestSettings):
         assert "assign request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+class Test_allow_role_tag(ErrBotExtraTestSettings):
+    @pytest.fixture
+    def mocked_testbot_allow_true(self, testbot):
+        config = create_config()
+        config['ALLOW_ROLE_TAG'] = "allow-role"
+        return inject_mocks(testbot, config, role_tags={'allow-role': True})
+
+    @pytest.fixture
+    def mocked_testbot_allow_false(self, testbot):
+        config = create_config()
+        config['ALLOW_ROLE_TAG'] = "allow-role"
+        return inject_mocks(testbot, config, role_tags={'allow-role': False})
+
+    def test_access_command_fail_for_not_allowed_roles(self, mocked_testbot_allow_false):
+        mocked_testbot_allow_false.push_message("access to role Xxx")
+        assert "not available" in mocked_testbot_allow_false.pop_message()
+
+    def test_access_command_grant_when_allowed_role(self, mocked_testbot_allow_true):
+        mocked_testbot_allow_true.push_message("access to role Xxx")
+        mocked_testbot_allow_true.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_allow_true.pop_message()
+        assert "assign request" in mocked_testbot_allow_true.pop_message()
+        assert "Granting" in mocked_testbot_allow_true.pop_message()
+
 # pylint: disable=dangerous-default-value
 def inject_mocks(testbot, config, roles = [], account_tags = None, throw_no_role_found = False, role_tags = None, role_grant_exists = False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']

@@ -26,6 +26,34 @@ class Test_show_roles(ErrBotExtraTestSettings):
         assert "Aaa" in message
         assert "Bbb" in message
 
+class Test_show_allowed_roles(ErrBotExtraTestSettings):
+    @pytest.fixture
+    def mocked_testbot_allow_role_true(self, testbot):
+        config = create_config()
+        config['ALLOW_ROLE_TAG'] = 'allow-role'
+        roles = [ DummyRole("Bbb", {}), DummyRole("Aaa", {'allow-role': True}) ]
+        return inject_mocks(testbot, config, roles)
+
+    @pytest.fixture
+    def mocked_testbot_allow_role_false(self, testbot):
+        config = create_config()
+        config['ALLOW_ROLE_TAG'] = 'allow-role'
+        roles = [ DummyRole("Bbb", {}), DummyRole("Aaa", {'allow-role': False}) ]
+        return inject_mocks(testbot, config, roles)
+
+    def test_only_show_allowed_roles_when_allow_role_tag_true(self, mocked_testbot_allow_role_true):
+        mocked_testbot_allow_role_true.push_message("show available roles")
+        message = mocked_testbot_allow_role_true.pop_message()
+        assert "Aaa" in message
+        assert "Bbb" not in message
+
+    def test_dont_show_roles_when_allow_role_tag_false(self, mocked_testbot_allow_role_false):
+        mocked_testbot_allow_role_false.push_message("show available roles")
+        message = mocked_testbot_allow_role_false.pop_message()
+        assert "Aaa" not in message
+        assert "Bbb" not in message
+        assert "no available roles" in message
+
 class Test_show_roles_except_hidden_roles(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
