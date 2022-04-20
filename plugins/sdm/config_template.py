@@ -27,7 +27,7 @@ _INSTANCE = {
     'EMAIL_SLACK_FIELD': os.getenv("SDM_EMAIL_SLACK_FIELD"),
     'EMAIL_SUBADDRESS': os.getenv("SDM_EMAIL_SUBADDRESS"),
     'GROUPS_TAG': os.getenv("SDM_GROUPS_TAG"),
-    'REQUIRED_FLAGS': os.getenv("SDM_REQUIRED_FLAGS", "")
+    'REQUIRED_FLAGS': os.getenv("SDM_REQUIRED_FLAGS")
 }
 
 def get():

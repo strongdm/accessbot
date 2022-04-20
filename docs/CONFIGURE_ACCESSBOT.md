@@ -48,7 +48,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
-* **SDM_REQUIRED_FLAGS**. List of flags that should be required when using the "access" command. The flags should be separated by space, e.g. `reason duration`. Disabled by default
+* **SDM_REQUIRED_FLAGS**. List of flags that should be required when using the "access" command. The flags should be separated by space, e.g. `reason duration`. By default, there are no required flags
 
 See image below for more information:
 

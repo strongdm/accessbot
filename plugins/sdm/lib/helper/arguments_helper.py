@@ -24,6 +24,8 @@ class ArgumentsHelper:
         return flags
 
     def check_required_flags(self, valid_flags: list, required_flags: str, extracted_flags: dict):
+        if required_flags is None:
+            return
         missing_required_flags = []
         for required_flag in required_flags.split(" "):
             if required_flag in valid_flags and extracted_flags.get(required_flag) is None:
