@@ -138,6 +138,37 @@ class Test_is_hidden_role:
         sdm_role.tags = {'another-tag': 'true'}
         assert not is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
 
+class Test_is_allowed_role:
+    def test_allow_role_when_tag_true(self):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        sdm_role = MagicMock(spec = Postgres)
+        sdm_role.tags = {'allow-role': 'true'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
+
+    def test_dont_allow_role_when_tag_false(self):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        sdm_role = MagicMock(spec = Postgres)
+        sdm_role.tags = {'allow-role': 'false'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role) is False
+
+    def test_allow_role_when_tag_have_no_value(self):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        sdm_role = MagicMock(spec = Postgres)
+        sdm_role.tags = {'allow-role': None}
+        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
+
+    def test_dont_allow_role_when_tag_have_unexpected_value(self):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        sdm_role = MagicMock(spec = Postgres)
+        sdm_role.tags = {'allow-role' : 'not-a-boolean'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
+
+    def test_dont_allow_role_when_tag_doesnt_exist(self):
+        config = {'ALLOW_ROLE_TAG': 'another-tag'}
+        sdm_role = MagicMock(spec = Postgres)
+        sdm_role.tags = {'allow-role': 'true'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role) is False
+
 class Test_can_auto_approve_by_tag:
     def test_auto_approve_when_tag_true(self):
         config = {'AUTO_APPROVE_TAG': 'auto-approve'}

@@ -34,6 +34,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_AUTO_APPROVE_ROLE_TAG**. Role tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
 * **SDM_AUTO_APPROVE_GROUPS_TAG**. Resource tag to be used for auto-approve groups. The tag value should be a list of groups (see `SDM_GROUPS_TAG`) separated by comma. Disabled by default
 * **SDM_ALLOW_RESOURCE_TAG**. Resource tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
+* **SDM_ALLOW_ROLE_TAG**. Role tag to be used for only showing the allowed roles. Ideally set the value to `true` or `false` (e.g. `allow-role=true`). When there's no tag assigned, all roles are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_RESOURCE_TAG**. Resource tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_ROLE_TAG**. Role tag to be used for hiding available roles, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-role=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_CONCEAL_RESOURCE_TAG**. Resource tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
@@ -112,6 +113,22 @@ a-xxx                  Firstname1     Lastname1     user1@example.com          s
 a-yyy                  Firstname2     Lastname2     user2@example.com
 $ sdm admin users update --email user1@example.com --delete-tags 'sdm-roles'
 ```
+
+#### Allow Roles
+```
+$ sdm admin roles list
+Role ID                Name             Composite     Tags
+r-xxxxxxxxxxxxxxx      my-role          false         
+r-xxxxxxxxxxxxxxx      another-role     false         
+$ sdm admin roles update --tags allow-role=true my-role
+$ sdm admin roles list
+Role ID                Name             Composite     Tags
+r-xxxxxxxxxxxxxxx      my-role          false         allow-role=true
+r-xxxxxxxxxxxxxxx      another-role     false          
+$ sdm admin roles update --delete-tags allow-role my-role
+```
+
+Basically, you need to add a tag with the name you've configured in `SDM_ALLOW_ROLE_TAG` to the roles you want to allow. In the example above, we're assuming that `SDM_ALLOW_ROLE_TAG=allow-role`. When this tag is configured only the roles with the tag value set to `true` will be displayed. In order to hide the role, just delete the tag from it.
 
 IMPORTANT:
 * Remember to separate values with commas

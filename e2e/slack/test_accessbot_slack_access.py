@@ -211,8 +211,12 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         request_message = mocked_testbot.pop_message()
         assert "access request" in request_message
         assert "Granting" in mocked_testbot.pop_message()
+        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
 
     def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot
+        ))
         mocked_testbot.push_message(f"access to Xxx --requester @user")
         assert "You cannot use the requester flag." in mocked_testbot.pop_message()
 

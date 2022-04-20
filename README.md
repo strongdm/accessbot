@@ -76,6 +76,9 @@ For example:
       - `SDM_AUTO_APPROVE_TAG=auto-approve` -- automatic approval for this resource
       - `SDM_ALLOW_RESOURCE_TAG=allow-resource` -- resource is displayed via `show` command; any access request auto-fails if the resource does not have the tag
       - `SDM_HIDE_RESOURCE_TAG=hide-resource` -- resource is not displayed via `show` command; any access request auto-fails
+3. Use the strongDM CLI or SDK to add the following tags to individual roles:
+      - `SDM_AUTO_APPROVE_ROLE_TAG=auto-approve` -- automatic approval for this role
+      - `SDM_ALLOW_ROLE_TAG=allow-role` -- role is displayed via `show` command; any access request auto-fails if the role does not have the tag
 
 For more information, please refer to the [detailed guide for access configuration](docs/ACCESS_CONFIGURATION.md).
 
