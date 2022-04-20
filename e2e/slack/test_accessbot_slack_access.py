@@ -690,6 +690,79 @@ class Test_acknowledgement_message:
         assert "valid request" in acknowledgement_message
         assert "team admins" in acknowledgement_message
 
+class Test_resource_approver_groups_tag(ErrBotExtraTestSettings):
+    raw_messages = []
+    admins_channel_name = 'admins-channel'
+    approver_group_channel_name = 'resource-approvers-group'
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.approver_group_channel_name}])
+        return inject_config(testbot, config, tags={'approvers-channel': self.approver_group_channel_name})
+
+    @pytest.fixture
+    def mocked_testbot_resource_without_approvers_tag(self, testbot):
+        config = create_config()
+        config['ADMINS_CHANNEL'] = f"#{self.admins_channel_name}"
+        config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        testbot.bot.channels = MagicMock(return_value=[
+            {'name': self.admins_channel_name},
+            {'name': self.approver_group_channel_name},
+        ])
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_with_wrong_config(self, testbot):
+        config = create_config()
+        config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.approver_group_channel_name}])
+        return inject_config(testbot, config, tags={'approvers-channel': 'wrong-group'})
+
+    def test_access_command_send_request_message_to_respective_channels(self, mocked_testbot):
+        mocked_testbot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            side_effect=mocked_build_identifier
+        )
+        mocked_testbot.bot.sender.room = create_room_mock(self.approver_group_channel_name)
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+        assert self.raw_messages[1].to.person == f"#{self.approver_group_channel_name}"
+        self.raw_messages.clear()
+
+    def test_access_command_send_request_message_to_admins_channel(self, mocked_testbot_resource_without_approvers_tag):
+        mocked_testbot_resource_without_approvers_tag.bot.plugin_manager.plugins[
+            'AccessBot'].build_identifier = MagicMock(
+            side_effect=mocked_build_identifier
+        )
+        mocked_testbot_resource_without_approvers_tag.bot.sender.room = create_room_mock(self.admins_channel_name)
+        mocked_testbot_resource_without_approvers_tag.push_message("access to Xxx")
+        mocked_testbot_resource_without_approvers_tag.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_resource_without_approvers_tag.pop_message()
+        assert "access request" in mocked_testbot_resource_without_approvers_tag.pop_message()
+        assert "Granting" in mocked_testbot_resource_without_approvers_tag.pop_message()
+        assert self.raw_messages[1].to.person == f"#{self.admins_channel_name}"
+        self.raw_messages.clear()
+
+    def test_access_command_fails_when_approver_group_is_unreachable(self, mocked_testbot_with_wrong_config):
+        '''
+        This test should raise an Exception when trying to build an identifier for an unreachable channel.
+        '''
+        mocked_testbot_with_wrong_config.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            side_effect=[
+                # build_identifier needs to return a mocked identifier for each admin before throwing the wanted Exception
+                get_dummy_person('@sdm_admin'),
+                raise_no_identifier
+            ]
+        )
+        mocked_testbot_with_wrong_config.push_message("access to Xxx")
+        assert "valid request" in mocked_testbot_with_wrong_config.pop_message()
+        assert "cannot contact the approvers for this resource, their channel is unreachable" in mocked_testbot_with_wrong_config.pop_message()
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
@@ -758,3 +831,9 @@ def create_room_mock(channel_name):
 
 def raise_no_resource_found(message='', match=''):
     raise NotFoundException('Sorry, cannot find that resource!')
+
+def raise_no_identifier(_):
+    raise NotFoundException('No identifier built.')
+
+def mocked_build_identifier(param):
+    return get_dummy_person(param)

@@ -26,7 +26,8 @@ _INSTANCE = {
     'ENABLE_RESOURCES_FUZZY_MATCHING': str(os.getenv("SDM_ENABLE_RESOURCES_FUZZY_MATCHING", 'true')).lower() == 'true',
     'EMAIL_SLACK_FIELD': os.getenv("SDM_EMAIL_SLACK_FIELD"),
     'EMAIL_SUBADDRESS': os.getenv("SDM_EMAIL_SUBADDRESS"),
-    'GROUPS_TAG': os.getenv("SDM_GROUPS_TAG")
+    'GROUPS_TAG': os.getenv("SDM_GROUPS_TAG"),
+    'APPROVERS_CHANNEL_TAG': os.getenv("SDM_APPROVERS_CHANNEL_TAG")
 }
 
 def get():

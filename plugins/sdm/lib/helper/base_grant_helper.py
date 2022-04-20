@@ -95,12 +95,12 @@ class BaseGrantHelper(ABC):
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         self.__check_administration_availability()
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
-        yield from self.__notify_access_request_entered(sender_nick, sdm_object.name, request_id, message, flags)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
-    def __notify_access_request_entered(self, sender_nick, resource_name, request_id, message, flags: dict):
+    def __notify_access_request_entered(self, sender_nick, sdm_object, request_id, message, flags: dict):
         operation_desc = self.get_operation_desc()
-        formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(resource_name, sender_nick)
+        formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(sdm_object.name, sender_nick)
         if self.__bot.config['ADMINS_CHANNEL']:
             yield f"Thanks {formatted_sender_nick}, that is a valid request. I have created a request for approval in the configured admin channel.\nYour request id is **{request_id}**"
         else:
@@ -111,9 +111,18 @@ class BaseGrantHelper(ABC):
         request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}{duration_details}!"
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
-        self.__notify_admins(request_details + reason + approval_instructions, message)
+        yield from self.__notify_admins(request_details + reason + approval_instructions, message, sdm_object)
 
-    def __notify_admins(self, text, message):
+    def __notify_admins(self, text, message, sdm_object):
+        approvers_channel_tag = self.__bot.config['APPROVERS_CHANNEL_TAG']
+        if approvers_channel_tag is not None and sdm_object.tags is not None:
+            approvers_channel = sdm_object.tags.get(approvers_channel_tag)
+            if approvers_channel is not None:
+                try:
+                    self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel}'), text)
+                except Exception:
+                    yield "Sorry, I cannot contact the approvers for this resource, their channel is unreachable. Please, contact your SDM Admin."
+                return
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
             self.__bot.send(self.__bot.build_identifier(admins_channel), text)
