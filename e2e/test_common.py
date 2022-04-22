@@ -51,6 +51,7 @@ def create_config():
         'EMAIL_SLACK_FIELD': None,
         'EMAIL_SUBADDRESS': None,
         'GROUPS_TAG': None,
+        'REQUIRED_FLAGS': None,
         'APPROVERS_CHANNEL_TAG': None
     }
 
