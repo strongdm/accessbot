@@ -192,7 +192,7 @@ class Test_get_all_resources_by_role:
         client.resources.list = MagicMock(return_value = [None])
 
         resources = service.get_all_resources_by_role(role_name)
-        client.roles.list.assert_called_with(f'name:"{role_name}"')
+        client.roles.list.assert_called_with(f'name:?', role_name)
         client.role_grants.list.assert_called_with(f"role_id:{role_id}")
         client.resources.list.assert_called_with("id:2")
         assert len(resources) == 0 # discard None
@@ -208,8 +208,8 @@ class Test_get_all_resources_by_role:
     def test_when_role_does_not_exist(self, client, service):
         client.roles.list = MagicMock(return_value = iter([]))
         with pytest.raises(Exception) as ex:
-            service.get_all_resources_by_role("role_name")
-        client.roles.list.assert_called_with('name:"role_name"')
+            service.get_all_resources_by_role(role_name)
+        client.roles.list.assert_called_with('name:?', role_name)
         assert str(ex.value) != ""
 
     def test_with_filter(self, client, service):
@@ -219,7 +219,7 @@ class Test_get_all_resources_by_role:
 
         sdm_resources = list(service.get_all_resources_by_role(role_name, filter=f"name:{resource_name}"))
 
-        client.roles.list.assert_called_with(f'name:"{role_name}"')
+        client.roles.list.assert_called_with(f'name:?', role_name)
         client.role_grants.list.assert_called_with(f"role_id:{role_id}")
         client.resources.list.assert_called_with(f"id:2,name:{resource_name}")
         assert len(sdm_resources) == 1
@@ -232,7 +232,7 @@ class Test_get_all_resources_by_role:
 
         sdm_resources = list(service.get_all_resources_by_role(role_name, filter=f"name:{resource_name}"))
 
-        client.roles.list.assert_called_with(f'name:"{role_name}"')
+        client.roles.list.assert_called_with(f'name:?', role_name)
         client.resources.list.assert_called_with(f"id:{resource_id},name:{resource_name}")
         assert len(sdm_resources) == 1
         assert sdm_resources[0].id == resource_id
@@ -242,7 +242,7 @@ class Test_get_all_resources_by_role:
         nonexistent_resource = 'resource2'
         client.roles.list = MagicMock(return_value = get_role_iter())
         sdm_resources = service.get_all_resources_by_role(role_name, filter = f"name:{nonexistent_resource}")
-        client.roles.list.assert_called_with(f'name:"{role_name}"')
+        client.roles.list.assert_called_with(f'name:?', role_name)
         assert len(sdm_resources) == 0
 
     def test_no_resources_with_filter_and_access_rules(self, client, service):
@@ -250,7 +250,7 @@ class Test_get_all_resources_by_role:
         client.roles.list = MagicMock(return_value = get_role_iter(access_rules=[{"ids": [resource_id]}]))
         client.resources.list = MagicMock(side_effect = filter_resources)
         sdm_resources = service.get_all_resources_by_role(role_name, filter = f"name:{nonexistent_resource}")
-        client.roles.list.assert_called_with(f'name:"{role_name}"')
+        client.roles.list.assert_called_with(f'name:?', role_name)
         client.resources.list.assert_called_with(f"id:{resource_id},name:{nonexistent_resource}")
         assert len(sdm_resources) == 0
 
