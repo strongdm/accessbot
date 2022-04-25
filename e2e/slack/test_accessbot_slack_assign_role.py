@@ -178,7 +178,7 @@ class Test_role_grant_exists(ErrBotExtraTestSettings):
     def test_when_grant_doesnt_exists(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         service = accessbot.get_sdm_service()
-        service.role_grant_exists.return_value = False
+        service.role_grant_exists_in_resources.return_value = []
         mocked_testbot.push_message("access to role Allowed Role")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
@@ -239,7 +239,8 @@ def create_sdm_service_mock(roles, account_tags, throw_no_role_found, role_tags,
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account(account_tags))
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
     service_mock.account_grant_exists = MagicMock(return_value = False)
-    service_mock.role_grant_exists = MagicMock(return_value = role_grant_exists)
+    service_mock.account_grant_exists_in_resources = MagicMock(return_value = [])
+    service_mock.role_grant_exists_in_resources = MagicMock(return_value = create_mock_resources()) if role_grant_exists else MagicMock(return_value=[])
     service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 

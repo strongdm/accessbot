@@ -18,7 +18,7 @@ class ResourceGrantHelper(BaseGrantHelper):
         return shortuuid.ShortUUID().random(length=4)
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
-        if self.__sdm_service.account_grant_exists(sdm_object.id, sdm_account.id): # TODO Add tests for this branch
+        if self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id):
             raise PermissionDeniedException("You already have access to that resource!")
 
     def get_all_items(self):
