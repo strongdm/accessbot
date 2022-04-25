@@ -18,7 +18,7 @@ class SdmService:
         """
         try:
             self.__log.debug("##SDM## SdmService.get_resource_by_name name: %s", name)
-            sdm_resources = list(self.__client.resources.list('name:"{}"'.format(name)))
+            sdm_resources = list(self.__client.resources.list('name:?', name))
         except Exception as ex:
             raise Exception("List resources failed: " + str(ex)) from ex
         if len(sdm_resources) == 0:
@@ -112,7 +112,7 @@ class SdmService:
         Return a SDM role by name
         """
         try:
-            sdm_roles = list(self.__client.roles.list('name:"{}"'.format(name)))
+            sdm_roles = list(self.__client.roles.list('name:?', name))
         except Exception as ex:
             raise Exception("List roles failed: " + str(ex)) from ex
         if len(sdm_roles) == 0:
