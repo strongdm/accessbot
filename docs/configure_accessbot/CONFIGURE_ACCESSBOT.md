@@ -1,3 +1,9 @@
+---
+layout: default
+title: AccessBot Environment Variables
+nav_order: 4
+parent: Accessbot Configuration
+---
 # Configure AccessBot
 
 There are a number of variables you can use for configuring AccessBot.

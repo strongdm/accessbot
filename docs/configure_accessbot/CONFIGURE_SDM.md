@@ -1,3 +1,11 @@
+---
+layout: default
+title: SDM Token requirements
+nav_order: 2
+parent: Accessbot Configuration
+---
+
+
 # Configure SDM
 
 In order to configure SDM you need to [create an API Key](https://www.strongdm.com/docs/admin-ui-guide/settings/admin-tokens/api-keys) 

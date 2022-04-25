@@ -1,3 +1,9 @@
+---
+layout: default
+title: Alternate emails
+nav_order: 3
+parent: Accessbot Configuration
+---
 # Configure Alternative Emails
 
 You can make access requests using alternative emails. This functionality is specially helpful when you need to make access requests using a different email address than the one you have configured in your Slack Profile. 

@@ -1,3 +1,10 @@
+---
+layout: default
+title: Configure Slack(Bolt)
+nav_order: 2
+parent: Slack
+---
+
 # Configure Slack
 
 In order to configure AccessBot integration with Slack follow the next steps:
