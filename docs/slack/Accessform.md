@@ -2,7 +2,7 @@
 layout: default
 title: Slack Accessbot Form (setup) 
 nav_order: 5
-parent: slack
+parent: Slack
 ---
 # AccessForm
 
