@@ -84,7 +84,7 @@ class AccessBot(BotPlugin):
         if self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
             self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
             admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
-            members = self._bot.conversations_members(admin_channel)
+            members = self._bot.conversation_members(admin_channel)
             for member_id in members:
                 identifier = self._bot.userid_to_username(member_id)
                 allowed_users += [f'@{identifier}']

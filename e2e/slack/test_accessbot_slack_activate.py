@@ -55,7 +55,7 @@ def inject_config(testbot, config):
     accessbot.build_identifier = MagicMock(
         side_effect=mocked_build_identifier
     )
-    accessbot._bot.conversations_members = MagicMock(return_value = get_dummy_members())
+    accessbot._bot.conversation_members = MagicMock(return_value = get_dummy_members())
     accessbot._bot.userid_to_username = MagicMock(side_effect = mocked_userid_to_username)
     return testbot
 
