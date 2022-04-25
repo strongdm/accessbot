@@ -1,3 +1,9 @@
+---
+layout: default
+title: AccessBot workflows
+nav_order: 5
+parent: Accessbot Configuration
+---
 # Access configuration
 You can use the “access to resource-name” command for obtaining 1 hour access to a specific resource.
 

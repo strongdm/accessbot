@@ -1,3 +1,9 @@
+---
+title: Teams Accessbot How-to
+nav_order: 10
+parent: Teams
+layout: default
+---
 # Access bot (GitHub)
 
 ## Creating yourAzure Bot
