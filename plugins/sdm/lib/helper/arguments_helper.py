@@ -22,3 +22,13 @@ class ArgumentsHelper:
             if not validator or validator(flag_value):
                 flags[flag_name] = flag_value
         return flags
+
+    def check_required_flags(self, valid_flags: list, required_flags: str, extracted_flags: dict):
+        if required_flags is None:
+            return
+        missing_required_flags = []
+        for required_flag in required_flags.split(" "):
+            if required_flag in valid_flags and extracted_flags.get(required_flag) is None:
+                missing_required_flags.append(required_flag)
+        if len(missing_required_flags) > 0:
+            raise Exception(f'Missing required flags: {", ".join(missing_required_flags)}.')

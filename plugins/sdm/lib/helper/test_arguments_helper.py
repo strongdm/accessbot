@@ -11,7 +11,7 @@ class Test_remove_flags:
         arguments = 'My Resource'
         result = ArgumentsHelper().remove_flags(arguments)
         assert result == 'My Resource'
-        
+
     def test_remove_when_has_no_resource(self):
         arguments = '--flag value'
         result = ArgumentsHelper().remove_flags(arguments)
@@ -49,3 +49,33 @@ class Test_extract_flags:
         }
         with pytest.raises(Exception):
             ArgumentsHelper().extract_flags(arguments, validators)
+
+class Test_check_required_flags:
+    required_flags = 'flag-a flag-b'
+
+    def test_check_successfully(self):
+        extracted_flags = {
+            'flag-a': 'value-a',
+            'flag-b': 'value-b',
+            'flag-c': 'value-c',
+        }
+        try:
+            ArgumentsHelper().check_required_flags(self.required_flags.split(' '), self.required_flags, extracted_flags)
+        except Exception as exc:
+            assert False, f"'check_required_flags' raised an exception {exc}"
+
+    def test_check_fails_when_missing_required_flags(self):
+        extracted_flags = {
+            'flag-c': 'value-c'
+        }
+        with pytest.raises(Exception):
+            ArgumentsHelper().check_required_flags(self.required_flags.split(' '), self.required_flags, extracted_flags)
+
+    def test_check_successfully_when_required_flags_are_not_valid(self):
+        extracted_flags = {
+            'flag-a': 'value-a',
+        }
+        try:
+            ArgumentsHelper().check_required_flags(['flag-d', 'flag-e'], self.required_flags, extracted_flags)
+        except Exception as exc:
+            assert False, f"'check_required_flags' raised an exception {exc}"

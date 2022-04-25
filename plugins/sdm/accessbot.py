@@ -105,8 +105,14 @@ class AccessBot(BotPlugin):
         if not self._platform.can_access_resource(message):
             return
         resource_name = self.get_arguments_helper().remove_flags(arguments)
-        flags = self.get_arguments_helper().extract_flags(arguments, validators=self.get_resource_grant_helper().get_flags_validators())
-        self.check_requester_flag(message, flags.get('requester'))
+        flags_validators = self.get_resource_grant_helper().get_flags_validators()
+        flags = self.get_arguments_helper().extract_flags(arguments, validators=flags_validators)
+        try:
+            self.get_arguments_helper().check_required_flags(flags_validators.keys(), self.config['REQUIRED_FLAGS'], flags)
+            self.check_requester_flag(message, flags.get('requester'))
+        except Exception as e:
+            yield str(e)
+            return
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
 
     @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
