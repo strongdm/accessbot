@@ -197,6 +197,27 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
+    def test_access_command_grant_access_when_using_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason --duration 15m")
+        mocked_testbot_with_required_flags.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_required_flags.pop_message()
+        assert "access request" in mocked_testbot_with_required_flags.pop_message()
+        assert "Granting" in mocked_testbot_with_required_flags.pop_message()
+
+    def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" in request_message
+        assert "duration" in request_message
+
+    def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" not in request_message
+        assert "duration" in request_message
+
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -250,27 +271,6 @@ class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
         ))
         mocked_testbot.push_message(f"access to Xxx --requester @user")
         assert "You cannot use the requester flag." in mocked_testbot.pop_message()
-
-    def test_access_command_grant_access_when_using_required_flags(self, mocked_testbot_with_required_flags):
-        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason --duration 15m")
-        mocked_testbot_with_required_flags.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot_with_required_flags.pop_message()
-        assert "access request" in mocked_testbot_with_required_flags.pop_message()
-        assert "Granting" in mocked_testbot_with_required_flags.pop_message()
-
-    def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
-        mocked_testbot_with_required_flags.push_message(f"access to Xxx")
-        request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
-        assert "reason" in request_message
-        assert "duration" in request_message
-
-    def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
-        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
-        request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
-        assert "reason" not in request_message
-        assert "duration" in request_message
 
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
