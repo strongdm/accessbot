@@ -9,7 +9,7 @@ sys.path.append('plugins/sdm')
 sys.path.append('e2e')
 
 from test_common import create_config, DummyResource, send_message_override, \
-    callback_message_fn, get_dummy_person, ErrBotExtraTestSettings
+    callback_message_fn, get_dummy_person, ErrBotExtraTestSettings, DummyPerson
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -190,29 +190,6 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
-    def test_access_command_from_access_form_bot(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot,
-            bot_id=access_form_bot_id,
-            room_id=room_id,
-            room_name=room_name
-        ))
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        request_message = mocked_testbot.pop_message()
-        assert "access request" in request_message
-        assert "Granting" in mocked_testbot.pop_message()
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
-
-    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot
-        ))
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        assert "You cannot use the requester flag." in mocked_testbot.pop_message()
-
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
@@ -226,6 +203,46 @@ class Test_invalid_approver(ErrBotExtraTestSettings):
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Invalid user" in mocked_testbot.pop_message()
+
+class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        config['SENDER_NICK_OVERRIDE'] = None
+        config['SENDER_EMAIL_OVERRIDE'] = None
+        bot = inject_config(testbot, config, admins=['@admin'])
+        bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(side_effect=mocked_build_identifier)
+        return bot
+
+    def test_access_command_from_access_form_bot(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            bot_id=access_form_bot_id,
+            room_id=room_id,
+            room_name=room_name
+        ))
+        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
+        mocked_testbot.push_message(f"access to Xxx --requester @user")
+        ack_message = mocked_testbot.pop_message()
+        assert "Thanks `@user`" in ack_message
+        assert "valid request" in ack_message
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            from_nick="admin"
+        ))
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        request_message = mocked_testbot.pop_message()
+        assert "access request" in request_message
+        assert "Granting" in mocked_testbot.pop_message()
+        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
+
+    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot
+        ))
+        mocked_testbot.push_message(f"access to Xxx --requester @user")
+        assert "You cannot use the requester flag." in mocked_testbot.pop_message()
 
 class Test_auto_approve_all(ErrBotExtraTestSettings):
     @pytest.fixture
@@ -758,3 +775,6 @@ def create_room_mock(channel_name):
 
 def raise_no_resource_found(message='', match=''):
     raise NotFoundException('Sorry, cannot find that resource!')
+
+def mocked_build_identifier(param):
+    return DummyPerson(param[1:], nick=param[1:])
