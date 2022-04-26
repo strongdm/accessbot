@@ -145,7 +145,6 @@ class SdmService:
             if not sdm_role:
                 sdm_role = self.get_role_by_name(role_name)
             resources_filters = self.__get_resources_filters_by_role(sdm_role)
-            print("*** resources_filters ", resources_filters)
             if filter:
                 resources_filters = [f"{rf},{filter}" for rf in resources_filters]
             return self.__get_unique_resources(resources_filters)
@@ -164,17 +163,18 @@ class SdmService:
             role_grants_executed = False
         access_rules = json.loads(sdm_role.access_rules) if isinstance(sdm_role.access_rules, str) else sdm_role.access_rules
         for ar in access_rules:
-            filter = []
+            filters = []
             if not role_grants_executed and ar.get('ids'): 
-                filter.append(",".join([f"id:{id}" for id in ar['ids']]))
+                filters.append(",".join([f"id:{id}" for id in ar['ids']]))
             if ar.get('type'):
-                filter.append(f"type:{ar['type']}")
+                filters.append(f"type:{ar['type']}")
             if ar.get('tags'):
                 tags = []
                 for key, value in ar['tags'].items():
                     tags.append('tag:"{}"="{}"'.format(key, value))
-                filter.append(",".join(tags))
-            resources_filters.append(",".join(filter))
+                filters.append(",".join(tags))
+            if len(filters) > 0:
+                resources_filters.append(",".join(filters))
         return resources_filters
 
     def __get_unique_resources(self, resources_filter):
