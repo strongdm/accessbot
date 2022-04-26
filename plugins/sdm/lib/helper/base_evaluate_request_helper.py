@@ -1,6 +1,9 @@
 import shortuuid
 from abc import ABC, abstractmethod
 
+from ..util import get_approvers_channel
+
+
 class BaseEvaluateRequestHelper(ABC):
     def __init__(self, bot):
         self._bot = bot
@@ -14,23 +17,35 @@ class BaseEvaluateRequestHelper(ABC):
             yield f"Invalid access request id = {request_id}"
             return
 
-        if not self.__is_allowed_to_evaluate(request_id, user):
+        if not self.__is_allowed_to_self_evaluate(request_id, user):
             self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin to self approve or deny: %s", execution_id, str(user))
             yield "Invalid user, not an admin to self approve or deny"
             return
 
-        if not self.__is_admin(user):
-            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin: %s", execution_id, str(user))
+        if not self.__is_allowed_to_evaluate(request_id, user):
+            self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin or using the wrong channel: %s", execution_id, str(user))
             yield "Invalid user, not an admin or using the wrong channel"
             return
 
         self._bot.log.info("##SDM## %s EvaluateRequestHelper.execute concluding evaluation for access request id: %s", execution_id, request_id)
         yield from self.evaluate(request_id, admin=user, reason=reason)
 
-    def __is_allowed_to_evaluate(self, request_id, evaluator):
+    def __is_allowed_to_self_evaluate(self, request_id, evaluator):
         grant_request = self._bot.get_grant_request(request_id)
         is_self_approve = grant_request['sdm_account'].email == evaluator.email
         return not is_self_approve or self._bot.get_user_nick(evaluator) in self._bot.get_admins()
+
+    def __is_allowed_to_evaluate(self, request_id, evaluator):
+        grant_request = self._bot.get_grant_request(request_id)
+        sdm_object = grant_request['sdm_object']
+        approvers_channel = get_approvers_channel(self._bot.config, sdm_object)
+        if approvers_channel is not None:
+            return self.__is_valid_approver_channel(evaluator, approvers_channel)
+        return self.__is_admin(evaluator)
+
+    def __is_valid_approver_channel(self, evaluator, approvers_channel):
+        evaluator_channel = None if not hasattr(evaluator, 'room') else evaluator.room.name
+        return approvers_channel == evaluator_channel
 
     def __is_admin(self, evaluator):
         admins_channel = self._bot.config['ADMINS_CHANNEL']

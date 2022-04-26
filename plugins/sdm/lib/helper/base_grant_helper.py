@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from ..exceptions import NotFoundException, PermissionDeniedException
 from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string,\
-    convert_duration_flag_to_timedelta
+    convert_duration_flag_to_timedelta, get_approvers_channel
 
 
 class BaseGrantHelper(ABC):
@@ -101,8 +101,12 @@ class BaseGrantHelper(ABC):
     def __notify_access_request_entered(self, sender_nick, sdm_object, request_id, message, flags: dict):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(sdm_object.name, sender_nick)
-        if self.__bot.config['ADMINS_CHANNEL']:
-            yield f"Thanks {formatted_sender_nick}, that is a valid request. I have created a request for approval in the configured admin channel.\nYour request id is **{request_id}**"
+        approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
+        if self.__bot.config['ADMINS_CHANNEL'] or approvers_channel is not None:
+            evaluators_type = 'approvers' if approvers_channel is not None else 'admins'
+            yield f"Thanks {formatted_sender_nick}, that is a valid request." \
+                  f" I'll send a request for approval in the configured {evaluators_type} channel.\n" \
+                  f"Your request id is **{request_id}**"
         else:
             team_admins = ", ".join(self.__bot.get_admins())
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
