@@ -97,7 +97,7 @@ class Test_role_grant_exists:
         client.roles.get = MagicMock(return_value=get_role_response(access_rules=[{'ids': [resource_id]}]))
         client.roles.list = MagicMock(return_value=[get_role()])
         client.resources.list = MagicMock(return_value=get_resource_list_iter())
-        grant_exists = service.role_grant_exists_in_resources([get_resource()], account_id)
+        grant_exists = service.get_granted_resources_via_role([get_resource()], account_id)
         client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
         client.roles.get.assert_called_with(role_id)
         client.resources.list.assert_called_with(f'id:{resource_id}')
@@ -108,7 +108,7 @@ class Test_role_grant_exists:
         client.roles.get = MagicMock(return_value=get_role_response())
         client.resources.list = MagicMock(return_value=get_resource_list_iter())
         client.role_grants.list = MagicMock(return_value=[get_role_grant()])
-        grant_exists = service.role_grant_exists_in_resources([get_resource()], account_id)
+        grant_exists = service.get_granted_resources_via_role([get_resource()], account_id)
         client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
         client.roles.get.assert_called_with(role_id)
         client.role_grants.list.assert_called_with(f'role_id:{role_id}')
@@ -118,7 +118,7 @@ class Test_role_grant_exists:
         client.account_attachments.list = MagicMock(return_value=get_account_attachments())
         client.roles.get = MagicMock(return_value=get_role_response())
         client.roles.list = MagicMock(return_value=[get_role_response()])
-        grant_exists = service.role_grant_exists_in_resources([get_resource()], account_id)
+        grant_exists = service.get_granted_resources_via_role([get_resource()], account_id)
         client.account_attachments.list.assert_called_with(f"account_id:{account_id}")
         client.roles.get.assert_called_with(role_id)
         client.resources.list.assert_not_called()
@@ -129,7 +129,7 @@ class Test_role_grant_exists:
         client.account_attachments.list = MagicMock(return_value=get_account_attachments())
         client.roles.get = MagicMock(side_effect=Exception(error_message))
         with pytest.raises(Exception) as ex:
-            service.role_grant_exists_in_resources([get_resource()], account_id)
+            service.get_granted_resources_via_role([get_resource()], account_id)
         assert error_message in str(ex.value)
 
 class Test_grant_temporary_access:

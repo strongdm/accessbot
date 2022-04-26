@@ -1,4 +1,6 @@
 import json
+from os import access
+import resource
 
 from ..exceptions import NotFoundException
 import strongdm
@@ -43,11 +45,11 @@ class SdmService:
         Does an account grant exists - resource assigned to an account
         """
         self.__log.debug("##SDM## SdmService.account_grant_exists resource_id: %s account_id: %s", resource.id, account_id)
-        return len(self.account_grant_exists_in_resources([resource], account_id)) > 0
+        return len(self.get_granted_resources_via_account([resource], account_id)) > 0
 
-    def account_grant_exists_in_resources(self, resources, account_id):
+    def get_granted_resources_via_account(self, resources, account_id):
         """
-        Does an account grant exists - a list of resources assigned to an account
+        A list of resources assigned to an account
         """
         granted_resources = []
         try:
@@ -60,20 +62,18 @@ class SdmService:
             raise Exception("Account grant exists failed: " + str(ex)) from ex
         return granted_resources
 
-    def role_grant_exists_in_resources(self, sdm_resources, account_id):
+    def get_granted_resources_via_role(self, sdm_resources, account_id):
         """
-        Does a role grant exists - resources assigned to a role that is assigned to an account
+        A list of resources assigned to an account via a role
 
-        account -> account_attachment -> role -> role_grant -> resource
+        account -> account_attachment -> role -> (role_grant|access_rules) -> resource
         """
         granted_resources = []
         try:
             for aa in list(self.__client.account_attachments.list(f"account_id:{account_id}")):
                 role = self.__client.roles.get(aa.role_id).role
                 for role_resource in self.get_all_resources_by_role(role.name, sdm_role=role):
-                    for sdm_resource in sdm_resources:
-                        if role_resource.id == sdm_resource.id:
-                            granted_resources.append(sdm_resource)
+                    granted_resources += [sdm_resource for sdm_resource in sdm_resources if role_resource.id == sdm_resource.id]
         except Exception as ex:
             raise Exception("Role grant exists failed: " + str(ex)) from ex
         return granted_resources
@@ -111,6 +111,7 @@ class SdmService:
         """
         Return a SDM role by name
         """
+        self.__log.debug("##SDM## SdmService.get_role_by_name name: %s", name)
         try:
             sdm_roles = list(self.__client.roles.list('name:?', name))
         except Exception as ex:
@@ -124,19 +125,27 @@ class SdmService:
         Return all roles
         """
         try:
+            self.__log.debug("##SDM## SdmService.get_all_roles")
             return list(self.__client.roles.list(''))
         except Exception as ex:
             raise Exception("List roles failed: " + str(ex)) from ex
 
-    # TODO: consider create tests and see the edge cases - have 3 ways
+    # TODO Create 2 methods: get_all_resources_by_role_name and get_all_resources_by_role
     def get_all_resources_by_role(self, role_name, filter='', sdm_role=None):
         """
         Return all resources by role name
         """
+        self.__log.debug(
+            "##SDM## SdmService.get_all_resources_by_role role_name: %s filter: %s sdm_role: %s", 
+            role_name, 
+            filter,
+            str(sdm_role)
+        )
         try:
             if not sdm_role:
                 sdm_role = self.get_role_by_name(role_name)
             resources_filters = self.__get_resources_filters_by_role(sdm_role)
+            print("*** resources_filters ", resources_filters)
             if filter:
                 resources_filters = [f"{rf},{filter}" for rf in resources_filters]
             return self.__get_unique_resources(resources_filters)
@@ -144,15 +153,19 @@ class SdmService:
             raise Exception("List resources by role failed: " + str(ex)) from ex
 
     def __get_resources_filters_by_role(self, sdm_role):
-        if sdm_role.to_dict().get('access_rules') is None or sdm_role.access_rules is None:
-            sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
-            return [f"id:{rg.resource_id}" for rg in sdm_role_grants]
-        # The customer was migrated to Access Overhaul
-        access_rules = json.loads(sdm_role.access_rules) if isinstance(sdm_role.access_rules, str) else sdm_role.access_rules
         resources_filters = []
+        role_grants_executed = True
+        try:
+            sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
+            rules = ",".join([f"id:{rg.resource_id}" for rg in sdm_role_grants])
+            resources_filters.append(rules)
+        except Exception as ex:
+            self.__log.debug("##SDM## SdmService.__get_resources_filters_by_role RoleGrants.list failed, interpreting access_rules attribute (Access Overhaul enabled?) " + str(ex))
+            role_grants_executed = False
+        access_rules = json.loads(sdm_role.access_rules) if isinstance(sdm_role.access_rules, str) else sdm_role.access_rules
         for ar in access_rules:
             filter = []
-            if ar.get('ids'):
+            if not role_grants_executed and ar.get('ids'): 
                 filter.append(",".join([f"id:{id}" for id in ar['ids']]))
             if ar.get('type'):
                 filter.append(f"type:{ar['type']}")
