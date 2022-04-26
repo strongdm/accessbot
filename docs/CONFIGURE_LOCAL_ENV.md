@@ -26,14 +26,14 @@ export SLACK_APP_TOKEN=slack-app-token
 export SLACK_BOT_TOKEN=slack-bot-token
 ```
 
-See [Configure Slack](CONFIGURE_SLACK.md)
+See [Configure Slack](slack/CONFIGURE_SLACK.md)
 
 #### SDM_BOT_PLATFORM is `slack-classic`
 ```
 export SLACK_TOKEN=slack-token
 ```
 
-See [Configure Slack Classic Bot](CONFIGURE_SLACK_CLASSIC.md)
+See [Configure Slack Classic Bot](slack/CONFIGURE_SLACK_CLASSIC.md)
 
 #### SDM_BOT_PLATFORM is `ms-teams`:
 ```
@@ -41,11 +41,11 @@ export AZURE_APP_ID=app-id
 export AZURE_APP_PASSWORD=app-password
 ```
 
-See [Configure Microsoft Teams](CONFIGURE_MS_TEAMS.md)
+See [Configure Microsoft Teams](teams/CONFIGURE_MS_TEAMS.md)
 
 ---
 
-Before initialize errbot, you also need to [Configure SDM](CONFIGURE_SDM.md).
+Before initialize errbot, you also need to [Configure SDM](configure_accessbot/CONFIGURE_SDM.md).
 
 ## Initialize errbot
 ```

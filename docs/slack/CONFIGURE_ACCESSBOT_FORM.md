@@ -1,3 +1,10 @@
+---
+layout: default
+title: Slack - Accessform Usage
+nav_order: 4
+parent: Slack
+---
+
 # Configure AccessBot Form
 
 ## Set Environment Variable
