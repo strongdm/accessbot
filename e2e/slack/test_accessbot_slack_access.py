@@ -719,6 +719,27 @@ class Test_acknowledgement_message:
         assert "team admins" in acknowledgement_message
 
 
+class Test_check_permission(ErrBotExtraTestSettings):
+    @pytest.fixture
+    def mocked_testbot_account_grant_exists(self, testbot):
+        return inject_config(testbot, create_config(), account_grant_exists=True)
+
+    @pytest.fixture
+    def mocked_testbot_account_grant_doesnt_exists(self, testbot):
+        return inject_config(testbot, create_config())
+
+    def test_when_account_grant_exists(self, mocked_testbot_account_grant_exists):
+        accessbot = mocked_testbot_account_grant_exists.bot.plugin_manager.plugins["AccessBot"]
+        with pytest.raises(Exception) as ex:
+            accessbot.get_resource_grant_helper().check_permission(create_resource_mock(None), create_account_mock(), '')
+        assert "already have access" in str(ex.value)
+
+    def test_when_account_grant_doesnt_exists(self, mocked_testbot_account_grant_doesnt_exists):
+        accessbot = mocked_testbot_account_grant_doesnt_exists.bot.plugin_manager.plugins["AccessBot"]
+        result = accessbot.get_resource_grant_helper().check_permission(create_resource_mock(None), create_account_mock(), '')
+        assert not result
+
+
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
                   resources=[], account_tags={}):
