@@ -38,7 +38,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         resources = self.__sdm_service.get_all_resources_by_role(role_name)
         granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
         granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
-        granted_resources = granted_resources_via_account + granted_resources_via_role
+        granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
         if len(granted_resources) > 0:
             granted_resources_text = ''
             for resource in granted_resources:
@@ -96,3 +96,11 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         """
         granted_resource_ids = [granted_resource.id for granted_resource in granted_resources]
         return [resource for resource in sdm_resources if resource.id not in granted_resource_ids]
+
+    def __remove_duplicated_resources(self, resources):
+        mapped_resources_by_id = {}
+        for resource in resources:
+            if not mapped_resources_by_id.get(resource.id):
+                mapped_resources_by_id[resource.id] = resource
+        distinct_resources = mapped_resources_by_id.values()
+        return distinct_resources
