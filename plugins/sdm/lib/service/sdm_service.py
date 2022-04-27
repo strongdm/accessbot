@@ -47,6 +47,18 @@ class SdmService:
         except Exception as ex:
             raise Exception("Account grant exists failed: " + str(ex)) from ex
 
+    def delete_account_grant(self, resource_id, account_id):
+        """
+        Deletes an account grant from a resource assigned to an account
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.delete_account_grant resource_id: %s account_id: %s", resource_id, account_id)
+            account_grants = list(self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}"))
+            if len(account_grants) > 0:
+                self.__client.account_grants.delete(account_grants[0].id)
+        except Exception as ex:
+            raise Exception("Delete account grant failed: " + str(ex)) from ex
+
     def role_grant_exists(self, resource_id, account_id):
         """
         Does a role grant exists - resource assigned to a role that is assigned to an account

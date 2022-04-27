@@ -719,6 +719,49 @@ class Test_acknowledgement_message:
         assert "team admins" in acknowledgement_message
 
 
+class Test_access_request_renewal(ErrBotExtraTestSettings):
+    raw_messages = []
+    regular_channel_name = 'regular-channel'
+    admins_channel_name = 'admins-channel'
+
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        testbot.bot.channels = MagicMock(return_value=[
+            {'name': self.admins_channel_name},
+            {'name': self.regular_channel_name},
+        ])
+        config['ADMINS_CHANNEL'] = f'#{self.admins_channel_name}'
+        config['ALLOW_ACCESS_REQUEST_RENEWAL'] = True
+        testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
+        bot = inject_config(testbot, config, account_grant_exists=True)
+        bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
+            side_effect=mocked_build_identifier
+        )
+        return bot
+
+    def test_access_command_grant_renewal(self, mocked_testbot):
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            room_name=self.regular_channel_name
+        ))
+        mocked_testbot.push_message('access to Xxx')
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert self.raw_messages[1].to.person == f'#{self.admins_channel_name}'
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            room_name=self.admins_channel_name
+        ))
+        mocked_testbot.push_message(f'yes {access_request_id}')
+        assert "Access renewed" in mocked_testbot.pop_message()
+        assert self.raw_messages[2].to.person == f'#{self.regular_channel_name}'
+        granted_message = mocked_testbot.pop_message()
+        assert "Granting" in granted_message
+        assert "The previous grant was revoked and a new one was created" in granted_message
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.get_sdm_service().delete_account_grant.assert_called_with(resource_id, account_id)
+
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
                   resources=[], account_tags={}):
@@ -756,6 +799,7 @@ def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resou
     mock.get_all_resources_by_role = MagicMock(return_value=resources_by_role)
     mock.account_grant_exists = MagicMock(return_value=account_grant_exists)
     mock.get_all_resources = MagicMock(return_value=resources)
+    mock.delete_account_grant = MagicMock(return_value=None)
     return mock
 
 def create_resource_mock(tags):
@@ -786,3 +830,6 @@ def create_room_mock(channel_name):
 
 def raise_no_resource_found(message='', match=''):
     raise NotFoundException('Sorry, cannot find that resource!')
+
+def mocked_build_identifier(param):
+    return get_dummy_person(param)
