@@ -156,8 +156,9 @@ class SdmService:
         role_grants_executed = True
         try:
             sdm_role_grants = list(self.__client.role_grants.list(f"role_id:{sdm_role.id}"))
-            rules = ",".join([f"id:{rg.resource_id}" for rg in sdm_role_grants])
-            resources_filters.append(rules)
+            if len(sdm_role_grants) > 0:
+                rules = ",".join([f"id:{rg.resource_id}" for rg in sdm_role_grants])
+                resources_filters.append(rules)
         except Exception as ex:
             self.__log.debug("##SDM## SdmService.__get_resources_filters_by_role RoleGrants.list failed, interpreting access_rules attribute (Access Overhaul enabled?) " + str(ex))
             role_grants_executed = False
