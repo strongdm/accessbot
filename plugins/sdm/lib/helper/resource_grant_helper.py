@@ -18,7 +18,7 @@ class ResourceGrantHelper(BaseGrantHelper):
         return shortuuid.ShortUUID().random(length=4)
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
-        account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object.id, sdm_account.id)
+        account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id)
         if not self.__bot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] and account_grant_exists:
             raise PermissionDeniedException("You already have access to that resource!")
 

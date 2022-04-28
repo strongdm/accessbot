@@ -41,10 +41,20 @@ class ApproveHelper(BaseEvaluateRequestHelper):
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
         grant_valid_until = grant_start_from + datetime.timedelta(minutes=self._bot.config['GRANT_TIMEOUT'])
-        for resource in self.__sdm_service.get_all_resources_by_role(role_name):
-            if self.__sdm_service.account_grant_exists(resource.id, account_id) or self.__sdm_service.role_grant_exists(resource.id, account_id):
-                yield f"User already have access to {resource.name}"
-                continue
+        resources = self.__sdm_service.get_all_resources_by_role(role_name)
+        granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
+        granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
+        granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
+        if len(granted_resources) > 0:
+            granted_resources_text = ''
+            for resource in granted_resources:
+                if granted_resources_text:
+                    granted_resources_text += "\n"
+                granted_resources_text += f"User already have access to {resource.name}"
+            yield granted_resources_text
+        # TODO Yield with a specific error when there are no resources to grant
+        not_granted_resources = self.__get_not_granted_resources(resources, granted_resources)
+        for resource in not_granted_resources:
             self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
     def __grant_temporal_access(self, resource, account_id: str, duration: str):
@@ -90,3 +100,18 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         if grant_timeout_tag and resource.tags.get(grant_timeout_tag):
             return int(resource.tags.get(grant_timeout_tag))
         return self._bot.config['GRANT_TIMEOUT']
+
+    def __get_not_granted_resources(self, sdm_resources, granted_resources):
+        """
+        Removes the intersection about the granted resources and all sdm resources
+        """
+        granted_resource_ids = [granted_resource.id for granted_resource in granted_resources]
+        return [resource for resource in sdm_resources if resource.id not in granted_resource_ids]
+
+    def __remove_duplicated_resources(self, resources):
+        mapped_resources_by_id = {}
+        for resource in resources:
+            if not mapped_resources_by_id.get(resource.id):
+                mapped_resources_by_id[resource.id] = resource
+        distinct_resources = mapped_resources_by_id.values()
+        return distinct_resources
