@@ -77,13 +77,13 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
             assert "not an admin to self approve" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
-def inject_mocks(testbot, config, roles = [], account_tags = None, role_tags = None, role_grant_exists = False):
+def inject_mocks(testbot, config, roles = [], account_tags = None, role_tags = None):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = ["gbin@localhost"])
     accessbot.get_api_access_key = MagicMock(return_value = "api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
-    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, role_tags, role_grant_exists))
+    accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, role_tags))
     accessbot.get_role_grant_helper = MagicMock(return_value = create_role_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     return testbot
@@ -96,13 +96,12 @@ def create_role_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(roles, account_tags, role_tags, role_grant_exists):
+def create_sdm_service_mock(roles, account_tags, role_tags):
     service_mock = MagicMock()
     service_mock.get_role_by_name = MagicMock(return_value = create_mock_role(role_tags))
     service_mock.get_account_by_email = MagicMock(return_value = create_mock_account(account_tags))
     service_mock.get_all_resources_by_role = MagicMock(return_value = create_mock_resources())
     service_mock.account_grant_exists = MagicMock(return_value = False)
-    service_mock.role_grant_exists = MagicMock(return_value = role_grant_exists)
     service_mock.get_all_roles = MagicMock(return_value = roles)
     return service_mock
 
