@@ -111,3 +111,9 @@ def get_formatted_duration_string(timedelta_obj: timedelta):
         if duration > 0:
             formatted_string += f'{duration} {unit} '
     return formatted_string.strip()
+
+def get_approvers_channel(config, sdm_object):
+    approvers_channel_tag = config['APPROVERS_CHANNEL_TAG']
+    if approvers_channel_tag is None or sdm_object.tags is None or sdm_object.tags.get(approvers_channel_tag) is None:
+        return None
+    return sdm_object.tags.get(approvers_channel_tag)

@@ -1,5 +1,8 @@
 import time
 
+from ..util import get_approvers_channel
+
+
 class PollerHelper:
     def __init__(self, bot):
         self.__bot = bot
@@ -24,7 +27,7 @@ class PollerHelper:
 
     def __notify_grant_request_denied(self, grant_request):
         requester_id = grant_request['message'].frm
-        self.__notify_admins(f"Request {grant_request['id']} timed out, user grant will be denied!", grant_request['message'])
+        self.__notify_evaluators(grant_request, f"Request {grant_request['id']} timed out, user grant will be denied!")
         self.__notify_requester(requester_id, grant_request['message'], f"Sorry, request {grant_request['id']} not approved! Please contact any of the team admins directly.")
 
     def __get_channel_id(self, requester_id):
@@ -33,6 +36,14 @@ class PollerHelper:
         if not hasattr(requester_id, 'room'):
             return None
         return self.__bot.build_identifier(f"#{requester_id.room.name}")
+
+    def __notify_evaluators(self, grant_request, text):
+        sdm_object = grant_request['sdm_object']
+        approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
+        if approvers_channel is not None:
+            channel_id = self.__get_channel_id(f'#{approvers_channel}')
+            return self.__bot.send(channel_id, text)
+        return self.__notify_admins(text, grant_request['message'])
 
     def __notify_admins(self, text, message):
         if self.__bot.config['ADMINS_CHANNEL']:

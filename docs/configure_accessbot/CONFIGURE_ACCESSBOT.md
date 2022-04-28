@@ -47,6 +47,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
+* **SDM_APPROVERS_CHANNEL_TAG**. Resource tag to be used for specifying the responsible approvers channel name for individual resources. For example: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=my-resource-approvers`, in this scenario all access requests for that resource would be sent only to the `#my-resource-approvers` Slack channel. Disabled by default
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Disabled by default
 * **SDM_USER_ROLES_TAG**. User tag to be used for controlling the roles a user can request. Disabled by default
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
