@@ -52,7 +52,7 @@ def create_config():
         'EMAIL_SUBADDRESS': None,
         'GROUPS_TAG': None,
         'REQUIRED_FLAGS': None,
-        'ALLOW_ACCESS_REQUEST_RENEWAL': False,
+        'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL': False,
     }
 
 

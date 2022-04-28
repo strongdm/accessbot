@@ -28,7 +28,7 @@ _INSTANCE = {
     'EMAIL_SUBADDRESS': os.getenv("SDM_EMAIL_SUBADDRESS"),
     'GROUPS_TAG': os.getenv("SDM_GROUPS_TAG"),
     'REQUIRED_FLAGS': os.getenv("SDM_REQUIRED_FLAGS"),
-    'ALLOW_ACCESS_REQUEST_RENEWAL':  str(os.getenv("SDM_ALLOW_ACCESS_REQUEST_RENEWAL", "")).lower() == 'true',
+    'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL':  str(os.getenv("SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL", "")).lower() == 'true',
 }
 
 def get():

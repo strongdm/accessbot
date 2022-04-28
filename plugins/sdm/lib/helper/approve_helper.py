@@ -30,7 +30,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         resource = grant_request['sdm_object']
         sdm_account = grant_request['sdm_account']
         account_grant_exists = self.__sdm_service.account_grant_exists(resource.id, sdm_account.id)
-        needs_renewal = self._bot.config['ALLOW_ACCESS_REQUEST_RENEWAL'] and account_grant_exists
+        needs_renewal = self._bot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] and account_grant_exists
         if needs_renewal:
             self.__sdm_service.delete_account_grant(resource.id, sdm_account.id)
         self.__grant_temporal_access(grant_request['sdm_object'], grant_request['sdm_account'].id, duration)

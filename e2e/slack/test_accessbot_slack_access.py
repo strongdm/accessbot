@@ -732,7 +732,7 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
             {'name': self.regular_channel_name},
         ])
         config['ADMINS_CHANNEL'] = f'#{self.admins_channel_name}'
-        config['ALLOW_ACCESS_REQUEST_RENEWAL'] = True
+        config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] = True
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         bot = inject_config(testbot, config, account_grant_exists=True)
         bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
@@ -761,6 +761,13 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         assert "The previous grant was revoked and a new one was created" in granted_message
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.get_sdm_service().delete_account_grant.assert_called_with(resource_id, account_id)
+
+    def test_dont_delete_account_grant_when_flag_is_disabled(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] = False
+        mocked_testbot.push_message('access to Xxx')
+        assert "already have access" in mocked_testbot.pop_message()
+        accessbot.get_sdm_service().delete_account_grant.assert_not_called()
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,

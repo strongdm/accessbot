@@ -55,7 +55,7 @@ The following variables can be changed at runtime via slack -by an SDM_ADMIN- us
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
 * **SDM_REQUIRED_FLAGS**. List of flags that should be required when using the "access" command. The flags should be separated by space, e.g. `reason duration`. By default, there are no required flags
-* **SDM_ALLOW_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of account grants - if an user wants to make a new access request to a resource they already have access to. Default = false
+* **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of account grants - if an user wants to make a new access request to a resource they already have access to. Default = false
 
 See image below for more information:
 
