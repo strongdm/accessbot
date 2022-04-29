@@ -24,18 +24,18 @@ For Slack platform, you need to provide the following required variables:
 * **SLACK_APP_TOKEN**. Slack App-Level Token
 * **SLACK_BOT_TOKEN**. Slack Bot User OAuth Token
 
-    > If you want to use the AccessBot resource access form, please read this [docs](docs/CONFIGURE_ACCESSBOT_FORM.md). 
+    > If you want to use the AccessBot resource access form, please read this [docs](docs/slack/CONFIGURE_ACCESSBOT_FORM.md). 
 
 ### MS Teams Installation
 For MS Teams platform, you need to provide the following required variables:
 * **AZURE_APP_ID**. Azure Bot application ID
 * **AZURE_APP_PASSWORD**. Azure Bot application password
 
-For a full list of configuration variables please read: [Configure AccessBot](docs/CONFIGURE_ACCESSBOT.md)
+For a full list of configuration variables please read: [Configure AccessBot](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md)
 
 Detailed instructions about how to configure Slack and SDM for AccessBot can be found here:
-* [Configure Slack](docs/CONFIGURE_SLACK.md)
-* [Configure SDM](docs/CONFIGURE_SDM.md)
+* [Configure Slack](docs/slack/CONFIGURE_SLACK.md)
+* [Configure SDM](docs/configure_accessbot/CONFIGURE_SDM.md)
 
 For starting the bot enter all required variables in [docker-compose.yaml](docker-compose.yaml) and execute:
 ```
@@ -80,7 +80,7 @@ For example:
       - `SDM_AUTO_APPROVE_ROLE_TAG=auto-approve` -- automatic approval for this role
       - `SDM_ALLOW_ROLE_TAG=allow-role` -- role is displayed via `show` command; any access request auto-fails if the role does not have the tag
 
-For more information, please refer to the [detailed guide for access configuration](docs/ACCESS_CONFIGURATION.md).
+For more information, please refer to the [detailed guide for access configuration](docs/configure_accessbot/ACCESS_CONFIGURATION.md).
 
 ## Troubleshooting
 
