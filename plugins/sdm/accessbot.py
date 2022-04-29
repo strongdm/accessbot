@@ -73,15 +73,17 @@ class AccessBot(BotPlugin):
     def configure(self, configuration):
         if configuration is not None and configuration != {}:
             config = dict(chain(config_template.get().items(), configuration.items()))
-        else:
+        elif self._bot.mode != 'test':
             config = config_template.get()
+        else:
+            config = {}
         super(AccessBot, self).configure(config)
 
     def update_access_control_admins(self):
         self._bot.bot_config.BOT_ADMINS.clear()
         allowed_users = self._bot.bot_config.get_bot_admins()
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].clear()
-        if self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
+        if self.config and self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
             self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
             admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
             members = self._bot.conversation_members(admin_channel)
