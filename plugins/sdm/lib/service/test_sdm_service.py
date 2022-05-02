@@ -6,8 +6,13 @@ from datetime import timezone, timedelta
 from unittest.mock import MagicMock, call
 import pytest
 import strongdm
+import sys
 
 from .sdm_service import SdmService
+
+sys.path.append('e2e/')
+
+from test_common import DummyAccountGrant
 
 resource_id = 1
 resource_name = "resource1"
@@ -15,6 +20,7 @@ role_id = 111
 role_name = "role111"
 account_id = 55
 account_email = "myaccount@test.com"
+grant_id = 11
 grant_start_from = datetime.datetime.now(timezone.utc) + timedelta(minutes=1)
 grant_valid_until = grant_start_from + timedelta(hours=1)
 
@@ -89,6 +95,34 @@ class Test_account_grant_exists:
         client.account_grants.list = MagicMock(side_effect = Exception(error_message))
         with pytest.raises(Exception) as ex:
             service.account_grant_exists(get_resource(), account_id)
+        assert error_message in str(ex.value)
+
+class Test_delete_account_grant:
+    def test_when_grant_exists(self, client, service):
+        client.account_grants.list = MagicMock(return_value=[DummyAccountGrant(grant_id)])
+        client.account_grants.delete = MagicMock(return_value=None)
+        service.delete_account_grant(resource_id, account_id)
+        client.account_grants.delete.assert_called_with(grant_id)
+
+    def test_when_grant_doesnt_exists(self, client, service):
+        client.account_grants.list = MagicMock(return_value=[])
+        client.account_grants.delete = MagicMock(return_value=None)
+        service.delete_account_grant(resource_id, account_id)
+        client.account_grants.delete.assert_not_called()
+
+    def test_when_grant_list_fails(self, client, service):
+        error_message = "Account grant list failed"
+        client.account_grants.list = MagicMock(side_effect=Exception(error_message))
+        with pytest.raises(Exception) as ex:
+            service.delete_account_grant(resource_id, account_id)
+        assert error_message in str(ex.value)
+
+    def test_when_grant_delete_fails(self, client, service):
+        error_message = "Delete account grant failed"
+        client.account_grants.list = MagicMock(return_value=iter([DummyAccountGrant(grant_id)]))
+        client.account_grants.delete = MagicMock(side_effect=Exception(error_message))
+        with pytest.raises(Exception) as ex:
+            service.delete_account_grant(resource_id, account_id)
         assert error_message in str(ex.value)
 
 class Test_role_grant_exists:

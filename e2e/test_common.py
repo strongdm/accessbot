@@ -52,7 +52,8 @@ def create_config():
         'EMAIL_SUBADDRESS': None,
         'GROUPS_TAG': None,
         'REQUIRED_FLAGS': None,
-        'APPROVERS_CHANNEL_TAG': None
+        'APPROVERS_CHANNEL_TAG': None,
+        'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL': False,
     }
 
 
@@ -119,6 +120,11 @@ class DummyRoom:
         self.name = name
 
 
+class DummyAccountGrant:
+    def __init__(self, id):
+        self.id = id
+
+
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
     # see: https://github.com/errbotio/errbot/blob/master/errbot/backends/test.py#L247
@@ -135,7 +141,7 @@ def send_message_override(bot, raw_messages):
 def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, bot_id=None,
                         room_id=None, room_name=None):
     def callback_message(msg):
-        frm = msg.frm
+        frm = bot.build_identifier(msg.frm.person)
         frm.bot_id = bot_id
         if room_id is not None or room_name is not None:
             frm.room = DummyRoom(room_id, room_name)

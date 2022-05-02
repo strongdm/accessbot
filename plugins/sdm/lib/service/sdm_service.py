@@ -1,6 +1,4 @@
 import json
-from os import access
-import resource
 
 from ..exceptions import NotFoundException
 import strongdm
@@ -61,6 +59,18 @@ class SdmService:
         except Exception as ex:
             raise Exception("Account grant exists failed: " + str(ex)) from ex
         return granted_resources
+
+    def delete_account_grant(self, resource_id, account_id):
+        """
+        Deletes an account grant from a resource assigned to an account
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.delete_account_grant resource_id: %s account_id: %s", resource_id, account_id)
+            account_grants = list(self.__client.account_grants.list(f"resource_id:{resource_id},account_id:{account_id}"))
+            if len(account_grants) > 0:
+                self.__client.account_grants.delete(account_grants[0].id)
+        except Exception as ex:
+            raise Exception("Delete account grant failed: " + str(ex)) from ex
 
     def get_granted_resources_via_role(self, sdm_resources, account_id):
         """
@@ -136,8 +146,8 @@ class SdmService:
         Return all resources by role name
         """
         self.__log.debug(
-            "##SDM## SdmService.get_all_resources_by_role role_name: %s filter: %s sdm_role: %s", 
-            role_name, 
+            "##SDM## SdmService.get_all_resources_by_role role_name: %s filter: %s sdm_role: %s",
+            role_name,
             filter,
             str(sdm_role)
         )
@@ -165,7 +175,7 @@ class SdmService:
         access_rules = json.loads(sdm_role.access_rules) if isinstance(sdm_role.access_rules, str) else sdm_role.access_rules
         for ar in access_rules:
             filters = []
-            if not role_grants_executed and ar.get('ids'): 
+            if not role_grants_executed and ar.get('ids'):
                 filters.append(",".join([f"id:{id}" for id in ar['ids']]))
             if ar.get('type'):
                 filters.append(f"type:{ar['type']}")
