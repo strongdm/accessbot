@@ -65,18 +65,16 @@ class ApproveHelper(BaseEvaluateRequestHelper):
     def __notify_access_request_granted(self, message, resource, duration: str, is_renewal: bool):
         sender_email = self._bot.get_sender_email(message.frm)
         sender_nick = self._bot.get_sender_nick(message.frm)
-        renewal_message = '. The previous grant was revoked and a new one was created,' \
-                          ' the user might need to reconnect to the resource' if is_renewal else ''
         if duration:
             duration_flag_timedelta = convert_duration_flag_to_timedelta(duration)
             formatted_duration = get_formatted_duration_string(duration_flag_timedelta)
-            yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {formatted_duration}{renewal_message}"
+            yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {formatted_duration}"
             return
         grant_timeout = self.__get_resource_grant_timeout(resource)
         if is_renewal:
             self._notify_requester(message.frm, message, 'Access renewed! The previous grant was revoked and a new one'
                                                           ' was created, you might need to reconnect to the resource.')
-        yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {grant_timeout} minutes{renewal_message}"
+        yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {grant_timeout} minutes"
 
     def __notify_assign_role_request_granted(self, message, role_name):
         sender_email = self._bot.get_sender_email(message.frm)

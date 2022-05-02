@@ -872,6 +872,7 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         return bot
 
     def test_access_command_grant_renewal(self, mocked_testbot):
+        from pprint import pprint
         mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             mocked_testbot._bot,
             room_name=self.regular_channel_name
@@ -880,16 +881,16 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert self.raw_messages[1].to.person == f'#{self.admins_channel_name}'
+        assert "Approving the request will revoke the previous grant and create a new one" in mocked_testbot.pop_message()
         mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             mocked_testbot._bot,
             room_name=self.admins_channel_name
         ))
         mocked_testbot.push_message(f'yes {access_request_id}')
         assert "Access renewed" in mocked_testbot.pop_message()
-        assert self.raw_messages[2].to.person == f'#{self.regular_channel_name}'
+        assert self.raw_messages[3].to.person == f'#{self.regular_channel_name}'
         granted_message = mocked_testbot.pop_message()
         assert "Granting" in granted_message
-        assert "The previous grant was revoked and a new one was created" in granted_message
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.get_sdm_service().delete_account_grant.assert_called_with(resource_id, account_id)
 

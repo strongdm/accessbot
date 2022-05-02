@@ -117,17 +117,18 @@ class BaseGrantHelper(ABC):
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
         renewal_note = self.__get_renewal_note_message(sdm_object, sdm_account)
-        yield from self.__notify_admins(f"{request_details}{reason}{approval_instructions}{renewal_note}", message, sdm_object)
+        yield from self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, sdm_object)
+        if renewal_note:
+            yield from self.__notify_admins(f"{renewal_note}", message, sdm_object)
 
     def __get_renewal_note_message(self, sdm_object, sdm_account):
         if self.__grant_type is not GrantRequestType.ACCESS_RESOURCE:
-            return ''
+            return None
         account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id)
         if self.__bot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] and account_grant_exists:
-            return " \n *The user already has access to the resource. Approving the request will revoke the previous " \
-                   "grant and create a new one - the user might need to reconnect to the resource.*"
-
-        return ''
+            return "_The user already has access to the resource. Approving the request will revoke the previous " \
+                   "grant and create a new one - the user might need to reconnect to the resource._"
+        return None
 
     def __notify_admins(self, text, message, sdm_object):
         approvers_channel_tag = self.__bot.config['APPROVERS_CHANNEL_TAG']
