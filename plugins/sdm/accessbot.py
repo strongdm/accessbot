@@ -28,7 +28,9 @@ def get_callback_message_fn(bot):
         Executes before the plugin command verification.
         Clears the message removing platform and bold symbols.
         """
-        msg.body = bot.plugin_manager.plugins['AccessBot'].clean_up_message(msg.body)
+        accessbot = bot.plugin_manager.plugins['AccessBot']
+        accessbot.check_elevate_admin_user(msg)
+        msg.body = accessbot.clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
 
@@ -91,6 +93,22 @@ class AccessBot(BotPlugin):
                 identifier = self._bot.userid_to_username(member_id)
                 allowed_users += [f'@{identifier}']
         self._bot.bot_config.BOT_ADMINS.extend(sorted(set(allowed_users)))
+
+    def check_elevate_admin_user(self, msg):
+        if not self.config.get('ADMINS_CHANNEL_ELEVATE') or self.config.get('ADMINS_CHANNEL') is None:
+            return
+        user_is_admin = f'@{msg.frm.username}' in self._bot.bot_config.BOT_ADMINS
+        if hasattr(msg.frm, "room"):
+            if f'#{msg.frm.room.channelname}' == self.config['ADMINS_CHANNEL'] and not user_is_admin:
+                self._bot.bot_config.BOT_ADMINS.append(f'@{msg.frm.username}')
+            return
+        if not user_is_admin:
+            return
+        admins_channel = self.build_identifier(self.config.get('ADMINS_CHANNEL'))
+        admins_channel_members = self._bot.conversation_members(admins_channel)
+        user_is_member_of_admins_channel = msg.frm.userid in admins_channel_members
+        if not user_is_member_of_admins_channel:
+            self._bot.bot_config.BOT_ADMINS.remove(f'@{msg.frm.username}')
 
     def check_configuration(self, configuration):
         pass

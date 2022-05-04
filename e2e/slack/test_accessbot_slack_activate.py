@@ -1,12 +1,14 @@
 # pylint: disable=invalid-name
 import sys
+from time import sleep
+
 import pytest
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
 sys.path.append('e2e')
 
-from test_common import create_config, get_dummy_person, ErrBotExtraTestSettings
+from test_common import create_config, get_dummy_person, ErrBotExtraTestSettings, callback_message_fn
 
 pytest_plugins = ["errbot.backends.test"]
 
@@ -15,7 +17,7 @@ def mocked_get_bot_admins():
 
 class Test_update_access_control_admins(ErrBotExtraTestSettings):
     bot_admins = ['@bot_admin']
-    admins_channel = '#admin-channel'
+    admins_channel = 'admin-channel'
     extra_config = {
         **ErrBotExtraTestSettings.extra_config,
         'BOT_ADMINS': bot_admins,
@@ -23,7 +25,7 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         'ACCESS_CONTROLS': {
             '*': {
                 'allowusers': bot_admins,
-                'allowrooms': [admins_channel],
+                'allowrooms': [f'#{admins_channel}'],
                 'allowmuc': True,
             }
         }
@@ -32,7 +34,7 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
         config = create_config()
-        config['ADMINS_CHANNEL'] = self.admins_channel
+        config['ADMINS_CHANNEL'] = f'#{self.admins_channel}'
         config['ADMINS_CHANNEL_ELEVATE'] = True
         return inject_config(testbot, config)
 
@@ -40,7 +42,7 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == len(get_dummy_members())
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms']) == 1
-        assert mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'][0] == self.admins_channel
+        assert mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'][0] == f'#{self.admins_channel}'
 
     def test_clean_admins_when_disabling_admins_channel_elevate(self, mocked_testbot):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
@@ -48,6 +50,31 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == 1
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms']) == 0
+
+    def test_elevate_admin_user_when_entering_in_admins_channel(self, mocked_testbot):
+        assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == 1
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            from_username="new_bot_admin",
+            room_name=self.admins_channel,
+            check_elevate_admin_user=True,
+        ))
+        mocked_testbot.push_message("hello world!")
+        sleep(0.1)
+        assert len(mocked_testbot._bot.bot_config.BOT_ADMINS) == 2
+
+    def test_remove_admin_status_after_leaving_admins_channel(self, mocked_testbot):
+        mocked_testbot._bot.bot_config.BOT_ADMINS.append("@new_bot_admin")
+        assert len(mocked_testbot._bot.bot_config.BOT_ADMINS) == 2
+        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot._bot,
+            from_username="new_bot_admin",
+            from_userid="new_bot_admin",
+            check_elevate_admin_user=True,
+        ))
+        mocked_testbot.push_message("hello world!")
+        sleep(0.1)
+        assert len(mocked_testbot._bot.bot_config.BOT_ADMINS) == 1
 
 def inject_config(testbot, config):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']

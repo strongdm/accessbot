@@ -139,6 +139,10 @@ class DummyRoom:
         self.id = id
         self.name = name
 
+    @property
+    def channelname(self):
+        return self.name
+
 
 # pylint: disable=bad-super-call
 def send_message_override(bot, raw_messages):
@@ -153,13 +157,17 @@ def send_message_override(bot, raw_messages):
     return sm
 
 
-def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, bot_id=None,
-                        room_id=None, room_name=None):
+def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, from_username=None,
+                        from_userid=None, bot_id=None, room_id=None, room_name=None, check_elevate_admin_user=False):
     def callback_message(msg):
         frm = msg.frm
         frm.bot_id = bot_id
         if from_nick is not None:
             frm._nick = from_nick
+        if from_username is not None:
+            frm.username = from_username
+        if from_userid is not None:
+            frm.userid = from_userid
         if room_id is not None or room_name is not None:
             frm.room = DummyRoom(room_id, room_name)
         if approver_is_admin and "yes" in msg.body:
@@ -186,6 +194,8 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
                 })
             }
         )
+        if check_elevate_admin_user:
+            bot.plugin_manager.plugins['AccessBot'].check_elevate_admin_user(msg)
         ErrBot.callback_message(bot, msg)
 
     return callback_message
