@@ -27,10 +27,16 @@ class ApproveHelper(BaseEvaluateRequestHelper):
 
     def __approve_access_resource(self, grant_request):
         duration = grant_request['flags'].get('duration')
+        resource = grant_request['sdm_object']
+        sdm_account = grant_request['sdm_account']
+        account_grant_exists = self.__sdm_service.account_grant_exists(resource, sdm_account.id)
+        needs_renewal = self._bot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] and account_grant_exists
+        if needs_renewal:
+            self.__sdm_service.delete_account_grant(resource.id, sdm_account.id)
         self.__grant_temporal_access(grant_request['sdm_object'], grant_request['sdm_account'].id, duration)
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
-        yield from self.__notify_access_request_granted(grant_request['message'], grant_request['sdm_object'], duration)
+        yield from self.__notify_access_request_granted(grant_request['message'], resource, duration, needs_renewal)
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
@@ -56,7 +62,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.__get_resource_grant_timeout(resource, duration=duration))
         self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
 
-    def __notify_access_request_granted(self, message, resource, duration: str):
+    def __notify_access_request_granted(self, message, resource, duration: str, is_renewal: bool):
         sender_email = self._bot.get_sender_email(message.frm)
         sender_nick = self._bot.get_sender_nick(message.frm)
         if duration:
@@ -65,6 +71,9 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {formatted_duration}"
             return
         grant_timeout = self.__get_resource_grant_timeout(resource)
+        if is_renewal:
+            self._notify_requester(message.frm, message, 'Access renewed! The previous grant was revoked and a new one'
+                                                          ' was created, you might need to reconnect to the resource.')
         yield f"{sender_nick}: Granting {sender_email} access to '{resource.name}' for {grant_timeout} minutes"
 
     def __notify_assign_role_request_granted(self, message, role_name):

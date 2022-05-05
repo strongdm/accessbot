@@ -4,6 +4,7 @@ from typing import Any
 from ..exceptions import NotFoundException, PermissionDeniedException
 from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string,\
     convert_duration_flag_to_timedelta, get_approvers_channel
+from grant_request_type import GrantRequestType
 
 
 class BaseGrantHelper(ABC):
@@ -95,10 +96,10 @@ class BaseGrantHelper(ABC):
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         self.__check_administration_availability()
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
-        yield from self.__notify_access_request_entered(sender_nick, sdm_object, request_id, message, flags)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
-    def __notify_access_request_entered(self, sender_nick, sdm_object, request_id, message, flags: dict):
+    def __notify_access_request_entered(self, sender_nick, sdm_object, sdm_account,request_id, message, flags: dict):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(sdm_object.name, sender_nick)
         approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
@@ -115,7 +116,19 @@ class BaseGrantHelper(ABC):
         request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}{duration_details}!"
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
-        yield from self.__notify_admins(request_details + reason + approval_instructions, message, sdm_object)
+        renewal_note = self.__get_renewal_note_message(sdm_object, sdm_account)
+        yield from self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, sdm_object)
+        if renewal_note:
+            yield from self.__notify_admins(f"{renewal_note}", message, sdm_object)
+
+    def __get_renewal_note_message(self, sdm_object, sdm_account):
+        if self.__grant_type is not GrantRequestType.ACCESS_RESOURCE:
+            return None
+        account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id)
+        if self.__bot.config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] and account_grant_exists:
+            return "_The user already has access to the resource. Approving the request will revoke the previous " \
+                   "grant and create a new one - the user might need to reconnect to the resource._"
+        return None
 
     def __notify_admins(self, text, message, sdm_object):
         approvers_channel_tag = self.__bot.config['APPROVERS_CHANNEL_TAG']

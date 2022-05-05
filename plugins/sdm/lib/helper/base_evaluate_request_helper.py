@@ -54,6 +54,18 @@ class BaseEvaluateRequestHelper(ABC):
             return evaluator_channel == admins_channel
         return self._bot.get_sender_id(evaluator) in self._bot.get_admins()
 
+    def _notify_requester(self, requester_id, message, text):
+        channel_id = self.__get_channel_id(requester_id)
+        if channel_id:
+            self._bot.send(channel_id, text, in_reply_to=message)
+            return
+        self._bot.send(requester_id, text, in_reply_to=message)
+
+    def __get_channel_id(self, requester_id):
+        if not hasattr(requester_id, 'room'):
+            return None
+        return self._bot.build_identifier(f"#{requester_id.room.name}")
+
     @abstractmethod
     def evaluate(request_id, **kwargs):
         pass
