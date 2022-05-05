@@ -241,6 +241,13 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "reason" not in request_message
         assert "duration" in request_message
 
+    def test_access_command_grant_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCesS TO Xxx")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):

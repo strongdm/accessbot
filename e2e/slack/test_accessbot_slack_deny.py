@@ -47,6 +47,13 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "with the following reason" in denied_response_message
         assert denial_reason in denied_response_message
 
+    def test_access_command_grant_denied_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message(f"NO {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert f"request {access_request_id} has been denied" in mocked_testbot.pop_message()
+
 class Test_invalid_user(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):

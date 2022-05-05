@@ -47,6 +47,13 @@ class Test_assign_role(ErrBotExtraTestSettings):
             valid_until = datetime.datetime(2021, 5, 12, 1, 0)
             grant_temporary_access_mock.assert_called_with(resource_id, account_id, start_from, valid_until)
 
+    def test_assign_role_command_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message(f"ACceSS To rOLe {role_name}")
+        mocked_testbot.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "assign request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
 class Test_auto_approve_all(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):

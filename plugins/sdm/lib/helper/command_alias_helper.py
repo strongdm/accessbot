@@ -19,7 +19,7 @@ class CommandAliasHelper:
 
     def __alias_matches(self, command, alias, text):
         alias_regex = self.__build_alias_regex(command, alias)
-        alias_compiled_regex = re.compile(alias_regex)
+        alias_compiled_regex = re.compile(alias_regex, flags=re.IGNORECASE)
         alias_match = alias_compiled_regex.match(text)
         return alias_match is not None
 
@@ -66,7 +66,7 @@ class CommandAliasHelper:
         return converted_message
 
     def __extract_value_from_regex_group(self, regex, extract_regex_group, text):
-        return re.sub(regex, extract_regex_group, text)
+        return re.sub(regex, extract_regex_group, text, flags=re.IGNORECASE)
 
     def __get_full_command_message_match(self, command, text):
         full_command_regex = self.__get_original_regex_from_command(command)

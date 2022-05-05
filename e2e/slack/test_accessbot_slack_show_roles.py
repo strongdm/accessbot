@@ -26,6 +26,12 @@ class Test_show_roles(ErrBotExtraTestSettings):
         assert "Aaa" in message
         assert "Bbb" in message
 
+    def test_show_roles_command_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("SHow AVaiLaBlE ROlES")
+        message = mocked_testbot.pop_message()
+        assert "Aaa" in message
+        assert "Bbb" in message
+
 class Test_show_allowed_roles(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_allow_role_true(self, testbot):

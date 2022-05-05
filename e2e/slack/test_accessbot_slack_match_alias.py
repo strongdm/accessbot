@@ -49,6 +49,12 @@ class Test_match_alias(ErrBotExtraTestSettings):
         assert "Aaa (type: DummyResource)" in message
         assert "Bbb (type: DummyResource)" in message
 
+    def test_command_alias_without_argument_and_strange_casing(self, mocked_testbot, mocked_sdm_service):
+        mocked_testbot.push_message("SaRes")
+        message = mocked_testbot.pop_message()
+        assert "Aaa (type: DummyResource)" in message
+        assert "Bbb (type: DummyResource)" in message
+
     def test_full_command_with_argument(self, mocked_testbot, mocked_sdm_service):
         mocked_testbot.push_message(f'{access_to_resource_command} {resource_name}')
         assert "valid request" in mocked_testbot.pop_message()
@@ -56,6 +62,11 @@ class Test_match_alias(ErrBotExtraTestSettings):
 
     def test_command_alias_with_argument(self, mocked_testbot, mocked_sdm_service):
         mocked_testbot.push_message(f'{access_to_resource_alias} {resource_name}')
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+
+    def test_command_alias_with_argument_and_strange_casing(self, mocked_testbot, mocked_sdm_service):
+        mocked_testbot.push_message(f'ACreS {resource_name}')
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
