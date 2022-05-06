@@ -8,7 +8,7 @@ You can contribute in any of the following ways:
 
 ## Submitting bugs or feature requests 
 
-In case you have a identified a bug or want to introduce a feature request (FR), please go through the next steps:
+In case you have identified a bug or want to introduce a feature request (FR), please go through the next steps:
 1. Go to the [Issues tab](../../issues)
 2. Check if your bug or FR was already added
     * In case there’s already an entry, review the comments and add something new if you consider it.

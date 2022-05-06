@@ -30,40 +30,42 @@ There are a number of variables you can use for configuring AccessBot.
 * **SDM_COMMANDS_ENABLED**. AccessBot commands to be enabled. Default = `access_resource assign_role show_resources show_roles approve deny`. You could also specify aliases for specific commands. In that case, only add `:alias` after the command name, for example: `access_resource:acres show_resources:sares`.
 
 ## Bot configuration
-The following variables can be changed at runtime via slack -by an SDM_ADMIN- using the `plugin config AccessBot` command:
+The following variables can be changed at runtime via Slack or MS Teams -by a bot admin- using the `plugin config AccessBot` command:
 * **SDM_ADMIN_TIMEOUT**. Timeout in seconds for a request to be manually approved. Default = 30 sec
-* **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Disabled by default (_useful for testing_)
-* **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Disabled by default (_useful for testing_)
-* **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
-* **SDM_AUTO_APPROVE_TAG**. Resource tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
-* **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
-* **SDM_AUTO_APPROVE_ROLE_TAG**. Role tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
-* **SDM_AUTO_APPROVE_GROUPS_TAG**. Resource tag to be used for auto-approve groups. The tag value should be a list of groups (see `SDM_GROUPS_TAG`) separated by comma. Disabled by default
+* **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
+* **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of resource account grants. When enabled allows a user to make a new access request to a resource even if they already have access to it. Default = false
 * **SDM_ALLOW_RESOURCE_TAG**. Resource tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_ALLOW_ROLE_TAG**. Role tag to be used for only showing the allowed roles. Ideally set the value to `true` or `false` (e.g. `allow-role=true`). When there's no tag assigned, all roles are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
+* **SDM_APPROVERS_CHANNEL_TAG**. Resource tag to be used for specifying the responsible approvers channel name for individual resources. For example: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=my-resource-approvers`, in this scenario all access requests for that resource would be sent only to the `#my-resource-approvers` Slack channel. Disabled by default
+* **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
+* **SDM_AUTO_APPROVE_GROUPS_TAG**. Resource tag to be used for auto-approve groups. The tag value should be a list of groups (see `SDM_GROUPS_TAG`) separated by comma. Disabled by default
+* **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
+* **SDM_AUTO_APPROVE_ROLE_TAG**. Role tag to be used for auto-approve roles. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
+* **SDM_AUTO_APPROVE_TAG**. Resource tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
+* **SDM_CONCEAL_RESOURCE_TAG**. Resource tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
+* **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
+* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
+* **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
+* **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
+* **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
+* **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
 * **SDM_HIDE_RESOURCE_TAG**. Resource tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_ROLE_TAG**. Role tag to be used for hiding available roles, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-role=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
-* **SDM_CONCEAL_RESOURCE_TAG**. Resource tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
-* **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
-* **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
-* **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
-* **SDM_APPROVERS_CHANNEL_TAG**. Resource tag to be used for specifying the responsible approvers channel name for individual resources. For example: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=my-resource-approvers`, in this scenario all access requests for that resource would be sent only to the `#my-resource-approvers` Slack channel. Disabled by default
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Disabled by default
-* **SDM_USER_ROLES_TAG**. User tag to be used for controlling the roles a user can request. Disabled by default
-* **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
-* **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Resource tag to be used for registering the custom time (in minutes) that a specific resource will be made available for the user.
-* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying a SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
-* **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
-* **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
 * **SDM_REQUIRED_FLAGS**. List of flags that should be required when using the "access" command. The flags should be separated by space, e.g. `reason duration`. By default, there are no required flags
-* **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of resource account grants. When enabled allows a user to make a new access request to a resource even if they already have access to it. Default = false
+* **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Resource tag to be used for registering the custom time (in minutes) that a specific resource will be made available for the user.
+* **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Disabled by default (_useful for testing_)
+* **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Disabled by default (_useful for testing_)
+* **SDM_USER_ROLES_TAG**. User tag to be used for controlling the roles a user can request. Disabled by default
+
+NOTE: you need to remove the "SDM_" prefix from the variable name when using `plugin config`.
 
 See image below for more information:
 
-![image](img/bot-config.gif)
+![image](../img/bot-config.gif)
 
 ### Some tricks
-* Use `plugin config AccessBot {}` for setting config to initial state. This command needs to be executed in a direct chat with AccessBot, cannot be used in channels
+* Use `plugin config AccessBot {}` for setting config to initial state. This command can be executed in a direct chat with AccessBot or in the `SDM_ADMINS_CHANNEL` if `SDM_ADMINS_CHANNEL_ELEVATE` is enabled
 * Use `plugin info AccessBot` for showing all configurations, including remaining auto-approve uses
 * Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
 
@@ -141,3 +143,7 @@ Basically, you need to add a tag with the name you've configured in `SDM_ALLOW_R
 IMPORTANT:
 * Remember to separate values with commas
 * Remember to enclose multiple values between double quotes (`"`)
+
+## Resources access request form bot configuration
+
+* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the access form bot. For further information, please refer to [CONFIGURE_ACCESSBOT_FORM.md](../slack/CONFIGURE_ACCESSBOT_FORM.md).

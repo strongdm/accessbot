@@ -2,7 +2,7 @@
 
 ## Getting Slack usernames
 
-Most interactions in Slack are done using the _Display Name_, which can be edited by users. For this configuration, you will need to use the Slack `username`. You can find this by replacing WORKSPACE_NAME below URL:
+Most interactions in Slack are done using the _Display Name_, which can be edited by users. For this configuration, you will need to use the Slack `username`. You can find this by replacing WORKSPACE_NAME in the following URL:
 ```
 https://WORKSPACE_NAME.slack.com/account/settings#username
 ```
