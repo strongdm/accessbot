@@ -85,8 +85,12 @@ class AccessBot(BotPlugin):
         self._bot.bot_config.BOT_ADMINS.clear()
         allowed_users = self._bot.bot_config.get_bot_admins()
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].clear()
+        self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = True
+        self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = False
         if self.config and self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
             self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
+            self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = False
+            self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
             admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
             members = self._bot.conversation_members(admin_channel)
             for member_id in members:

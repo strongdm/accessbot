@@ -4,6 +4,9 @@ import re
 def get_commands_enabled():
     return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny").split(" ")
 
+def is_admins_channel_elevate_enabled():
+    return str(os.getenv("SDM_ADMINS_CHANNEL_ELEVATE", "")).lower() == 'true' and os.getenv("SDM_ADMINS_CHANNEL") is not None
+
 def get_access_controls():
     commands_enabled = [re.sub(r':[\w-]+', '', cmd) for cmd in get_commands_enabled()]
     allow_all = { 'allowusers': ('*') }
@@ -21,7 +24,8 @@ def get_access_controls():
         '*': {
             'allowusers': BOT_ADMINS,
             'allowrooms': [os.getenv('SDM_ADMINS_CHANNEL')],
-            'allowmuc': True,
+            'allowprivate': not is_admins_channel_elevate_enabled(),
+            'allowmuc': is_admins_channel_elevate_enabled(),
         },
     }
 

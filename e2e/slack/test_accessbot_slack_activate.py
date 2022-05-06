@@ -43,6 +43,8 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == len(get_dummy_members())
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms']) == 1
         assert mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'][0] == f'#{self.admins_channel}'
+        assert not mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate']
+        assert mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc']
 
     def test_clean_admins_when_disabling_admins_channel_elevate(self, mocked_testbot):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
@@ -50,6 +52,8 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == 1
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms']) == 0
+        assert mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate']
+        assert not mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc']
 
     def test_elevate_admin_user_when_entering_in_admins_channel(self, mocked_testbot):
         assert len(mocked_testbot._bot.bot_config.ACCESS_CONTROLS['*']['allowusers']) == 1

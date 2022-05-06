@@ -19,7 +19,8 @@ class ErrBotExtraTestSettings:
             '*': {
                 'allowusers': bot_admins,
                 'allowrooms': [],
-                'allowmuc': True,
+                'allowprivate': True,
+                'allowmuc': False,
             }
         }
     }
@@ -38,7 +39,8 @@ class MSTeamsErrBotExtraTestSettings:
             '*': {
                 'allowusers': bot_admins,
                 'allowrooms': [],
-                'allowmuc': True,
+                'allowprivate': True,
+                'allowmuc': False,
             }
         }
     }
