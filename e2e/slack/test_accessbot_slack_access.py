@@ -19,7 +19,7 @@ resource_id = 1
 resource_name = "myresource"
 account_id = 1
 account_name = "myaccount@test.com"
-access_request_id = "12ab"
+access_request_id = "12AB"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
 access_form_bot_id = "B0000000000"
@@ -243,7 +243,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
 
     def test_access_command_grant_with_strange_casing(self, mocked_testbot):
         mocked_testbot.push_message("AcCesS TO Xxx")
-        mocked_testbot.push_message(f"yes {access_request_id}")
+        mocked_testbot.push_message(f"YeS 12aB")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()

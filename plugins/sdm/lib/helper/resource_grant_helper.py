@@ -15,7 +15,7 @@ class ResourceGrantHelper(BaseGrantHelper):
 
     @staticmethod
     def generate_grant_request_id():
-        return shortuuid.ShortUUID().random(length=4)
+        return shortuuid.ShortUUID().random(length=4).upper()
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
         account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id)

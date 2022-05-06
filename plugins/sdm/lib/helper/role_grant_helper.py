@@ -13,7 +13,7 @@ class RoleGrantHelper(BaseGrantHelper):
 
     @staticmethod
     def generate_grant_request_id():
-        return shortuuid.ShortUUID().random(length=4)
+        return shortuuid.ShortUUID().random(length=4).upper()
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
         if not self.__allowed_to_assign_role(searched_name, sdm_account):

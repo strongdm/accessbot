@@ -116,7 +116,7 @@ class AccessBot(BotPlugin):
         """
         Approve a grant (resource or role)
         """
-        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         approver = message.frm
         yield from self.get_approve_helper().execute(approver, access_request_id)
 
@@ -125,7 +125,7 @@ class AccessBot(BotPlugin):
         """
         Deny a grant request (resource or role)
         """
-        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
         admin = message.frm
         yield from self.get_deny_helper().execute(admin, access_request_id, denial_reason)
@@ -214,6 +214,9 @@ class AccessBot(BotPlugin):
             'type': grant_request_type,
             'flags': flags,
         }
+
+    def grant_requests_exists(self, request_id: str):
+        return self.__grant_requests.get(request_id) is not None
 
     def remove_grant_request(self, request_id):
         self.__grant_requests.pop(request_id, None)
