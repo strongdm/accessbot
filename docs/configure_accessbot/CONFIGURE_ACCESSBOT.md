@@ -6,7 +6,7 @@ parent: Accessbot Configuration
 ---
 # Configure AccessBot
 
-There are a number of variables you can use for configuring AccessBot.
+There are a number of variables you can use for configuring AccessBot. Here you will find the complete list of environment variables that you can use, and some of them can be changed at runtime (see the [Bot configuration](#bot-configuration) section below).
 
 ## Required configuration
 * **SDM_ADMINS**. List of SDM Platform Admins, format: `@usernick` (for slack). Although it's not required, these users are often SDM admins too. You could use `whoami` for getting user nick (slack handle). 
@@ -30,7 +30,9 @@ There are a number of variables you can use for configuring AccessBot.
 * **SDM_COMMANDS_ENABLED**. AccessBot commands to be enabled. Default = `access_resource assign_role show_resources show_roles approve deny`. You could also specify aliases for specific commands. In that case, only add `:alias` after the command name, for example: `access_resource:acres show_resources:sares`.
 
 ## Bot configuration
-The following variables can be changed at runtime via Slack or MS Teams -by a bot admin- using the `plugin config AccessBot` command:
+The following variables can be changed at runtime via Slack or MS Teams -by a bot admin- using the `plugin config AccessBot {}` command.
+You just need to remove the "SDM_" prefix when configuring them. Here's a usage example of the command: `plugin config AccessBot {'ADMINS_CHANNEL': '#my-channel', 'ADMIN_TIMEOUT': 60}`.
+
 * **SDM_ADMIN_TIMEOUT**. Timeout in seconds for a request to be manually approved. Default = 30 sec
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
 * **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of resource account grants. When enabled allows a user to make a new access request to a resource even if they already have access to it. Default = false

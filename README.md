@@ -2,7 +2,17 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/strongdm/accessbot)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/strongdm/accessbot/accessbot?label=tests)
 
-AccessBot is a chatbot that manages access to strongDM (SDM) resources, initially via Slack. A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
+AccessBot is a chatbot that manages access to strongDM (SDM) resources through temporary grants. 
+Some main features are: 
+you can have a manual approval flow and an automated one for specific resources (or all of them if you want);
+you can configure specific approvers for specific resources;
+you can configure what resources can be requested, or hide specific ones; 
+the users can specify the duration of the temporary grants and even the reason behind it.
+The resources can also be accessed by role grants, which means that the user can request access to a role, and they will have temporary access to all resources from that role. 
+
+AccessBot can be installed on Slack or MS Teams.
+
+A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
 
 ## Table of Contents
 * [Installation](#installation)
