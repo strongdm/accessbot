@@ -4,6 +4,9 @@ import re
 def get_commands_enabled():
     return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny").split(" ")
 
+def is_admins_channel_elevate_enabled():
+    return str(os.getenv("SDM_ADMINS_CHANNEL_ELEVATE", "")).lower() == 'true' and os.getenv("SDM_ADMINS_CHANNEL") is not None
+
 def get_access_controls():
     commands_enabled = [re.sub(r':[\w-]+', '', cmd) for cmd in get_commands_enabled()]
     allow_all = { 'allowusers': ('*') }
@@ -18,7 +21,12 @@ def get_access_controls():
         'AccessBot:match_alias': allow_all,
         'help': { 'allowusers': ('*') },
         'whoami': { 'allowusers': ('*') },
-        '*': { 'allowusers': BOT_ADMINS },
+        '*': {
+            'allowusers': BOT_ADMINS,
+            'allowrooms': [os.getenv('SDM_ADMINS_CHANNEL')],
+            'allowprivate': not is_admins_channel_elevate_enabled(),
+            'allowmuc': is_admins_channel_elevate_enabled(),
+        },
     }
 
 def get_commands_aliases():
@@ -64,6 +72,8 @@ def get_bot_extra_backend_dir():
         return None
     return 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
 
+def get_bot_admins():
+    return os.getenv("SDM_ADMINS").split(" ")
 
 CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
 
@@ -78,7 +88,7 @@ BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM")
 BOT_LOG_FILE = '' if str(os.getenv("SDM_DOCKERIZED", "")).lower() == 'true' else 'errbot.log'
 BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
 
-BOT_ADMINS = os.getenv("SDM_ADMINS").split(" ")
+BOT_ADMINS = get_bot_admins()
 CHATROOM_PRESENCE = ()
 BOT_IDENTITY = get_bot_identity()
 

@@ -1,5 +1,7 @@
 # pylint: disable=invalid-name
 import os
+from time import sleep
+
 import pytest
 import sys
 from errbot.backends.base import Message
@@ -105,6 +107,7 @@ class Test_stale_with_approvers_channel_tag_enabled(ErrBotExtraTestSettings):
                                       DummyResource('resource', {'approvers-channel': self.approvers_channel_name}),
                                       MagicMock(), MagicMock())
         assert access_request_id in accessbot.get_grant_request_ids()
+        sleep(0.1)
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
         assert self.raw_messages[0].to.person == f"#{self.approvers_channel_name}"
