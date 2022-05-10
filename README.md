@@ -65,6 +65,8 @@ If that's the case, enter any of the following commands:
 * `show available roles`. Show all roles
 * `access to resource-name`. Grant temporary access to all resources assigned to a role
 
+NOTE: all AccessBot commands are case-insensitive.
+
 For example:
 
 ![image](docs/img/main-commands-tutorial.gif)
