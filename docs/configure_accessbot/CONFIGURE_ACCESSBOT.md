@@ -35,6 +35,7 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 
 * **SDM_ADMIN_TIMEOUT**. Timeout in seconds for a request to be manually approved. Default = 30 sec
 * **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
+* **SDM_ADMINS_CHANNEL_ELEVATE**. Boolean flag to allow usage of admin commands to all users inside the configured SDM_ADMINS_CHANNEL. When this is enabled the admin commands can no longer be sent via DM, only via the configured channel. Default = false
 * **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of resource account grants. When enabled allows a user to make a new access request to a resource even if they already have access to it. Default = false
 * **SDM_ALLOW_RESOURCE_TAG**. Resource tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_ALLOW_ROLE_TAG**. Role tag to be used for only showing the allowed roles. Ideally set the value to `true` or `false` (e.g. `allow-role=true`). When there's no tag assigned, all roles are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)

@@ -28,7 +28,9 @@ def get_callback_message_fn(bot):
         Executes before the plugin command verification.
         Clears the message removing platform and bold symbols.
         """
-        msg.body = bot.plugin_manager.plugins['AccessBot'].clean_up_message(msg.body)
+        accessbot = bot.plugin_manager.plugins['AccessBot']
+        accessbot.check_elevate_admin_user(msg)
+        msg.body = accessbot.clean_up_message(msg.body)
         ErrBot.callback_message(bot, msg)
     return callback_message
 
@@ -52,6 +54,7 @@ class AccessBot(BotPlugin):
         self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
         self._bot.callback_message = get_callback_message_fn(self._bot)
         self.init_access_form_bot()
+        self.update_access_control_admins()
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
@@ -72,9 +75,44 @@ class AccessBot(BotPlugin):
     def configure(self, configuration):
         if configuration is not None and configuration != {}:
             config = dict(chain(config_template.get().items(), configuration.items()))
-        else:
+        elif self._bot.mode != 'test':
             config = config_template.get()
+        else:
+            config = {}
         super(AccessBot, self).configure(config)
+
+    def update_access_control_admins(self):
+        self._bot.bot_config.BOT_ADMINS.clear()
+        allowed_users = self._bot.bot_config.get_bot_admins()
+        self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].clear()
+        self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = True
+        self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = False
+        if self.config and self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
+            self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
+            self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = False
+            self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
+            admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
+            members = self._bot.conversation_members(admin_channel)
+            for member_id in members:
+                identifier = self._bot.userid_to_username(member_id)
+                allowed_users += [f'@{identifier}']
+        self._bot.bot_config.BOT_ADMINS.extend(sorted(set(allowed_users)))
+
+    def check_elevate_admin_user(self, msg):
+        if not self.config.get('ADMINS_CHANNEL_ELEVATE') or self.config.get('ADMINS_CHANNEL') is None:
+            return
+        user_is_admin = f'@{msg.frm.username}' in self._bot.bot_config.BOT_ADMINS
+        if hasattr(msg.frm, "room"):
+            if f'#{msg.frm.room.channelname}' == self.config['ADMINS_CHANNEL'] and not user_is_admin:
+                self._bot.bot_config.BOT_ADMINS.append(f'@{msg.frm.username}')
+            return
+        if not user_is_admin:
+            return
+        admins_channel = self.build_identifier(self.config.get('ADMINS_CHANNEL'))
+        admins_channel_members = self._bot.conversation_members(admins_channel)
+        user_is_member_of_admins_channel = msg.frm.userid in admins_channel_members
+        if not user_is_member_of_admins_channel:
+            self._bot.bot_config.BOT_ADMINS.remove(f'@{msg.frm.username}')
 
     def check_configuration(self, configuration):
         pass
@@ -84,8 +122,8 @@ class AccessBot(BotPlugin):
         """
         Grant access to a resource (using the requester's email address)
         """
-        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        if re.match("^role (.*)", arguments):
+        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        if re.match("^role (.*)", arguments, flags=re.IGNORECASE):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         if not self._platform.can_access_resource(message):
@@ -108,7 +146,7 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_assign_role(message):
             return
-        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
+        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
         yield from self.get_role_grant_helper().request_access(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
@@ -116,7 +154,7 @@ class AccessBot(BotPlugin):
         """
         Approve a grant (resource or role)
         """
-        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
+        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         approver = message.frm
         yield from self.get_approve_helper().execute(approver, access_request_id)
 
@@ -125,8 +163,8 @@ class AccessBot(BotPlugin):
         """
         Deny a grant request (resource or role)
         """
-        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""))
-        denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""))
+        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
+        denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
         admin = message.frm
         yield from self.get_deny_helper().execute(admin, access_request_id, denial_reason)
 
@@ -214,6 +252,9 @@ class AccessBot(BotPlugin):
             'type': grant_request_type,
             'flags': flags,
         }
+
+    def grant_requests_exists(self, request_id: str):
+        return self.__grant_requests.get(request_id) is not None
 
     def remove_grant_request(self, request_id):
         self.__grant_requests.pop(request_id, None)

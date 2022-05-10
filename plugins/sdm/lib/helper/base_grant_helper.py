@@ -24,7 +24,9 @@ class BaseGrantHelper(ABC):
             sdm_resource = self.get_item_by_name(searched_name, execution_id)
             sdm_account = self.__get_account(message)
             self.check_permission(sdm_resource, sdm_account, searched_name)
-            request_id = self.generate_grant_request_id()
+            request_id = None
+            while request_id is None or self.__bot.grant_requests_exists(request_id):
+                request_id = self.generate_grant_request_id()
             yield from self.__grant_access(message, sdm_resource, sdm_account, execution_id, request_id, flags)
         except NotFoundException as ex:
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s %s request failed %s", execution_id, self.__grant_type, operation_desc, str(ex))
