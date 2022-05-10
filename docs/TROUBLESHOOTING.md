@@ -2,11 +2,14 @@
 
 ## Getting Slack usernames
 
-Most interactions in Slack are done using the _Display Name_, which can be edited by users. For this configuration, you will need to use the Slack `username`. You can find this by replacing WORKSPACE_NAME in the following URL:
+Most interactions in Slack are done using the _Display Name_, which can be edited by users. For this configuration, you will need to use the Slack `username`. You can find this by replacing `WORKSPACE_URL_ID` in the following URL:
 ```
-https://WORKSPACE_NAME.slack.com/account/settings#username
+https://WORKSPACE_URL_ID.slack.com/account/settings#username
 ```
-then open the link and scroll to the bottom of the page. 
+
+NOTE: you will find your workspace URL ID in Slack. On the upper left corner click on your workspace name and you will find your workspace URL inside the pop-up menu. Then you can extract your workspace URL ID from it.
+
+Finally, open the link and scroll to the bottom of the page to find your username.
 
 Another option is to use [this Python script](../tools/get-slack-handle.py), which will output your Slack username.
 
