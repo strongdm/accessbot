@@ -209,8 +209,6 @@ The following video shows the usage of AccessBot via MS Teams.
 
 https://user-images.githubusercontent.com/82273420/167859692-8e2592ee-570b-4f14-9a3d-922f8456644b.mp4
 
-
-
 ## Limitations
 
 - Admins channel: it is not possible to add an application inside a private channel. Because of that, the bot will communicate with all the administrators via direct messages.
