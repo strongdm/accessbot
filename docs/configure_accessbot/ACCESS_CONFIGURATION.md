@@ -5,11 +5,11 @@ nav_order: 5
 parent: Accessbot Configuration
 ---
 # Access configuration
-You can use the “access to resource-name” command for obtaining 1 hour access to a specific resource.
+You can use the **access to `resource-name`** command for obtaining 1 hour access to a specific resource.
 
 The default configuration relies on a “manual approval” workflow, which delegates access request approvals to the bot admins (`SDM_ADMINS`).
 
-When an access request is registered, the bot assigns an `access_request_id` and notifies all the admins. In order to approve or deny a request, an admin needs to send one of the following messages in a DM or the configured admin channel, before the request times out (`SDM_ADMIN_TIMEOUT`):
+When an access request is registered, the bot assigns an `access_request_id` and notifies all the admins. In order to approve or deny a request, an admin needs to send one of the following messages in a DM or the configured admin channel (`SDM_ADMINS_CHANNEL`), before the request times out (`SDM_ADMIN_TIMEOUT`):
 
 - For approve: **yes `access_request_id`**
 - For deny: **no `access_request_id` [optional-reason]**
@@ -22,13 +22,15 @@ Besides the “manual approval” workflow, you can configure:
 * Automatic approval for all resources (`SDM_AUTO_APPROVE_ALL`). Automatically grant access to all available resources - no need for admin approval.
 * Automatic approval by tag for resources (`SDM_AUTO_APPROVE_TAG`). Automatically grant access to all tagged available resources. Delete the tag or set it false to disable. Auto-approve resources will be highlighted when executing: _show available resources_
 * Show tagged resources (`SDM_ALLOW_RESOURCE_TAG`). Show tagged resources in the list of available resources. The tag value must be true to be enabled, set value to false or delete the tag to hide the resource. Only allowed resources will be shown when executing: _show available resources_
-* Hide tagged resources (`SDM_HIDE_RESOURCE_TAG`). Remove tagged resources from the list of available resources. The tag value is ignored, delete tag to disable. Hidden resources will not be shown when executing: _show available resources_
+* Hide tagged resources (`SDM_HIDE_RESOURCE_TAG`). Remove tagged resources from the list of available resources. The tag value must be true to be enabled, set value to false or delete the tag to show the resource. Hidden resources will not be shown when executing: _show available resources_
 * Automatic approval for all roles (`SDM_AUTO_APPROVE_ROLE_ALL`). Automatically grant access to all available roles - no need for admin approval.
 * Automatic approval by tag for roles (`SDM_AUTO_APPROVE_ROLE_TAG`). Automatically grant access to all tagged available roles. Delete the tag or set it false to disable. Auto-approve roles will be highlighted when executing: _show available roles_
 * Show tagged roles (`SDM_ALLOW_ROLE_TAG`). Show tagged roles in the list of available roles. The tag value must be true to be enabled, set value to false or delete the tag to hide the role. Only allowed roles will be shown when executing: _show available roles_
+* Hide tagged roles (`SDM_HIDE_ROLE_TAG`). Remove tagged roles from the list of available roles. The tag value must be true to be enabled, set value to false or delete the tag to show the role. Hidden roles will not be shown when executing: _show available roles_
+* Specific approvers for specific resources (`SDM_APPROVERS_CHANNEL_TAG`). Tagged resources will send access requests to their responsible approvers. The tag value should be the name of the approvers channel for that resource.
 
 ## Possible workflows
-Different workflows (permutations) can be configured using the flags mentioned above - adjustable at runtime via [plugin config](docs/CONFIGURE_ACCESSBOT.md).
+Different workflows (permutations) can be configured using the flags mentioned above - adjustable at runtime via [plugin config](CONFIGURE_ACCESSBOT.md).
 * Manually approve all resources. Default workflow
 * Manually approve all resources, but auto approve a subset: `SDM_AUTO_APPROVE_TAG`
 * Manually approve all resources, but exclude a subset: `SDM_ALLOW_RESOURCE_TAG`

@@ -6,10 +6,10 @@ layout: default
 ---
 # Access bot (GitHub)
 
-## Creating yourAzure Bot
+## Creating your Azure Bot
 
 1. Create the AccessBot resource in the [Azure Portal](https://portal.azure.com/) by adding an “Azure Bot” resource
-2. On the creation page, change the “type of app” to Multi Tenant as this is what create the secret already generated in the key store that is created along side the Azure bot.
+2. On the creation page, change the “type of app” to Multi Tenant as this is what create the secret already generated in the key store that is created alongside the Azure bot.
 
 ![Create Bot](https://user-images.githubusercontent.com/6556218/157345332-c2137703-0978-4b12-ae6f-67ee875f0caa.png)
 
@@ -18,12 +18,12 @@ layout: default
 
 ![App ID](https://user-images.githubusercontent.com/6556218/157345362-dbaa80e9-6ef1-4c62-ba93-78c5266312c8.png)
 
-4. After your bot is created go to “[key vaults](https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.KeyVault%2Fvaults)” to to get the secret. This can be found by searching for Key Vault in the main search bar. Your newly created vault will be there with a random name. Look for one in the same security group that you selected when creating the Azure bot.
+4. After your bot is created go to “[key vaults](https://portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/Microsoft.KeyVault%2Fvaults)” to get the secret. This can be found by searching for Key Vault in the main search bar. Your newly created vault will be there with a random name. Look for one in the same security group that you selected when creating the Azure bot.
 5. We need to add ourselves to the vault to gain permissions to see the secret. Select Access policies, and add a policy with yourself having at least List and Get permissions for secrets.
 
 ![Key Vault Permissions](https://user-images.githubusercontent.com/6556218/157345405-6b960b35-91e2-4bd3-84f3-ed60913afe69.png)
 
-6. Then select on Secrets blade, then current version, and lastly the show secret value button to to get the key. Store it somewhere safe as we will need it when confiuring AccessBot on the server.
+6. Then select on Secrets blade, then current version, and lastly the show secret value button to get the key. Store it somewhere safe as we will need it when configuring AccessBot on the server.
 
 
 ![Secret](https://user-images.githubusercontent.com/6556218/157345456-cee10d78-9dd6-4a6b-a6c7-a3b91525048a.png)
@@ -35,11 +35,11 @@ layout: default
 
 ![Channels Add Teams](https://user-images.githubusercontent.com/6556218/157345481-017e4317-ed2f-4fb7-820d-8cf59e5d625b.png)
 
-## Acessbot Server
+## Accessbot Server
 
-Acessbot is run via a docker iamge using docker-compose. You will also need Nginx on this server to serve as the webhook/reverse proxy. Other server and website configurations are possible but this is the easiest to manage.
+Accessbot is run via a docker image using docker-compose. You will also need Nginx on this server to serve as the webhook/reverse proxy. Other server and website configurations are possible but this is the easiest to manage.
 
-8. Use the [env-file.example](https://github.com/strongdm/accessbot/blob/main/env-file.example) file to configure the settings for AccessBot. Below you will see an example for MS teams. Modify the file with your data; the API key, platform to ms-teams, put in the Azure app ID and password we stored from earlier steps.
+8. Use the [env-file.example](https://github.com/strongdm/accessbot/blob/main/env-file.example) file to configure the settings for AccessBot. Below you will see an example for MS Teams. Modify the file with your data; the API key, platform to ms-teams, put in the Azure app ID and password we stored from earlier steps.
 
 ```bash
 # You can copy this file as "env-file" for your docker-compose
@@ -48,7 +48,7 @@ Acessbot is run via a docker iamge using docker-compose. You will also need Ngin
 # ------------------------------------------------------------------------------
 # |                           GENERAL ENV VARS                                 |
 # ------------------------------------------------------------------------------
-# These vars are required for any SDM_BOT_PLAFORM.
+# These vars are required for any SDM_BOT_PLATFORM.
 
 SDM_BOT_PLATFORM=ms-teams # possible values: slack, slack-classic, ms-teams
 SDM_API_ACCESS_KEY=YourAccessKeyFromSDM
@@ -91,14 +91,13 @@ services:
      restart: always
 ```
 
-12. Start the app with `docker-compose up`
-   a. This will show logging which is helpful during initial setup. Once you are happy with the deployment use `docker-compose up -d` to run the app in the background. You can also turn on debug in the logs via the env-file settings if further troubleshooting is needed.
+12. Start the app with `docker-compose up`. This will show logging which is helpful during initial setup. Once you are happy with the deployment use `docker-compose up -d` to run the app in the background. You can also turn on debug in the logs via the env-file settings if further troubleshooting is needed.
 
 ## Messaging Endpoint Creation
 
-13. [Install ngnix](https://ubuntu.com/tutorials/install-and-configure-nginx#1-overview) (this example is for Ubuntu options will vary depending on host OS)
-14. Copy default file in /etc/nginx/sites-enabled to have a backup, then modify default site to be have this configuration.
-15. Note after making changes to the config file restart the nginx service
+13. [Install ngnix](https://ubuntu.com/tutorials/install-and-configure-nginx#1-overview) (this example is for Ubuntu, options will vary depending on host OS)
+14. Copy default file in /etc/nginx/sites-enabled to have a backup, then modify default site to have this configuration.
+15. Note: after making changes to the config file restart the nginx service
 
 ```jsx
 server {
@@ -111,7 +110,7 @@ server {
 }
 ```
 
-16. Setup your site to be a valid HTTPS server. [Follow steps here to get certbot setup for HTTPS traffic](https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal) (example output below)
+16. Set up your site to be a valid HTTPS server. [Follow steps here to get certbot setup for HTTPS traffic](https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal) (example output below)
 
 ![Certbot Verified](https://user-images.githubusercontent.com/6556218/157345912-d8937d94-a95f-49d3-95ff-38950e21db7c.png)
 
@@ -185,24 +184,30 @@ server {
 }
 ```
 
-19. Take the [icons and manifest file](https://github.com/strongdm/accessbot/tree/main/ms-teams/app) you just modifed and zip them up. This is now your AccessBot app to be submitted into your MS Teams environment.
+19. Take the [icons and manifest file](https://github.com/strongdm/accessbot/tree/main/ms-teams/app) you just modified and zip them up. This is now your AccessBot app to be submitted into your MS Teams environment.
 
 ### Getting your App into Teams
 
 20. Upload the app.zip file to [register the app](https://admin.teams.microsoft.com/) in your Org
-21. Log into MS teams, and then go to Apps —> Manage your apps —> Submit an app to your org.
+21. Log into MS Teams, and then go to Apps —> Manage your apps —> Submit an app to your org.
 
 ![Upload your Zip/App](https://user-images.githubusercontent.com/6556218/157347518-ee5434ec-a0b2-45f6-a5ef-8e10a77752d6.png)
 
-22. Attached the zip file above.
+22. Attach the zip file above.
 23. Message your IT team to approve the application submission.
 24. Add the AccessBot App to your individual team
 
 ![Manage AccessBot](https://user-images.githubusercontent.com/6556218/157347688-3015c400-2762-476a-b740-984c553c794e.png)
 
-25. Use “@AccessBot help “to get a list of the available commands
+25. Use “@AccessBot“ help to get a list of the available commands
 
 ![AccessBot Commands](https://user-images.githubusercontent.com/6556218/157347756-fbd58d83-b746-43cf-ae04-5b740b930b74.png)
+
+## Usage Example
+
+The following video shows the usage of AccessBot via MS Teams.
+
+https://user-images.githubusercontent.com/82273420/167859692-8e2592ee-570b-4f14-9a3d-922f8456644b.mp4
 
 ## Limitations
 
