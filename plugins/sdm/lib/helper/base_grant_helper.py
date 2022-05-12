@@ -94,7 +94,8 @@ class BaseGrantHelper(ABC):
         yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
-        self.__check_administration_availability()
+        approvers_channel_name = sdm_object.tags.get(self.__bot.config['APPROVERS_CHANNEL_TAG']) if sdm_object.tags else None
+        self.__check_administration_availability(f"#{approvers_channel_name}" if approvers_channel_name else None)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
@@ -117,9 +118,9 @@ class BaseGrantHelper(ABC):
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
         renewal_note = self.__get_renewal_note_message(sdm_object, sdm_account)
-        yield from self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, sdm_object)
+        self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, sdm_object)
         if renewal_note:
-            yield from self.__notify_admins(f"{renewal_note}", message, sdm_object)
+            self.__notify_admins(f"{renewal_note}", message, sdm_object)
 
     def __get_renewal_note_message(self, sdm_object, sdm_account):
         if self.__grant_type is not GrantRequestType.ACCESS_RESOURCE:
@@ -135,10 +136,7 @@ class BaseGrantHelper(ABC):
         if approvers_channel_tag is not None and sdm_object.tags is not None:
             approvers_channel = sdm_object.tags.get(approvers_channel_tag)
             if approvers_channel is not None:
-                try:
-                    self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel}'), text)
-                except Exception:
-                    yield "Sorry, I cannot contact the approvers for this resource, their channel is unreachable. Please, contact your SDM Admin."
+                self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel}'), text)
                 return
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
@@ -160,13 +158,21 @@ class BaseGrantHelper(ABC):
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s similar role found: %s", execution_id, self.__grant_type, str(similar_result))
             yield f"Did you mean \"{similar_result}\"?"
 
-    def __check_administration_availability(self):
-        if not self.__has_active_admins():
+    def __check_administration_availability(self, approvers_channel_name: str):
+        if self.__bot.config['APPROVERS_CHANNEL_TAG'] is not None and approvers_channel_name is not None:
+            if not self.__bot.channel_is_reachable(approvers_channel_name):
+                self.__bot.log.error(f"The Channel {approvers_channel_name} defined as Approver Channel is unreachable."
+                                     + f" Probably it's archived or the bot is not in the channel.")
+                raise Exception("Sorry, I cannot contact the approvers for this resource, their channel is unreachable."
+                                + " Please, contact your SDM Admin.")
+        elif self.__bot.config['ADMINS_CHANNEL']:
+            if not self.__bot.channel_is_reachable(self.__bot.config['ADMINS_CHANNEL']):
+                self.__bot.log.error(f"The Channel {self.__bot.config['ADMINS_CHANNEL']} defined as Admin Channel is unreachable."
+                                     + f" Probably it's archived or the bot is not in the channel.")
+                raise Exception("An Admin Channel was defined but it's unreachable.")
+        elif not self.__has_active_admins():
             self.__bot.log.error("There is no active SDM Admin user in Slack Workspace.")
             raise Exception("There is no active Slack Admin to receive your request.")
-        if self.__bot.config['ADMINS_CHANNEL'] and not self.__bot.channel_is_reachable(self.__bot.config['ADMINS_CHANNEL']):
-            self.__bot.log.error(f"The Channel {self.__bot.config['ADMINS_CHANNEL']} defined as Admin Channel is unreachable. Probably it's archived.")
-            raise Exception("An Admin Channel was defined but it's unreachable.")
 
     def __has_active_admins(self):
         return self.__bot.has_active_admins()
