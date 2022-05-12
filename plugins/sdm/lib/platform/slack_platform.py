@@ -48,9 +48,9 @@ class SlackPlatform(BasePlatform):
     def get_rich_identifier(self, identifier, message):
         return identifier
 
-    def channel_is_reachable(self, channel):
+    def channel_is_reachable(self, channel_name):
         channel_list = self._bot._bot.channels()
-        for item in channel_list:
-            if f"#{item['name']}" == channel:
-                return True
+        for channel in channel_list:
+            if f"#{channel['name']}" == channel_name:
+                return channel['is_member']
         return False
