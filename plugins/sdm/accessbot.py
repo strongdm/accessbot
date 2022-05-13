@@ -1,10 +1,13 @@
 import os
 import re
 import time
+import json
+import copy
 from itertools import chain
 from errbot import BotPlugin, re_botcmd, Message
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
+from collections import namedtuple
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
@@ -48,6 +51,34 @@ class AccessBot(BotPlugin):
     __grant_requests = {}
     _platform = None
 
+    def __store_grant_requests(self):
+        grant_requests_list = []
+        for request_id in self.__grant_requests.keys():
+            grant_request = copy.deepcopy(self.__grant_requests[request_id])
+            grant_request['message'] = {
+                'frm': {
+                    'person': grant_request['message'].frm.person
+                },
+                'to': grant_request['message'].to.__str__()
+            }
+            grant_requests_list.append(grant_request)
+        self['grant_requests_list'] = json.dumps(grant_requests_list)
+
+    def __restore_grant_requests(self):
+        try:
+            self.__grant_requests = {}
+            grant_requests_list = json.loads(self['grant_requests_list'])
+            for grant_request in grant_requests_list:
+                message_dict = {
+                    'frm': self.build_identifier(grant_request['message']['frm']['person']),
+                    'to': self.build_identifier(grant_request['message']['to']),
+                }
+                grant_request['message'] = namedtuple('message', message_dict.keys())(*message_dict.values())
+                self.__grant_requests[grant_request['id']] = grant_request
+
+        except Exception:
+            self.__grant_requests = {}
+
     def activate(self):
         super().activate()
         self._platform = get_platform(self)
@@ -56,6 +87,7 @@ class AccessBot(BotPlugin):
         self.init_access_form_bot()
         self.update_access_control_admins()
         self['auto_approve_uses'] = {}
+        self.__restore_grant_requests()
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
@@ -246,15 +278,17 @@ class AccessBot(BotPlugin):
             'id': request_id,
             'status': 'PENDING', # TODO Remove?
             'timestamp': time.time(),
-            'message': message, # cannot be persisted in errbot state
-            'sdm_object': sdm_object,
-            'sdm_account': sdm_account,
-            'type': grant_request_type,
+            'message': message,
+            'sdm_object': namedtuple('sdm_object', sdm_object.to_dict().keys())(*sdm_object.to_dict().values()),
+            'sdm_account': namedtuple('sdm_account', sdm_account.to_dict().keys())(*sdm_account.to_dict().values()),
+            'type': grant_request_type.value,
             'flags': flags,
         }
+        self.__store_grant_requests()
 
     def remove_grant_request(self, request_id):
         self.__grant_requests.pop(request_id, None)
+        self.__store_grant_requests()
 
     def get_grant_request(self, request_id):
         return self.__grant_requests[request_id]
