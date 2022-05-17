@@ -60,6 +60,7 @@ docker logs accessbot_accessbot_1
 ```
 
 If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+If you want to expose a Prometheus endpoint with AccessBot Metrics, please refer to [Configure Monitoring](docs/configure_accessbot/CONFIGURE_MONITORING.md)
 
 ## Getting Started
 Once AccessBot is up and running, you can add it as an app or to a channel and start using it!
