@@ -21,7 +21,9 @@ A curated version of the documentation can be found [here](https://strongdm.gith
 * [Support](#support)
 
 ## Installation
-In order to install AccessBot, first you need to define the following required environment variables:
+In order to install AccessBot, first you need to create an `env-file` file following the `env-file.example` template file.
+Then you need to define the following required environment variables:
+
 * **SDM_BOT_PLATFORM**. The platform that the bot will be installed on, i.e. "ms-teams", "slack" or blank (which will be interpreted as Slack by default)
 * **SDM_ADMINS**. List of admin users who will manage the bot and approve grant requests (by default).
   - For Slack platform: use the `username` (not Display Name) of each admin, e.g. `@user1 @user2` (See this [section](docs/TROUBLESHOOTING.md#getting-slack-usernames) for more.)
@@ -47,19 +49,18 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure Slack Classic](docs/slack/CONFIGURE_SLACK_CLASSIC.md)
 * [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
 
-For starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/). 
-Enter all required variables in the [docker-compose.yaml](docker-compose.yaml) file and execute:
-```
-docker-compose build --no-cache 
-docker-compose up -d
+Now, for starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/), but you can use your preferred container orchestrator.
+```bash
+$ docker-compose build --no-cache 
+$ docker-compose up -d
 ```
 
 The bot should start running in the background. And if you want to check the logs you can run the following command: 
-```
-docker logs accessbot_accessbot_1
+```bash
+$ docker logs accessbot_accessbot_1
 ```
 
-If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+If you want to install and execute the bot locally without docker, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
 If you want to expose a Prometheus endpoint with AccessBot Metrics, please refer to [Configure Monitoring](docs/configure_accessbot/CONFIGURE_MONITORING.md)
 
 ## Getting Started

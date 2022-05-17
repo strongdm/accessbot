@@ -14,16 +14,16 @@ Finally, open the link and scroll to the bottom of the page to find your usernam
 Another option is to use [this Python script](../tools/get-slack-handle.py), which will output your Slack username.
 
 ## Getting logs
-```
+```bash
 # Getting logs
-docker logs accessbot_accessbot_1 
+$ docker logs accessbot_accessbot_1 
 # Following logs
-docker logs -f accessbot_accessbot_1
+$ docker logs -f accessbot_accessbot_1
 ```
 
 ## Changing log level
 The default logging level is set to `INFO`. In case you want to get more information, you could add the following env variable:
-```
+```yaml
 version: "3.9"
 services:
   accessbot:
@@ -34,6 +34,6 @@ services:
 ```
 
 For getting specific AccessBot logs, you could use:
-```
-docker logs -f accessbot_accessbot_1 2>&1 | grep "##SDM##"
+```bash
+$ docker logs -f accessbot_accessbot_1 2>&1 | grep "##SDM##"
 ```
