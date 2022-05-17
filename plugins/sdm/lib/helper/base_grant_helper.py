@@ -6,6 +6,8 @@ from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_gro
     convert_duration_flag_to_timedelta, get_approvers_channel
 from grant_request_type import GrantRequestType
 
+from metric_type import MetricGaugeType
+
 
 class BaseGrantHelper(ABC):
     def __init__(self, bot, sdm_service, admin_ids, grant_type, auto_approve_tag_key, auto_approve_all_key):
@@ -94,6 +96,7 @@ class BaseGrantHelper(ABC):
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
         yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
+        self.__bot.increment_metrics([MetricGaugeType.TOTAL_AUTO_APPROVES])
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         approvers_channel_name = sdm_object.tags.get(self.__bot.config['APPROVERS_CHANNEL_TAG']) if sdm_object.tags else None

@@ -6,6 +6,7 @@ ENV SDM_DOCKERIZED=true
 RUN mkdir -p $ERRBOT_DIR
 WORKDIR $ERRBOT_DIR
 
+RUN apt update -y && apt install -y gcc
 COPY requirements/common.txt ./requirements.txt
 RUN pip install \
       --no-cache-dir \
