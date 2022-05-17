@@ -4,11 +4,11 @@
 
 AccessBot is a chatbot that manages access to strongDM (SDM) resources through temporary grants. 
 Some main features are: 
-you can have a manual approval flow and an automated one for specific resources (or all of them if you want);
+you can have a manual approval flow, that requires at least one admin user to evaluate the requests, and an automated one for specific resources (or all of them if you want);
 you can configure specific approvers for specific resources;
 you can configure what resources can be requested, or hide specific ones; 
-the users can specify the duration of the temporary grants and even the reason behind it.
-The resources can also be accessed by role grants, which means that the user can request access to a role, and they will have temporary access to all resources from that role. 
+the users can specify a custom duration for a temporary grant and even the reason behind it.
+The resources can also be accessed by role grants, which means that the user can request access to a role, and they will have temporary access to all resources from that role.
 
 AccessBot can be installed on Slack or MS Teams.
 
