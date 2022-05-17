@@ -11,7 +11,9 @@ AccessBot is a chatbot that manages access to strongDM (SDM) resources, initiall
 * [Support](#support)
 
 ## Installation
-In order to install AccessBot, you need to provide the following required variables:
+In order to install AccessBot, first you need to create an `env-file` file following the `env-file.example` template file.
+Then you need to define the following required environment variables:
+
 * **SDM_BOT_PLATFORM**. The platform that the bot will be installed on, i.e. "ms-teams", "slack" or blank (which will be interpreted as Slack by default)
 * **SDM_ADMINS**. List of Slack users who will manage the bot, and approve grant requests (by default):
   - For Slack platform: use the `username` (not Display Name) of each admin, e.g. `@user1 @user2` (See this [section](docs/TROUBLESHOOTING.md#getting-slack-usernames) for more.)
@@ -37,17 +39,18 @@ Detailed instructions about how to configure Slack and SDM for AccessBot can be 
 * [Configure Slack](docs/slack/CONFIGURE_SLACK.md)
 * [Configure SDM](docs/configure_accessbot/CONFIGURE_SDM.md)
 
-For starting the bot enter all required variables in [docker-compose.yaml](docker-compose.yaml) and execute:
-```
-./docker-start.sh
+Now, for starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/), but you can use your preferred container orchestrator.
+```bash
+$ docker-compose build --no-cache 
+$ docker-compose up -d
 ```
 
 The bot would start running in the background. In order to check logs.
-```
-docker logs accessbot_accessbot_1
+```bash
+$ docker logs accessbot_accessbot_1
 ```
 
-If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+If you want to install and execute the bot locally without docker, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
 
 ## Getting Started
 Once AccessBot is up and running, you can add it as an app or to a channel and start using it!

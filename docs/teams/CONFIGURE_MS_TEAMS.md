@@ -78,7 +78,7 @@ SDM_GRANT_TIMEOUT=90
 10. Install docker-compose
 11. Create the docker-compose.yaml
 
-```jsx
+```yaml
 version: "3.9"
 services:
    accessbot:
@@ -100,14 +100,13 @@ services:
 14. Copy default file in /etc/nginx/sites-enabled to have a backup, then modify default site to be have this configuration.
 15. Note after making changes to the config file restart the nginx service
 
-```jsx
+```conf
 server {
     server_name yourDNSNameorIPhere.com;
 
     location / {
             proxy_pass http://127.0.0.1:3141;
     }
-
 }
 ```
 
@@ -119,7 +118,7 @@ server {
 
 17. Create an App ID via online tool like [UUID Gen](https://www.uuidgenerator.net/version1)
 
-```bash
+```
 47799de2-98f6-11ec-b909-0242ac120002
 ```
 

@@ -43,7 +43,7 @@ Different workflows (permutations) can be configured using the flags mentioned a
 
 ## Using tags
 Following some sample commands you can use for configuring tags (e.g. `SDM_AUTO_APPROVE_TAG=auto-approve`):
-```
+```bash
 $ sdm admin datasources list -e
 Datasource ID           Name                 Type          ...         Tags
 rs-4c29d3006066e7ef     snowflake-test-1     snowflake     ...
