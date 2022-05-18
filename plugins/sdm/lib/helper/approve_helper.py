@@ -20,9 +20,13 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             yield from self.__register_auto_approve_use(grant_request)
 
     def __approve_assign_role(self, grant_request):
-        yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
-        self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
+        try:
+            yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
+        except Exception as e:
+            yield str(e)
+            return
+        self._bot.add_thumbsup_reaction(grant_request['message'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
 
     def __approve_access_resource(self, grant_request):
@@ -45,14 +49,11 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
         granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
         granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
+        if len(granted_resources) == len(resources):
+            raise Exception(f"The user already have access to all resources assigned to the role {role_name}")
         if len(granted_resources) > 0:
-            granted_resources_text = ''
-            for resource in granted_resources:
-                if granted_resources_text:
-                    granted_resources_text += "\n"
-                granted_resources_text += f"User already have access to {resource.name}"
-            yield granted_resources_text
-        # TODO Yield with a specific error when there are no resources to grant
+            granted_resource_names = ', '.join([resource.name for resource in granted_resources])
+            yield f"User already have access to {granted_resource_names}"
         not_granted_resources = self.__get_not_granted_resources(resources, granted_resources)
         for resource in not_granted_resources:
             self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)
