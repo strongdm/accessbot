@@ -12,7 +12,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
 
     def evaluate(self, request_id, **kwargs):
         grant_request = self._bot.get_grant_request(request_id)
-        if grant_request['type'] == GrantRequestType.ASSIGN_ROLE:
+        if grant_request['type'] == GrantRequestType.ASSIGN_ROLE.value:
             yield from self.__approve_assign_role(grant_request)
         else:
             yield from self.__approve_access_resource(grant_request)
