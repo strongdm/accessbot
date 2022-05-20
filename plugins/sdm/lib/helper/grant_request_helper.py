@@ -9,7 +9,7 @@ from grant_request_type import GrantRequestType
 
 class GrantRequestHelper:
     __grant_requests = {}
-    file_path = "./data/grant_requests.txt"
+    file_path = "./data/grant_requests.json"
 
     def __init__(self, bot):
         self._bot = bot
@@ -21,16 +21,21 @@ class GrantRequestHelper:
         try:
             with open(self.file_path, "w") as state:
                 grant_requests_list = []
-                for request_id in self.__grant_requests.keys():
-                    grant_request = copy.deepcopy(self.__grant_requests[request_id])
-                    grant_request['message'] = {
-                        'frm': grant_request['message'].frm.__str__(),
-                        'to': grant_request['message'].to.__str__(),
-                        'extras': grant_request['message'].extras
+                for grant_request in self.__grant_requests.values():
+                    serializable_grant_request = {
+                        'id': grant_request['id'],
+                        'timestamp': grant_request['timestamp'],
+                        'message': {
+                            'frm': grant_request['message'].frm.__str__(),
+                            'to': grant_request['message'].to.__str__(),
+                            'extras': grant_request['message'].extras
+                        },
+                        'sdm_object': self.__sdm_model_to_dict(grant_request['sdm_object']),
+                        'sdm_account': self.__sdm_model_to_dict(grant_request['sdm_account']),
+                        'type': grant_request['type'],
+                        'flags': grant_request['flags'],
                     }
-                    grant_request['sdm_object'] = grant_request['sdm_object'] if type(grant_request['sdm_object']) is dict else grant_request['sdm_object'].to_dict()
-                    grant_request['sdm_account'] = grant_request['sdm_account'] if type(grant_request['sdm_account']) is dict else grant_request['sdm_account'].to_dict()
-                    grant_requests_list.append(grant_request)
+                    grant_requests_list.append(serializable_grant_request)
                 state.write(json.dumps(grant_requests_list))
         except Exception as e:
             self._bot.log.error("An error occurred while saving the grant requests state: ", str(e))
@@ -81,3 +86,6 @@ class GrantRequestHelper:
     def remove(self, request_id: str):
         self.__grant_requests.pop(request_id, None)
         self.__save_state()
+
+    def __sdm_model_to_dict(self, object):
+        return object if type(object) is dict else object.to_dict()

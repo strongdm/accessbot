@@ -12,13 +12,10 @@ class BaseEvaluateRequestHelper(ABC):
         execution_id = shortuuid.ShortUUID().random(length=6)
         self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute request_id: %s", execution_id, request_id)
 
-        print(">>>>>> HMMMm1")
         if not self._bot.grant_requests_exists(request_id):
-            print(">>>>>> HMMMm2")
             self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute invalid access request id: %s", execution_id, request_id)
             yield f"Invalid access request id = {request_id}"
             return
-        print(">>>>>> HMMMm3")
 
         if not self.__is_allowed_to_self_evaluate(request_id, user):
             self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute Invalid user, not an admin to self approve or deny: %s", execution_id, str(user))
