@@ -78,13 +78,15 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self.start_metrics_server()
+        self.__grant_requests_helper = GrantRequestHelper(self)
         self.__activate_webserver()
 
     def __activate_webserver(self):
+        if self._bot.mode == "test":
+            return
         webserver = self.get_plugin('Webserver')
         webserver.configure(webserver.get_configuration_template())
         webserver.activate()
-        self.__grant_requests_helper = GrantRequestHelper(self)
 
     def deactivate(self):
         self.get_plugin('Webserver').deactivate()
@@ -95,7 +97,7 @@ class AccessBot(BotPlugin):
             self._bot.resolve_access_form_bot_id()
 
     def start_metrics_server(self):
-        if not self._bot.bot_config.EXPOSE_METRICS or self._metrics is not None:
+        if self._bot.mode == "test" or not self._bot.bot_config.EXPOSE_METRICS or self._metrics is not None:
             return
         start_http_server(3142)
         self.log.info("Prometheus Metrics endpoint is available on port 3142")

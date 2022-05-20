@@ -87,11 +87,23 @@ class DummyAccount:
         self.name = name
         self.tags = tags
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'tags': self.tags,
+        }
+
 
 class DummyResource:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'tags': self.tags,
+        }
 
 
 class DummyRole:

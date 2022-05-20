@@ -41,9 +41,9 @@ class GrantRequestHelper:
             self._bot.log.error("An error occurred while saving the grant requests state: ", str(e))
 
     def __restore_state(self):
+        self.__grant_requests = {}
         if self._bot.mode == 'test':
             return
-        self.__grant_requests = {}
         if not isfile(self.file_path):
             return
         try:
