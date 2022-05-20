@@ -3,6 +3,7 @@ import datetime
 from grant_request_type import GrantRequestType
 from .base_evaluate_request_helper import BaseEvaluateRequestHelper
 from ..util import convert_duration_flag_to_timedelta, get_formatted_duration_string
+from metric_type import MetricGaugeType
 
 
 class ApproveHelper(BaseEvaluateRequestHelper):
@@ -20,10 +21,15 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             yield from self.__register_auto_approve_use(grant_request)
 
     def __approve_assign_role(self, grant_request):
-        yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
-        self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
+        try:
+            yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
+        except Exception as e:
+            yield str(e)
+            return
+        self._bot.add_thumbsup_reaction(grant_request['message'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
+        self._bot.increment_metrics([MetricGaugeType.TOTAL_MANUAL_APPROVES])
 
     def __approve_access_resource(self, grant_request):
         duration = grant_request['flags'].get('duration')
@@ -37,6 +43,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_access_request_granted(grant_request['message'], resource, duration, needs_renewal)
+        self._bot.increment_metrics([MetricGaugeType.TOTAL_MANUAL_APPROVES])
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
@@ -45,14 +52,11 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
         granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
         granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
+        if len(granted_resources) == len(resources):
+            raise Exception(f"The user already have access to all resources assigned to the role {role_name}")
         if len(granted_resources) > 0:
-            granted_resources_text = ''
-            for resource in granted_resources:
-                if granted_resources_text:
-                    granted_resources_text += "\n"
-                granted_resources_text += f"User already have access to {resource.name}"
-            yield granted_resources_text
-        # TODO Yield with a specific error when there are no resources to grant
+            granted_resource_names = ', '.join([resource.name for resource in granted_resources])
+            yield f"User already have access to {granted_resource_names}"
         not_granted_resources = self.__get_not_granted_resources(resources, granted_resources)
         for resource in not_granted_resources:
             self.__sdm_service.grant_temporary_access(resource.id, account_id, grant_start_from, grant_valid_until)

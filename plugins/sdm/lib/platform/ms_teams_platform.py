@@ -5,14 +5,6 @@ from ..util import remove_bold_symbols
 
 
 class MSTeamsPlatform(BasePlatform):
-    def activate(self):
-        webserver = self._bot.get_plugin('Webserver')
-        webserver.configure(webserver.get_configuration_template())
-        webserver.activate()
-
-    def deactivate(self):
-        self._bot.get_plugin('Webserver').deactivate()
-
     def can_access_resource(self, message):
         self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)
@@ -45,7 +37,14 @@ class MSTeamsPlatform(BasePlatform):
 
     def clean_up_message(self, text):
         unbolded_text = remove_bold_symbols(text)
-        return re.sub(r'<at>.+</at>', '', unbolded_text).strip()
+        return self.clean_message_at_symbols(unbolded_text)
+
+    def clean_message_at_symbols(self, text):
+        text_without_bot_mention = self.remove_bot_mention_symbols(text)
+        return re.sub(r'<at>|</at>', '', text_without_bot_mention).strip()
+
+    def remove_bot_mention_symbols(self, text):
+        return re.sub(r'^<at>[a-zA-Z0-9_ ]+</at>', '', text).strip()
 
     def format_access_request_params(self, resource_name, sender_nick):
         return f'**{resource_name}**', f'**{sender_nick}**'
