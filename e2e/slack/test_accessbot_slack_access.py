@@ -225,6 +225,14 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
 
+    def test_access_command_fails_when_duplicating_request(self, mocked_testbot):
+        mocked_testbot.push_message(f"access to {resource_name}")
+        mocked_testbot.push_message(f"access to {resource_name}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "already have a pending grant request" in mocked_testbot.pop_message()
+
+
 class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot(self, testbot):
