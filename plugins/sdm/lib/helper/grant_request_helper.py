@@ -87,5 +87,13 @@ class GrantRequestHelper:
         self.__grant_requests.pop(request_id, None)
         self.__save_state()
 
+    def check_request_already_exists(self, sdm_object_name: str, grant_request_type: GrantRequestType, user: str):
+        for grant_request in self.__grant_requests.values():
+            if grant_request["type"] == grant_request_type.value and grant_request["message"].frm.person == user \
+                    and grant_request["sdm_object"].name.lower() == sdm_object_name.lower():
+                obj_type_name = "resource" if grant_request_type == GrantRequestType.ACCESS_RESOURCE else "role"
+                raise Exception(
+                    f"You already have a pending grant request for that {obj_type_name}. Please, wait for an admin evaluation.")
+
     def __sdm_model_to_dict(self, object):
         return object if type(object) is dict else object.to_dict()

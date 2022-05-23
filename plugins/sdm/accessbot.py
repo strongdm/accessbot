@@ -178,6 +178,7 @@ class AccessBot(BotPlugin):
         try:
             self.get_arguments_helper().check_required_flags(flags_validators.keys(), self.config['REQUIRED_FLAGS'], flags)
             self.check_requester_flag(message, flags.get('requester'))
+            self.__grant_requests_helper.check_request_already_exists(resource_name, GrantRequestType.ACCESS_RESOURCE, message.frm.person)
         except Exception as e:
             yield str(e)
             return
@@ -193,6 +194,11 @@ class AccessBot(BotPlugin):
             return
         self.increment_metrics([MetricGaugeType.TOTAL_RECEIVED_MESSAGES, MetricGaugeType.TOTAL_ACCESS_REQUESTS])
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        try:
+            self.__grant_requests_helper.check_request_already_exists(role_name, GrantRequestType.ASSIGN_ROLE, message.frm.person)
+        except Exception as e:
+            yield str(e)
+            return
         yield from self.get_role_grant_helper().request_access(message, role_name)
         self.__update_metric(MetricGaugeType.TOTAL_CONSECUTIVE_ERRORS, 0)
 

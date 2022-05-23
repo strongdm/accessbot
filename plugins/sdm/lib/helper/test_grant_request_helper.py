@@ -1,3 +1,4 @@
+import pytest
 from errbot import Message
 import sys
 from unittest.mock import MagicMock, patch, mock_open
@@ -39,6 +40,23 @@ class Test_state_handling:
             assert len(helper.get_request_ids()) == 1
             file = handle()
             file.read.assert_called_once()
+            helper.remove(request_id)
+            assert helper.get(request_id) is None
+            assert not helper.exists(request_id)
+
+    def test_raise_exception_when_add_duplicated_request(self):
+        bot = get_mock_bot()
+        with patch("builtins.open", mock_open(read_data=mock_file_data)) as handle:
+            helper = GrantRequestHelper(bot)
+            assert helper.get(request_id) is not None
+            assert helper.exists(request_id)
+            assert len(helper.get_request_ids()) == 1
+            file = handle()
+            file.read.assert_called_once()
+            with pytest.raises(Exception) as e:
+                helper.add(request_id, get_mock_message(), get_mock_sdm_object(), get_mock_sdm_account(),
+                           GrantRequestType.ACCESS_RESOURCE)
+                assert "already have a pending grant request" in e.value
             helper.remove(request_id)
             assert helper.get(request_id) is None
             assert not helper.exists(request_id)
