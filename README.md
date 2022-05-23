@@ -50,6 +50,9 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
 
 Now, for starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/), but you can use your preferred container orchestrator.
+
+NOTE: for deployment purposes, we recommend running the Docker image in a linux system. And the machine should have at least 200 MB of memory and 1 GB of disk available.
+
 ```bash
 $ docker-compose build --no-cache 
 $ docker-compose up -d
