@@ -99,18 +99,20 @@ class BaseGrantHelper(ABC):
         self.__bot.increment_metrics([MetricGaugeType.TOTAL_AUTO_APPROVES])
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
-        approvers_channel_name = sdm_object.tags.get(self.__bot.config['APPROVERS_CHANNEL_TAG']) if sdm_object.tags else None
+        approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_account) \
+                                 or get_approvers_channel(self.__bot.config, sdm_object)
         self.__check_administration_availability(f"#{approvers_channel_name}" if approvers_channel_name else None)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
-        yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message, flags)
+        yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message,
+                                                        flags, approvers_channel_name=approvers_channel_name)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
 
-    def __notify_access_request_entered(self, sender_nick, sdm_object, sdm_account,request_id, message, flags: dict):
+    def __notify_access_request_entered(self, sender_nick, sdm_object, sdm_account, request_id, message, flags: dict,
+                                        approvers_channel_name: str = None):
         operation_desc = self.get_operation_desc()
         formatted_resource_name, formatted_sender_nick = self.__bot.format_access_request_params(sdm_object.name, sender_nick)
-        approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
-        if self.__bot.config['ADMINS_CHANNEL'] or approvers_channel is not None:
-            evaluators_type = 'approvers' if approvers_channel is not None else 'admins'
+        if self.__bot.config['ADMINS_CHANNEL'] or approvers_channel_name is not None:
+            evaluators_type = 'approvers' if approvers_channel_name is not None else 'admins'
             yield f"Thanks {formatted_sender_nick}, that is a valid request." \
                   f" I'll send a request for approval in the configured {evaluators_type} channel.\n" \
                   f"Your request id is **{request_id}**"
@@ -123,9 +125,9 @@ class BaseGrantHelper(ABC):
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
         renewal_note = self.__get_renewal_note_message(sdm_object, sdm_account)
-        self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, sdm_object)
+        self.__notify_admins(f"{request_details}{reason}{approval_instructions}", message, approvers_channel_name=approvers_channel_name)
         if renewal_note:
-            self.__notify_admins(f"{renewal_note}", message, sdm_object)
+            self.__notify_admins(f"{renewal_note}", message, approvers_channel_name=approvers_channel_name)
 
     def __get_renewal_note_message(self, sdm_object, sdm_account):
         if self.__grant_type is not GrantRequestType.ACCESS_RESOURCE:
@@ -136,13 +138,10 @@ class BaseGrantHelper(ABC):
                    "grant and create a new one - the user might need to reconnect to the resource._"
         return None
 
-    def __notify_admins(self, text, message, sdm_object):
-        approvers_channel_tag = self.__bot.config['APPROVERS_CHANNEL_TAG']
-        if approvers_channel_tag is not None and sdm_object.tags is not None:
-            approvers_channel = sdm_object.tags.get(approvers_channel_tag)
-            if approvers_channel is not None:
-                self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel}'), text)
-                return
+    def __notify_admins(self, text, message, approvers_channel_name: str = None):
+        if approvers_channel_name is not None:
+            self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel_name}'), text)
+            return
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
             self.__bot.send(self.__bot.build_identifier(admins_channel), text)
@@ -168,7 +167,7 @@ class BaseGrantHelper(ABC):
             if not self.__bot.channel_is_reachable(approvers_channel_name):
                 self.__bot.log.error(f"The Channel {approvers_channel_name} defined as Approver Channel is unreachable."
                                      + f" Probably it's archived or the bot is not in the channel.")
-                raise Exception("Sorry, I cannot contact the approvers for this resource, their channel is unreachable."
+                raise Exception("Sorry, I cannot contact the approvers for this request, their channel is unreachable."
                                 + " Please, contact your SDM Admin.")
         elif self.__bot.config['ADMINS_CHANNEL']:
             if not self.__bot.channel_is_reachable(self.__bot.config['ADMINS_CHANNEL']):

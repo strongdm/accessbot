@@ -58,6 +58,8 @@ class GrantRequestHelper:
                     'extras': grant_request['message'].get('extras')
                 }
                 grant_request['message'] = namedtuple('message', message_dict.keys())(*message_dict.values())
+                grant_request['sdm_account'] = namedtuple('sdm_account', grant_request['sdm_account'].keys())(*grant_request['sdm_account'].values())
+                grant_request['sdm_object'] = namedtuple('sdm_object', grant_request['sdm_object'].keys())(*grant_request['sdm_object'].values())
                 self.__grant_requests[grant_request['id']] = grant_request
         except Exception as e:
             self._bot.log.error("An error occurred while restoring the grant requests state: ", str(e))
