@@ -3,12 +3,12 @@ from slack_bolt import App
 from modal import modal
 
 app = App(
-    token=os.environ.get("SLACK_BOT_TOKEN"),
-    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
+    token=os.environ.get("SLACK_ACCESS_FORM_BOT_TOKEN"),
+    signing_secret=os.environ.get("SLACK_ACCESS_FORM_SIGNING_SECRET")
 )
 
 slack_client = None
-CHANNEL_ID = os.environ.get('SLACK_CHANNEL_ID')
+CHANNEL_ID = os.environ.get('SLACK_ACCESS_FORM_CHANNEL_ID')
 
 @app.shortcut("open_access_form")
 def open_access_form(ack, shortcut, client):
@@ -30,7 +30,7 @@ def handle_view_events(ack, body, logger):
     command = get_command(body)
 
     try:
-        slack_client.chat_postMessage(channel=CHANNEL_ID, link_names = True, text=command)
+        slack_client.chat_postMessage(channel=CHANNEL_ID, link_names=True, text=command)
     except Exception as e:
         logger.exception(f"Failed to post a message {e}")
 

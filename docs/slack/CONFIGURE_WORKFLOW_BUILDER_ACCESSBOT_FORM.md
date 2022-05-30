@@ -7,6 +7,8 @@ parent: Slack
 
 # Configure AccessBot Form
 
+In case you already have an Access Form built from Workflow Builder, you can follow the next steps in order to enable it.
+
 ## Set Environment Variable
 
 To request access to a StrongDM resource through AccessBot using a form set the environment variable `SDM_ACCESS_FORM_BOT_NICKNAME` in your `env-file`.

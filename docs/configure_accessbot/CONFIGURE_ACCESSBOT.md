@@ -149,4 +149,4 @@ IMPORTANT:
 
 ## Resources access request form bot configuration
 
-* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the access form bot. For further information, please refer to [CONFIGURE_ACCESSBOT_FORM.md](../slack/CONFIGURE_ACCESSBOT_FORM.md).
+* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the Access Form bot. For further information, please refer to [CONFIGURE_ACCESS_FORM_BOT.md](docs/slack/CONFIGURE_ACCESS_FORM_BOT.md).

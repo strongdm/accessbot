@@ -34,7 +34,7 @@ oauth_config:
 settings:
   interactivity:
     is_enabled: true
-    request_url: https://accessform.loca.lt/slack/events
+    request_url: https://your-subdomain.loca.lt/slack/events
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false
