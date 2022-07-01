@@ -13,7 +13,7 @@ In order to configure AccessBot integration with Slack follow the next steps:
 
 ![image](https://user-images.githubusercontent.com/313803/128012837-79be22d5-72ec-4e6a-92c3-da422332d524.png)
 
-2. Enter the content of [slack-manifest.yaml](../slack-manifest.yaml)
+2. Enter the content of [slack-manifest.yaml](https://raw.githubusercontent.com/strongdm/accessbot/main/slack-manifest.yaml)
 
 ![image](https://user-images.githubusercontent.com/313803/128013483-87b62077-cfc0-44d0-b64e-2f42a0a0d5bb.png)
 
