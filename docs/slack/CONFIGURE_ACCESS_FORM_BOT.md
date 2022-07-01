@@ -22,7 +22,7 @@ In order to configure the form, you need to create a new Slack App.
 
 3. On step 1, select your organization and click on "Next".
 
-4. On step 2, copy and paste the content of the [access-form-manifest.yaml](tools/access-form/access-form-manifest.yaml) file into the "YAML" field, and click on "Next".
+4. On step 2, copy and paste the content of the [access-form-manifest.yaml](../../tools/access-form/access-form-manifest.yaml) file into the "YAML" field, and click on "Next".
 
 ![image](https://user-images.githubusercontent.com/20745533/170761741-5184ab7f-496e-4be2-a818-42079524ad28.png)
 
