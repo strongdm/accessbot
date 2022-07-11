@@ -5,7 +5,9 @@ nav_order: 3
 parent: Slack
 ---
 
-# Configure Slack
+# Configure Slack Classic
+
+**NOTE**: we are deprecating the support for the Slack Classic app version. We strongly recommend you to use the default Slack app version.
 
 In order to configure AccessBot integration with Slack follow the next steps:
 
