@@ -49,7 +49,7 @@ class Test_assign_role(ErrBotExtraTestSettings):
 
     def test_assign_role_command_with_strange_casing(self, mocked_testbot):
         mocked_testbot.push_message(f"ACceSS To rOLe {role_name}")
-        mocked_testbot.push_message(f"yes {access_request_id}")
+        mocked_testbot.push_message(f"YeS {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "assign request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
