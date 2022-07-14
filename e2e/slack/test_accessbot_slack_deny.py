@@ -48,7 +48,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert denial_reason in denied_response_message
 
     def test_access_command_grant_denied_with_strange_casing(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message("AcCeSs to Xxx")
         mocked_testbot.push_message(f"NO 12aB")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()

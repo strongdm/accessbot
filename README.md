@@ -78,7 +78,7 @@ Please refer to the following [doc](https://www.strongdm.com/docs/automation/get
 * `show available roles`. Show all available roles*
 * `access to resource-name`. Grant temporary access to all resources assigned to a role
 
-NOTE: all AccessBot commands are case-insensitive.
+NOTE: All AccessBot commands are case-insensitive.
 
 For example:
 
