@@ -16,7 +16,7 @@ resource_id = 1
 resource_name = "myresource"
 account_id = 1
 account_name = "myaccount@test.com"
-access_request_id = "12ab"
+access_request_id = "12AB"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
 
@@ -46,6 +46,13 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert f"request {access_request_id} has been denied" in denied_response_message
         assert "with the following reason" in denied_response_message
         assert denial_reason in denied_response_message
+
+    def test_access_command_grant_denied_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCeSs to Xxx")
+        mocked_testbot.push_message(f"NO 12aB")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert f"request {access_request_id} has been denied" in mocked_testbot.pop_message()
 
 class Test_invalid_user(ErrBotExtraTestSettings):
     @pytest.fixture

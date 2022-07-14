@@ -15,7 +15,7 @@ from lib import PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
 
-access_request_id = "12ab"
+access_request_id = "12AB"
 
 class Test_stale_grant_requests_cleaner(ErrBotExtraTestSettings):
     sdm_admin = "gbin@localhost"

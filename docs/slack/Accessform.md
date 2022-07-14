@@ -10,7 +10,7 @@ AccessForm is the free way to request access to a resource using a form within S
 
 ## Create AccessForm
 
-In order to configure the form, you'd need to create a new Slack App, take a look [here](accessform-manifest.yaml)
+In order to configure the form, you'd need to create a new Slack App, take a look [here](../../tools/accessform/accessform-manifest.yaml)
 
 ## Installation and configuration
 

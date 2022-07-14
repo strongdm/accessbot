@@ -47,6 +47,12 @@ class Test_show_resources(ErrBotExtraTestSettings):
         assert "Aaa (type: DummyResource)" not in message
         assert "Bbb (type: DummyResource)" not in message
 
+    def test_show_resources_command_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("ShoW AvaILablE ReSouRcES")
+        message = mocked_testbot.pop_message()
+        assert "Aaa (type: DummyResource)" in message
+        assert "Bbb (type: DummyResource)" in message
+
 class Test_show_allowed_resources(ErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_allow_resource_true(self, testbot):

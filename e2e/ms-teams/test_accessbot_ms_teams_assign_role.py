@@ -19,7 +19,7 @@ resource_id = 1
 resource_name = "myresource"
 account_id = 1
 account_name = "myaccount@test.com"
-access_request_id = "12ab"
+access_request_id = "12AB"
 
 class Test_assign_role(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture

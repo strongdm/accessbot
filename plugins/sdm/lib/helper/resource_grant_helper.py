@@ -1,5 +1,4 @@
 import re
-import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
@@ -12,10 +11,6 @@ class ResourceGrantHelper(BaseGrantHelper):
         self.__admin_ids = bot.get_admin_ids()
         self.__sdm_service = bot.get_sdm_service()
         super().__init__(bot, self.__sdm_service, self.__admin_ids, GrantRequestType.ACCESS_RESOURCE, 'AUTO_APPROVE_TAG', 'AUTO_APPROVE_ALL')
-
-    @staticmethod
-    def generate_grant_request_id():
-        return shortuuid.ShortUUID().random(length=4)
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
         account_grant_exists = self.__sdm_service.account_grant_exists(sdm_object, sdm_account.id)
