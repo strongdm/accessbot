@@ -74,6 +74,10 @@ class AccessBot(BotPlugin):
 
     def configure(self, configuration):
         if configuration is not None and configuration != {}:
+            admins_channel = configuration.get('ADMINS_CHANNEL')
+            if admins_channel is not None and not admins_channel.startswith("#"):
+                channel = self._bot.build_identifier(configuration['ADMINS_CHANNEL'])
+                configuration['ADMINS_CHANNEL'] = f"#{channel.name}"
             config = dict(chain(config_template.get().items(), configuration.items()))
         elif self._bot.mode != 'test':
             config = config_template.get()
