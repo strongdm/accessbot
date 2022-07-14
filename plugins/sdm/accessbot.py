@@ -84,8 +84,8 @@ class AccessBot(BotPlugin):
         """
         Grant access to a resource (using the requester's email address)
         """
-        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""))
-        if re.match("^role (.*)", arguments):
+        arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        if re.match("^role (.*)", arguments, flags=re.IGNORECASE):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
         if not self._platform.can_access_resource(message):
@@ -108,7 +108,7 @@ class AccessBot(BotPlugin):
         """
         if not self._platform.can_assign_role(message):
             return
-        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""))
+        role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
         yield from self.get_role_grant_helper().request_access(message, role_name)
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
@@ -116,7 +116,7 @@ class AccessBot(BotPlugin):
         """
         Approve a grant (resource or role)
         """
-        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""))
+        access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         approver = message.frm
         yield from self.get_approve_helper().execute(approver, access_request_id)
 
@@ -125,8 +125,8 @@ class AccessBot(BotPlugin):
         """
         Deny a grant request (resource or role)
         """
-        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""))
-        denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""))
+        access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
+        denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
         admin = message.frm
         yield from self.get_deny_helper().execute(admin, access_request_id, denial_reason)
 
@@ -214,6 +214,9 @@ class AccessBot(BotPlugin):
             'type': grant_request_type,
             'flags': flags,
         }
+
+    def grant_requests_exists(self, request_id: str):
+        return self.__grant_requests.get(request_id) is not None
 
     def remove_grant_request(self, request_id):
         self.__grant_requests.pop(request_id, None)
