@@ -253,9 +253,6 @@ class AccessBot(BotPlugin):
     def grant_requests_exists(self, request_id: str):
         return self.__grant_requests_helper.exists(request_id)
 
-    def grant_requests_exists(self, request_id: str):
-        return self.__grant_requests.get(request_id) is not None
-
     def remove_grant_request(self, request_id):
         self.__grant_requests_helper.remove(request_id)
 

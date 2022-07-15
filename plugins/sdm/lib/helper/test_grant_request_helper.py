@@ -1,3 +1,4 @@
+import pytest
 from errbot import Message
 import sys
 from unittest.mock import MagicMock, patch, mock_open
@@ -31,17 +32,19 @@ class Test_state_handling:
             assert not helper.exists(request_id)
 
     def test_restore_state_when_has_stored_requests(self):
-        bot = get_mock_bot()
-        with patch("builtins.open", mock_open(read_data=mock_file_data)) as handle:
-            helper = GrantRequestHelper(bot)
-            assert helper.get(request_id) is not None
-            assert helper.exists(request_id)
-            assert len(helper.get_request_ids()) == 1
-            file = handle()
-            file.read.assert_called_once()
-            helper.remove(request_id)
-            assert helper.get(request_id) is None
-            assert not helper.exists(request_id)
+        with patch("os.path.isfile") as mock_isfile:
+            mock_isfile.side_effect = [True]
+            bot = get_mock_bot()
+            with patch("builtins.open", mock_open(read_data=mock_file_data)) as handle:
+                helper = GrantRequestHelper(bot)
+                assert helper.get(request_id) is not None
+                assert helper.exists(request_id)
+                assert len(helper.get_request_ids()) == 1
+                file = handle()
+                file.read.assert_called_once()
+                helper.remove(request_id)
+                assert helper.get(request_id) is None
+                assert not helper.exists(request_id)
 
 
 def get_mock_bot():

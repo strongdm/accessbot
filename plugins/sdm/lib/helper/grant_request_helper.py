@@ -1,8 +1,7 @@
-import copy
 import json
 import time
 from collections import namedtuple
-from os.path import isfile
+import os
 
 from grant_request_type import GrantRequestType
 
@@ -44,7 +43,7 @@ class GrantRequestHelper:
         self.__grant_requests = {}
         if self._bot.mode == 'test':
             return
-        if not isfile(self.file_path):
+        if not os.path.isfile(self.file_path):
             return
         try:
             state_text = open(self.file_path, "r").read()
