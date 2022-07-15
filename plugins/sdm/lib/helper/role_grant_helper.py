@@ -1,4 +1,3 @@
-import shortuuid
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
@@ -10,10 +9,6 @@ class RoleGrantHelper(BaseGrantHelper):
         self.__admin_ids = bot.get_admin_ids()
         self.__sdm_service = bot.get_sdm_service()
         super().__init__(bot, self.__sdm_service, self.__admin_ids, GrantRequestType.ASSIGN_ROLE, 'AUTO_APPROVE_ROLE_TAG', 'AUTO_APPROVE_ROLE_ALL')
-
-    @staticmethod
-    def generate_grant_request_id():
-        return shortuuid.ShortUUID().random(length=4).upper()
 
     def check_permission(self, sdm_object, sdm_account, searched_name):
         if not self.__allowed_to_assign_role(searched_name, sdm_account):
