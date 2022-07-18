@@ -12,5 +12,6 @@ RUN apk add sqlite
 
 RUN sqlite3 /var/lib/grafana/grafana.db < /init_dashboard.sql
 RUN rm /init_dashboard.sql
+RUN chown grafana /var/lib/grafana/grafana.db
 
 USER grafana

@@ -10,20 +10,12 @@ services:
     ports:
       - 3141:3141
       - 3142:3142
-    networks:
-      - accessbot
   prometheus:
     build: tools/prometheus
     ports:
       - 9090:9090
-    networks:
-      - accessbot
   grafana:
     build: tools/grafana
     ports:
       - 3000:3000
-    networks:
-      - accessbot
-networks:
-  accessbot:
-    driver: bridge
+
