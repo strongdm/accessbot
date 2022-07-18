@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------------
 # |                           GENERAL ENV VARS                                 |
 # ------------------------------------------------------------------------------
-# These vars are required for any SDM_BOT_PLAFORM.
+# These vars are required for any SDM_BOT_PLATFORM.
 
 SDM_BOT_PLATFORM=slack # possible values: slack, slack-classic, ms-teams
 SDM_API_ACCESS_KEY=
