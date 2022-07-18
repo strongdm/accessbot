@@ -14,14 +14,17 @@ AccessBot can be installed on Slack or MS Teams.
 
 A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
 
+You can also watch our [demo video](https://www.youtube.com/watch?v=LfsbXl0b3G8) of AccessBot on YouTube.
+
 ## Table of Contents
-* [Installation](#installation)
+* [Configuration](#configuration)
+* [Deploy](#deploy)
 * [Getting Started](#getting-started)
 * [Contributing](#contributing)
 * [Support](#support)
 
-## Installation
-In order to install AccessBot, first you need to define the following required environment variables:
+## Configuration
+In order to deploy AccessBot, first you need to define the following required environment variables:
 * **SDM_BOT_PLATFORM**. The platform that the bot will be installed on, i.e. "ms-teams", "slack" or blank (which will be interpreted as Slack by default)
 * **SDM_ADMINS**. List of admin users who will manage the bot and approve grant requests (by default).
   - For Slack platform: use the `username` (not Display Name) of each admin, e.g. `@user1 @user2` (See this [section](docs/TROUBLESHOOTING.md#getting-slack-usernames) for more.)
@@ -47,19 +50,33 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure Slack Classic](docs/slack/CONFIGURE_SLACK_CLASSIC.md)
 * [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
 
-For starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/). 
+
+## Deploy
+
+AccessBot is available as a Docker image. For deploying it we recommend you to use a container orchestrator, e.g. Kubernetes. Here's a [k8s deployment descriptor](k8s-descriptor.yaml) that you can use as a reference.
+
+Most customers deploy AccessBot as a k8s deployment of *one* replica using the bot's [healthcheck endpoint](.), so the Orchestrator ensures that there's always an instance of the bot available. At the moment, the bot doesn't support load balancing nor slack webhooks.
+
+### Run locally
+
+#### Using Docker Compose
+
+For starting the bot with [docker compose](https://docs.docker.com/compose/install/). 
 Enter all required variables in the [docker-compose.yaml](docker-compose.yaml) file and execute:
+
 ```
-docker-compose build --no-cache 
-docker-compose up -d
+docker compose build --no-cache 
+docker compose up -d
 ```
 
-The bot should start running in the background. And if you want to check the logs you can run the following command: 
+Then, the bot should start running in the background. If you want to check the logs you can run the following command: 
 ```
 docker logs accessbot_accessbot_1
 ```
 
-If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+#### Without Docker
+
+If you want to install and execute the bot locally without Docker, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
 If you want to expose a Prometheus endpoint with AccessBot Metrics, please refer to [Configure Monitoring](docs/configure_accessbot/CONFIGURE_MONITORING.md)
 
 ## Getting Started
@@ -79,7 +96,7 @@ Please refer to the following [doc](https://www.strongdm.com/docs/automation/get
 * `show available roles`. Show all available roles*
 * `access to resource-name`. Grant temporary access to all resources assigned to a role
 
-NOTE: all AccessBot commands are case-insensitive.
+NOTE: All AccessBot commands are case-insensitive.
 
 For example:
 

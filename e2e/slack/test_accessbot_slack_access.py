@@ -226,9 +226,13 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "Granting" in mocked_testbot.pop_message()
 
 class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
-
     @pytest.fixture
     def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_without_override(self, testbot):
         config = create_config()
         config['SENDER_NICK_OVERRIDE'] = None
         config['SENDER_EMAIL_OVERRIDE'] = None
@@ -236,34 +240,68 @@ class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
         bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(side_effect=mocked_build_identifier_with_nick)
         return bot
 
-    def test_access_command_from_access_form_bot(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot,
+    @pytest.fixture
+    def mocked_testbot_with_required_flags(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = required_flags
+        return mocked_testbot
+
+    def test_access_command_from_access_form_bot(self, mocked_testbot_without_override):
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot,
             bot_id=access_form_bot_id,
             room_id=room_id,
             room_name=room_name
         ))
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        ack_message = mocked_testbot.pop_message()
+        mocked_testbot_without_override._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
+        mocked_testbot_without_override.push_message(f"access to Xxx --requester @user")
+        ack_message = mocked_testbot_without_override.pop_message()
         assert "Thanks `@user`" in ack_message
         assert "valid request" in ack_message
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot,
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot,
             from_nick="admin"
         ))
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        request_message = mocked_testbot.pop_message()
+        mocked_testbot_without_override.push_message(f"yes {access_request_id}")
+        request_message = mocked_testbot_without_override.pop_message()
         assert "access request" in request_message
-        assert "Granting" in mocked_testbot.pop_message()
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
+        assert "Granting" in mocked_testbot_without_override.pop_message()
+        mocked_testbot_without_override._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
 
-    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot
+    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot_without_override):
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot
         ))
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        assert "You cannot use the requester flag." in mocked_testbot.pop_message()
+        mocked_testbot_without_override.push_message(f"access to Xxx --requester @user")
+        assert "You cannot use the requester flag." in mocked_testbot_without_override.pop_message()
+
+    def test_access_command_grant_access_when_using_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason --duration 15m")
+        mocked_testbot_with_required_flags.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_required_flags.pop_message()
+        assert "access request" in mocked_testbot_with_required_flags.pop_message()
+        assert "Granting" in mocked_testbot_with_required_flags.pop_message()
+
+    def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" in request_message
+        assert "duration" in request_message
+
+    def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" not in request_message
+        assert "duration" in request_message
+
+    def test_access_command_grant_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCesS TO Xxx")
+        mocked_testbot.push_message(f"YeS 12aB")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
 
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture

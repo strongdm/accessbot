@@ -8,6 +8,7 @@ WORKDIR $ERRBOT_DIR
 
 RUN apt update -y && apt install -y gcc
 COPY requirements/common.txt ./requirements.txt
+RUN apt update -y && apt install -y gcc
 RUN pip install \
       --no-cache-dir \
       --disable-pip-version-check \

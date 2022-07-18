@@ -21,10 +21,5 @@ Just mention `@accessbot` in your channel
 ## How can I use AccessBot in a private channel?
 Invite AccessBot to your private channel and add the scope `usergroups:read` to your bot
 
-## Why I need to create a Classic Slack App?
-At the moment there are no plans to move to the Events API, the integration complexity behind firewalls or corporate networks would increase significantly, because the bot would need to expose an endpoint for receiving Slack events.
-AccessBot uses the RTM interface, and Slack support of the new Socket Mode -a similar approach- is still limited and only supported in beta state by Errbot (the bot framework).
-Slack encourages users to keep their classic apps for now - guess until Socket Mode becomes the standard.
-
 ## How can I get my AccessBot version?
 Send the following direct message to the Bot: `plugin config AccessBot`
