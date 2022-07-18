@@ -53,15 +53,9 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 
 ## Deploy
 
-AccessBot is available as a Docker image and for deploying it we recommend that you use a container orchestrator to manage the bot container, like Kubernetes. Here's a [k8s deployment descriptor](k8s-descriptor.yaml) that you can use as a base.
+AccessBot is available as a Docker image. For deploying it we recommend you to use a container orchestrator, e.g. Kubernetes. Here's a [k8s deployment descriptor](k8s-descriptor.yaml) that you can use as a reference.
 
-### High Availability, Load Balancing and Resiliency
-
-At the moment we don't have any of these functionalities for AccessBot.
-
-If you have more than one replica, AccessBot will answer you multiple times, so you only need a single replica. 
-
-The fault tolerance is managed by the container orchestrator.
+Most customers deploy AccessBot as a k8s deployment of *one* replica using the bot's [healthcheck endpoint](.), so the Orchestrator ensures that there's always an instance of the bot available. At the moment, the bot doesn't support load balancing nor slack webhooks.
 
 ### Run locally
 
