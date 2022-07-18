@@ -138,9 +138,10 @@ class DummyPerson(DummyErrbotPerson):
 
 
 class DummyRoom:
-    def __init__(self, id, name):
+    def __init__(self, id, name, is_member=True):
         self.id = id
         self.name = name
+        self.is_member = is_member
 
     @property
     def channelname(self):
