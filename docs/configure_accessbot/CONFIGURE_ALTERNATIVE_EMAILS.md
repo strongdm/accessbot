@@ -47,3 +47,9 @@ Follow these steps to configure in your Slack Workspace:
 ![set StrongDM account email](https://user-images.githubusercontent.com/49597325/134934179-3f299cb1-9416-4c90-a02a-b052b1bb207a.jpg)
 
 IMPORTANT: Remember to setup the field name (e.g. `StrongDM Email`) in the environment variable `SDM_EMAIL_SLACK_FIELD`
+
+## Demo video
+
+Here is a video showing how to configure and use the alternative email on slack.
+
+https://user-images.githubusercontent.com/82273420/167861857-1e625b3f-62dd-4e2a-a1af-ebc541698481.mp4

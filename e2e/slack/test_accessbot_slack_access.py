@@ -218,19 +218,12 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "reason" not in request_message
         assert "duration" in request_message
 
-class Test_invalid_approver(ErrBotExtraTestSettings):
-    @pytest.fixture
-    def mocked_testbot(self, testbot):
-        config = create_config()
-        config['SENDER_NICK_OVERRIDE'] = 'not-admin'
-        return inject_config(testbot, config)
-
-    def test_access_command_fail_when_user_not_admin(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
-        mocked_testbot.push_message(f"yes {access_request_id}")
+    def test_access_command_grant_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCesS TO Xxx")
+        mocked_testbot.push_message(f"YeS 12aB")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
-        assert "Invalid user" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
 
 class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     @pytest.fixture
