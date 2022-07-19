@@ -60,18 +60,14 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self._platform.activate()
-        self._override_dependency_commands()
+        self._disable_dependency_commands()
 
-    def _override_dependency_commands(self):
+    def _disable_dependency_commands(self):
         utils = self.get_plugin('Utils')
         utils.deactivate()
         setattr(utils.whoami.__func__, '_err_command_hidden', True)
         setattr(utils.whoami.__func__, '_err_command_name', 'utils-whoami')
         utils.activate()
-
-        super().deactivate()
-        setattr(self.whoami.__func__, '_err_command_name', 'whoami')
-        super().activate()
 
     def deactivate(self):
         self._platform.deactivate()
@@ -205,13 +201,10 @@ class AccessBot(BotPlugin):
             return
         yield from self.get_show_roles_helper().execute(message)
 
-    @botcmd(name="accessbot-whoami")
-    def whoami(self, msg, args):
+    @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
+    def whoami(self, message, match):
         """A simple command echoing the details of your identifier. Useful to debug identity problems."""
-        if args:
-            frm = self.build_identifier(str(args).strip('"'))
-        else:
-            frm = msg.frm
+        frm = message.frm
 
         resp = ""
         if self.bot_config.GROUPCHAT_NICK_PREFIXED:
@@ -227,7 +220,7 @@ class AccessBot(BotPlugin):
 
         email_slack_field = self.config['EMAIL_SLACK_FIELD']
         if email_slack_field is not None:
-            sdm_email = self.get_sdm_email_from_profile(msg.frm, email_slack_field)
+            sdm_email = self.get_sdm_email_from_profile(message.frm, email_slack_field)
             resp += f"| SDM email | `{sdm_email}`\n"
 
         #  extra info if it is a MUC
