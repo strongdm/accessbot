@@ -19,6 +19,7 @@ def get_access_controls():
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
         'AccessBot:show_roles': allow_all if 'show_roles' in commands_enabled else deny_all,
         'AccessBot:match_alias': allow_all,
+        'AccessBot:whoami': allow_all,
         'help': { 'allowusers': ('*') },
         'whoami': { 'allowusers': ('*') },
         '*': {

@@ -2,7 +2,7 @@ import os
 import re
 import time
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message
+from errbot import BotPlugin, re_botcmd, Message, botcmd
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
@@ -60,6 +60,18 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self._platform.activate()
+        self._override_dependency_commands()
+
+    def _override_dependency_commands(self):
+        utils = self.get_plugin('Utils')
+        utils.deactivate()
+        setattr(utils.whoami.__func__, '_err_command_hidden', True)
+        setattr(utils.whoami.__func__, '_err_command_name', 'utils-whoami')
+        utils.activate()
+
+        super().deactivate()
+        setattr(self.whoami.__func__, '_err_command_name', 'whoami')
+        super().activate()
 
     def deactivate(self):
         self._platform.deactivate()
@@ -192,6 +204,39 @@ class AccessBot(BotPlugin):
         if not self._platform.can_show_roles(message):
             return
         yield from self.get_show_roles_helper().execute(message)
+
+    @botcmd(name="accessbot-whoami")
+    def whoami(self, msg, args):
+        """A simple command echoing the details of your identifier. Useful to debug identity problems."""
+        if args:
+            frm = self.build_identifier(str(args).strip('"'))
+        else:
+            frm = msg.frm
+
+        resp = ""
+        if self.bot_config.GROUPCHAT_NICK_PREFIXED:
+            resp += "\n\n"
+
+        resp += f"| key       | value\n"
+        resp += f"| --------  | --------\n"
+        resp += f"| person    | `{frm.person}`\n"
+        resp += f"| nick      | `{frm.nick}`\n"
+        resp += f"| fullname  | `{frm.fullname}`\n"
+        resp += f"| client    | `{frm.client}`\n"
+        resp += f"| email     | `{frm.email}`\n"
+
+        email_slack_field = self.config['EMAIL_SLACK_FIELD']
+        if email_slack_field is not None:
+            sdm_email = self.get_sdm_email_from_profile(msg.frm, email_slack_field)
+            resp += f"| SDM email | `{sdm_email}`\n"
+
+        #  extra info if it is a MUC
+        if hasattr(frm, "room"):
+            resp += f"\n`room` is {frm.room}\n"
+        resp += f"\n\n- string representation is '{frm}'\n"
+        resp += f"- class is '{frm.__class__.__name__}'\n"
+
+        return resp
 
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
