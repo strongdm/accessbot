@@ -75,7 +75,8 @@ def get_bot_extra_backend_dir():
 def get_bot_admins():
     return os.getenv("SDM_ADMINS").split(" ")
 
-CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
+CORE_PLUGINS = ('ACLs', 'Backup', 'ChatRoom', 'CommandNotFoundFilter', 'Flows', 'Health', 'Help', 'Plugins', 'TextCmds',
+                'Utils', 'VersionChecker', 'Webserver')
 
 BACKEND = get_backend()
 BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
