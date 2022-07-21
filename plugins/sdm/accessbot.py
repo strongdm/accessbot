@@ -9,7 +9,7 @@ from slack_sdk.errors import SlackApiError
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, HealthCheckHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -202,10 +202,9 @@ class AccessBot(BotPlugin):
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
 
-    @webhook('/healthcheck')
-    def _healthcheck(self, args):
-        """ Return 200 OK """
-        return "Ok"
+    @webhook('/health-check')
+    def _health_check(self, _):
+        return self.get_health_check_helper().execute()
 
     @staticmethod
     def get_admins():
@@ -248,6 +247,9 @@ class AccessBot(BotPlugin):
 
     def get_arguments_helper(self):
         return ArgumentsHelper()
+
+    def get_health_check_helper(self):
+        return HealthCheckHelper(self)
 
     def get_admin_ids(self):
         return self._platform.get_admin_ids()
