@@ -80,7 +80,7 @@ See image below for more information:
 A snippet that might help:
 
 #### Allow Resource
-```
+```bash
 $ sdm admin ssh list
 Server ID               Name
 rs-xxxxxxxxxxxxxxx     public-key-ssh
@@ -96,7 +96,7 @@ changed 1 out of 1 matching datasource
 Basically, you need to get the resource id and then add a tag with the name you've configured in `SDM_ALLOW_RESOURCE_TAG`. In the example above, we're assuming that `SDM_ALLOW_RESOURCE_TAG=allow-resource`. When this tag is configured only the resources with the tag value set to `true` will be displayed. In order to hide the resource, just delete the tag from it.
 
 #### Hide Resource
-```
+```bash
 $ sdm admin ssh list
 Server ID               Name
 rs-xxxxxxxxxxxxxxx     public-key-ssh
@@ -114,7 +114,7 @@ Basically, you need to get the resource id and then add a tag with the name you'
 From [AccessBot v1.0.3](https://github.com/strongdm/accessbot/releases/tag/1.0.3) the value of the tag is interpreted (see [here](https://github.com/strongdm/accessbot/issues/83)). You could use: `hide-resource=false` instead of deleting the tag. For more information about using tags please refer to the [documentation](https://www.strongdm.com/docs/automation/getting-started/tags).
 
 #### User Roles
-```
+```bash
 $ sdm admin users list
 User ID                First Name     Last Name     Email                            Tags
 a-xxx                  Firstname1     Lastname1     user1@example.com
@@ -128,7 +128,7 @@ $ sdm admin users update --email user1@example.com --delete-tags 'sdm-roles'
 ```
 
 #### Allow Roles
-```
+```bash
 $ sdm admin roles list
 Role ID                Name             Composite     Tags
 r-xxxxxxxxxxxxxxx      my-role          false         

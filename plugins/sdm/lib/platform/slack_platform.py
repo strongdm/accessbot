@@ -5,12 +5,6 @@ from ..util import remove_bold_symbols
 
 
 class SlackPlatform(BasePlatform):
-    def activate(self):
-        pass
-
-    def deactivate(self):
-        pass
-
     def can_access_resource(self, message):
         return True
 

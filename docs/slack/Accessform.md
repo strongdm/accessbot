@@ -34,8 +34,8 @@ In order to configure the form, you'd need to create a new Slack App, take a loo
 
         - SDM_ACCESS_FORM_BOT_NICKNAME: obtained by executing the following command in a terminal inside the root folder of the `accessbot` project (remember to be inside the accessbot project virtual environment and to export the necessary environment variables, otherwise an error will occur) :
             
-            ```shell
-            python tools/get-slack-handle.py -d "AccessForm"
+            ```bash
+            $ python tools/get-slack-handle.py -d "AccessForm"
             ```
             > By default this nickname is `@accessform`.
 

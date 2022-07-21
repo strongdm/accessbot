@@ -1,7 +1,7 @@
 [Core]
 name = AccessBot
 module = accessbot
-DependsOn = Webserver
+DependsOn = Webserver,Health
 
 [Documentation]
 description = Grants access to strongDM resources

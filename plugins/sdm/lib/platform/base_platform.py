@@ -5,14 +5,6 @@ class BasePlatform(ABC):
         self._bot = bot
 
     @abstractmethod
-    def activate(self):
-        pass
-
-    @abstractmethod
-    def deactivate(self):
-        pass
-
-    @abstractmethod
     def can_access_resource(self, message):
         pass
 
