@@ -14,7 +14,7 @@ class GrantRequestHelper:
         self._bot = bot
         self.__restore_state()
 
-    def __save_state(self):
+    def save_state(self):
         if not self.__can_perform_state_handling():
             return
         try:
@@ -54,11 +54,17 @@ class GrantRequestHelper:
                 return
             grant_requests_list = json.loads(state_text)
             for grant_request in grant_requests_list:
-                grant_request['message'] = self.__build_grant_request_message(grant_request)
-                self.__grant_requests[grant_request['id']] = grant_request
+                self.__grant_requests[grant_request['id']] = self.__deserialize_grant_request(grant_request)
         except Exception as e:
             self._bot.log.error("An error occurred while restoring the grant requests state: ", str(e))
-    
+
+    def __deserialize_grant_request(self, source_grant_request):
+        grant_request = dict(source_grant_request)
+        grant_request['message'] = self.__build_grant_request_message(grant_request)
+        grant_request['sdm_object'] = namedtuple('sdm_object', grant_request['sdm_object'].keys())(*grant_request['sdm_object'].values())
+        grant_request['sdm_account'] = namedtuple('sdm_account', grant_request['sdm_account'].keys())(*grant_request['sdm_account'].values())
+        return grant_request
+
     def __build_grant_request_message(self, grant_request):
         message_dict = {
             'frm': self._bot.build_identifier(grant_request['message']['frm']),
@@ -66,9 +72,9 @@ class GrantRequestHelper:
             'extras': grant_request['message'].get('extras')
         }
         return namedtuple('message', message_dict.keys())(*message_dict.values())
-    
+
     def __can_perform_state_handling(self):
-        return self._bot.mode != 'test' and self._bot.config["ENABLE_BOT_STATE_HANDLING"] != False
+        return self._bot.mode != 'test' and self._bot.config["ENABLE_BOT_STATE_HANDLING"]
 
     def add(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
         self.__grant_requests[request_id] = {
@@ -80,7 +86,7 @@ class GrantRequestHelper:
             'type': grant_request_type.value,
             'flags': flags,
         }
-        self.__save_state()
+        self.save_state()
 
     def get(self, request_id: str):
         return self.__grant_requests.get(request_id)
@@ -93,7 +99,14 @@ class GrantRequestHelper:
 
     def remove(self, request_id: str):
         self.__grant_requests.pop(request_id, None)
-        self.__save_state()
+        self.save_state()
 
     def __sdm_model_to_dict(self, object):
         return object if type(object) is dict else object.to_dict()
+
+    def clear_cached_state(self):
+        try:
+            if os.path.exists(self.file_path):
+                os.remove(self.file_path)
+        except Exception as e:
+            self._bot.log.error("An error occurred while clearing the cached state: ", str(e))

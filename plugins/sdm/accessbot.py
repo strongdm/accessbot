@@ -64,7 +64,8 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self._platform.activate()
-        self.__grant_requests_helper = GrantRequestHelper(self)
+        if self.__grant_requests_helper is None:
+            self.__grant_requests_helper = GrantRequestHelper(self)
 
     def deactivate(self):
         self._platform.deactivate()
@@ -78,6 +79,9 @@ class AccessBot(BotPlugin):
         return config_template.get()
 
     def configure(self, configuration):
+        previous_config = {}
+        if hasattr(self, 'config'):
+            previous_config = dict(self.config)
         if configuration is not None and configuration != {}:
             admins_channel = configuration.get('ADMINS_CHANNEL')
             if admins_channel is not None and not admins_channel.startswith("#"):
@@ -89,6 +93,16 @@ class AccessBot(BotPlugin):
         else:
             config = {}
         super(AccessBot, self).configure(config)
+        self.__check_new_bot_state_handling_config(previous_config)
+
+    def __check_new_bot_state_handling_config(self, previous_config):
+        if self.__grant_requests_helper is None:
+            return
+        enable_bot_state_handling = self.config['ENABLE_BOT_STATE_HANDLING']
+        if not enable_bot_state_handling and previous_config.get('ENABLE_BOT_STATE_HANDLING'):
+            self.__grant_requests_helper.clear_cached_state()
+        elif enable_bot_state_handling and not previous_config.get('ENABLE_BOT_STATE_HANDLING'):
+            self.__grant_requests_helper.save_state()
 
     def update_access_control_admins(self):
         self._bot.bot_config.BOT_ADMINS.clear()
