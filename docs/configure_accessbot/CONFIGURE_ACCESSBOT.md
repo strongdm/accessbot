@@ -72,6 +72,8 @@ See image below for more information:
 * Use `plugin info AccessBot` for showing all configurations, including remaining auto-approve uses
 * Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
 
+NOTE: In the whoami command, the email field will show you the email that will be used in all your requests, but this value can change according to your configuration, e.g. defining the `SDM_SENDER_EMAIL_OVERRIDE`, `SDM_EMAIL_SLACK_FIELD` and/or `SDM_EMAIL_SUBADDRESS`.
+
 ### Known issues
 * When using `plugin config` from a Mac, you will need to disable: 
 `System Preferences > Keyboard > Text > Uncheck "Use smart quotes and dashes`. The `config` command fails to understand quotes as unicode characters.
