@@ -1,0 +1,54 @@
+# The secret definition is totally optional - just ensure that it exists
+apiVersion: v1
+kind: Secret
+metadata:
+  name: accessbot-secret
+type: Opaque
+stringData:
+  SDM_API_ACCESS_KEY: sdm-api-access-key
+  SDM_API_SECRET_KEY: sdm-api-secret-key
+  SLACK_APP_TOKEN: slack-app-token
+  SLACK_BOT_TOKEN: slack-bot-token
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accessbot-deployment
+spec:
+  selector:
+    matchLabels:
+      app: accessbot
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: accessbot
+    spec:
+      containers:
+      - name: accessbot
+        image: public.ecr.aws/strongdm/accessbot:latest
+        env:
+        - name: SDM_ADMINS
+          value: "@nickname1 @nickname2"
+        - name: SDM_API_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: accessbot-secret
+              key: SDM_API_ACCESS_KEY
+        - name: SDM_API_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: accessbot-secret
+              key: SDM_API_SECRET_KEY
+        - name: SDM_BOT_PLATFORM
+          value: "slack"
+        - name: SLACK_APP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: accessbot-secret
+              key: SLACK_APP_TOKEN
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: accessbot-secret
+              key: SLACK_BOT_TOKEN
