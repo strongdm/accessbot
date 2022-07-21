@@ -76,8 +76,10 @@ class Test_state_handling:
         bot = get_mocked_bot()
         with patch("builtins.open", mock_open(read_data=mocked_file_data)), \
                 patch("os.path.exists") as mock_path_exists, \
-                patch("os.remove") as mock_remove:
+                patch("os.remove") as mock_remove, \
+                patch("os.path.isfile") as mock_isfile:
             mock_path_exists.side_effect = [True]
+            mock_isfile.return_value = True
             helper = GrantRequestHelper(bot)
             assert helper.get(request_id) is not None
             assert helper.exists(request_id)
@@ -85,6 +87,7 @@ class Test_state_handling:
             helper.clear_cached_state()
             mock_path_exists.assert_called_once()
             mock_remove.assert_called_once()
+            assert len(helper.get_request_ids()) == 1
 
 
 def get_mocked_bot(enable_handle_state=True):
