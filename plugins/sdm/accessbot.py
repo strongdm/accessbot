@@ -64,6 +64,8 @@ class AccessBot(BotPlugin):
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self._platform.activate()
+        # TODO Extend this check to the rest of the method
+        # If something doesn't need to be "instantiated" again we shouldn't be doing it
         if self.__grant_requests_helper is None:
             self.__grant_requests_helper = GrantRequestHelper(self)
 
