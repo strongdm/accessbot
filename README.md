@@ -57,7 +57,7 @@ AccessBot is available as a Docker image. For deploying it we recommend you to u
 
 Most customers deploy AccessBot as a k8s deployment of *one* replica using the bot's [healthcheck endpoint](.), so the Orchestrator ensures that there's always an instance of the bot available. At the moment, the bot doesn't support load balancing nor slack webhooks.
 
-TIP: If you're deploying in technologies that dispose containers after a while, e.g. Fargate, you should enable the variable `SDM_ENABLE_BOT_STATE_HANDLING`, please refer to the [documentation](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md#bot-configuration) for more details. 
+If you're using manual approvals and technologies that dispose containers, e.g. Fargate, you should enable state handling via `SDM_ENABLE_BOT_STATE_HANDLING`. Please refer to the [documentation](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md#bot-configuration) for more details. 
 
 ### Run locally
 
