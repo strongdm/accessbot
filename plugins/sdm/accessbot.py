@@ -205,6 +205,9 @@ class AccessBot(BotPlugin):
 
     @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
     def whoami(self, message, _):
+        """
+        Show your user details
+        """
         return self.get_whoami_helper().execute(message)
 
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
