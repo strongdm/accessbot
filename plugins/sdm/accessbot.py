@@ -4,7 +4,7 @@ import time
 import json
 import copy
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message
+from errbot import BotPlugin, re_botcmd, Message, botcmd
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 from collections import namedtuple
@@ -13,7 +13,7 @@ import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper
+    GrantRequestHelper, WhoamiHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -68,6 +68,15 @@ class AccessBot(BotPlugin):
         # If something doesn't need to be "instantiated" again we shouldn't be doing it
         if self.__grant_requests_helper is None:
             self.__grant_requests_helper = GrantRequestHelper(self)
+        self._hide_utils_whoami_command()
+
+    def _hide_utils_whoami_command(self):
+        # this can change in future versions of errbot
+        utils = self.get_plugin('Utils')
+        utils.deactivate()
+        setattr(utils.whoami.__func__, '_err_command_hidden', True)
+        setattr(utils.whoami.__func__, '_err_command_name', 'utils-whoami')
+        utils.activate()
 
     def deactivate(self):
         self._platform.deactivate()
@@ -214,6 +223,13 @@ class AccessBot(BotPlugin):
             return
         yield from self.get_show_roles_helper().execute(message)
 
+    @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
+    def whoami(self, message, _):
+        """
+        Show your user details
+        """
+        return self.get_whoami_helper().execute(message)
+
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
@@ -259,6 +275,9 @@ class AccessBot(BotPlugin):
 
     def get_arguments_helper(self):
         return ArgumentsHelper()
+
+    def get_whoami_helper(self):
+        return WhoamiHelper(self)
 
     def get_admin_ids(self):
         return self._platform.get_admin_ids()

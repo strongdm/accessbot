@@ -10,3 +10,4 @@ from .show_roles_helper import *
 from .command_alias_helper import *
 from .arguments_helper import *
 from .grant_request_helper import *
+from .whoami_helper import *
