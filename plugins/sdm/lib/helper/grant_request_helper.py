@@ -5,10 +5,10 @@ import os
 
 from grant_request_type import GrantRequestType
 
-
 class GrantRequestHelper:
     __grant_requests = {}
-    file_path = "./data/grant_requests.json"
+    folder_path = "./data/grant_requests"
+    file_path = f"{folder_path}/state.json"
 
     def __init__(self, bot):
         self._bot = bot
@@ -18,6 +18,8 @@ class GrantRequestHelper:
         if not self.__can_perform_state_handling():
             return
         try:
+            if not os.path.exists(self.folder_path):
+                os.mkdir(self.folder_path)
             with open(self.file_path, "w") as state:
                 grant_requests_list = [
                     self.__serialize_grant_request(grant_request)
@@ -61,8 +63,6 @@ class GrantRequestHelper:
     def __deserialize_grant_request(self, source_grant_request):
         grant_request = dict(source_grant_request)
         grant_request['message'] = self.__build_grant_request_message(grant_request)
-        grant_request['sdm_object'] = namedtuple('sdm_object', grant_request['sdm_object'].keys())(*grant_request['sdm_object'].values())
-        grant_request['sdm_account'] = namedtuple('sdm_account', grant_request['sdm_account'].keys())(*grant_request['sdm_account'].values())
         return grant_request
 
     def __build_grant_request_message(self, grant_request):
