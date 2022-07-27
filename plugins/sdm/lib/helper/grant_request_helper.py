@@ -2,11 +2,14 @@ import json
 import time
 from collections import namedtuple
 import os
+from strongdm.models import User
 
 from grant_request_type import GrantRequestType
+from lib.models.base_resource import BaseResource
 
 class GrantRequestHelper:
     __grant_requests = {}
+    # INFO: we might want to make it configurable
     folder_path = "./data/grant_requests"
     file_path = f"{folder_path}/state.json"
 
@@ -30,13 +33,18 @@ class GrantRequestHelper:
             self._bot.log.error("An error occurred while saving the grant requests state: ", str(e))
 
     def __serialize_grant_request(self, grant_request):
+        msg_to = grant_request['message'].to
         return {
             'id': grant_request['id'],
             'timestamp': grant_request['timestamp'],
             'message': {
                 'frm': grant_request['message'].frm.__str__(),
-                'to': grant_request['message'].to.__str__(),
-                'extras': grant_request['message'].extras
+                'to': {
+                    'identifier': msg_to.__str__(),
+                    'channelid': msg_to.channelid if hasattr(msg_to, 'channelid') else None
+                },
+                'extras': grant_request['message'].extras,
+                'is_group': grant_request['message'].is_group,
             },
             'sdm_object': self.__sdm_model_to_dict(grant_request['sdm_object']),
             'sdm_account': self.__sdm_model_to_dict(grant_request['sdm_account']),
@@ -63,14 +71,18 @@ class GrantRequestHelper:
     def __deserialize_grant_request(self, source_grant_request):
         grant_request = dict(source_grant_request)
         grant_request['message'] = self.__build_grant_request_message(grant_request)
+        grant_request['sdm_account'] = User.from_dict(grant_request['sdm_account'])
+        grant_request['sdm_object'] = BaseResource(grant_request['sdm_object'])
         return grant_request
 
     def __build_grant_request_message(self, grant_request):
         message_dict = {
             'frm': self._bot.build_identifier(grant_request['message']['frm']),
-            'to': self._bot.build_identifier(grant_request['message']['to']),
-            'extras': grant_request['message'].get('extras')
+            'to': self._bot.build_identifier(grant_request['message']['to']['identifier']),
+            'extras': grant_request['message'].get('extras'),
+            'is_group': grant_request['message'].get('is_group'),
         }
+        message_dict['to']._channelid = grant_request['message']['to'].get('channelid')
         return namedtuple('message', message_dict.keys())(*message_dict.values())
 
     def __can_perform_state_handling(self):

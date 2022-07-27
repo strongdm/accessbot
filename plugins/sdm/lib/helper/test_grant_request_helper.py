@@ -13,7 +13,7 @@ from grant_request_type import GrantRequestType
 request_id = "12AB"
 resource_name = "xxx"
 account_name = "xxx"
-mocked_file_data = '[{"id": "12AB", "timestamp": 1653069610.2132611, "message": {"frm": "gbin@localhost", "to": "gbin@localhost", "extras": {}}, "sdm_object": {"name": "xxx", "tags": {}}, "sdm_account": {"name": "xxx", "tags": {}}, "type": 0, "flags": null}]'
+mocked_file_data = '[{"id": "12AB", "timestamp": 1653069610.2132611, "message": {"frm": "gbin@localhost", "to": {"identifier": "gbin@localhost", "channelid": null}, "extras": {}}, "sdm_object": {"name": "xxx", "tags": {}}, "sdm_account": {"name": "xxx", "tags": {}}, "type": 0, "flags": null}]'
 
 
 class Test_state_handling:
