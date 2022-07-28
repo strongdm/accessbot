@@ -49,6 +49,7 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
 * **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
+* **SDM_ENABLE_BOT_STATE_HANDLING**. Boolean flag to enable persistent grant requests. When enabled, all grant requests will be synced in a local file, that way if AccessBot goes down, all ongoing requests will be restored. Default = false
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
