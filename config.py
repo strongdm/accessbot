@@ -19,8 +19,13 @@ def get_access_controls():
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
         'AccessBot:show_roles': allow_all if 'show_roles' in commands_enabled else deny_all,
         'AccessBot:match_alias': allow_all,
+        'AccessBot:accessbot-whoami': {
+            'allowusers': ('*'),
+            'allowprivate': True,
+            'allowmuc': False,
+        },
         'help': { 'allowusers': ('*') },
-        'whoami': { 'allowusers': ('*') },
+        'whoami': deny_all,
         '*': {
             'allowusers': BOT_ADMINS,
             'allowrooms': [os.getenv('SDM_ADMINS_CHANNEL')],
@@ -75,7 +80,8 @@ def get_bot_extra_backend_dir():
 def get_bot_admins():
     return os.getenv("SDM_ADMINS").split(" ")
 
-CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
+CORE_PLUGINS = ('ACLs', 'Backup', 'ChatRoom', 'CommandNotFoundFilter', 'Flows', 'Health', 'Help', 'Plugins', 'TextCmds',
+                'Utils', 'VersionChecker', 'Webserver')
 
 BACKEND = get_backend()
 BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()

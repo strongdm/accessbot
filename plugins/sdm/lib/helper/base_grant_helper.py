@@ -97,7 +97,7 @@ class BaseGrantHelper(ABC):
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         approvers_channel_name = sdm_object.tags.get(self.__bot.config['APPROVERS_CHANNEL_TAG']) if sdm_object.tags else None
-        self.__check_administration_availability(f"#{approvers_channel_name}" if approvers_channel_name else None)
+        self.__check_administration_availability(approvers_channel_name=approvers_channel_name)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message, flags)
         self.__bot.log.debug("##SDM## %s GrantHelper.__grant_%s needs manual approval", execution_id, self.__grant_type)
@@ -160,10 +160,10 @@ class BaseGrantHelper(ABC):
             self.__bot.log.error("##SDM## %s GrantHelper.access_%s similar role found: %s", execution_id, self.__grant_type, str(similar_result))
             yield f"Did you mean \"{similar_result}\"?"
 
-    def __check_administration_availability(self, approvers_channel_name: str):
+    def __check_administration_availability(self, approvers_channel_name: str = None):
         if self.__bot.config['APPROVERS_CHANNEL_TAG'] is not None and approvers_channel_name is not None:
-            if not self.__bot.channel_is_reachable(approvers_channel_name):
-                self.__bot.log.error(f"The Channel {approvers_channel_name} defined as Approver Channel is unreachable."
+            if not self.__bot.channel_is_reachable(f"#{approvers_channel_name}"):
+                self.__bot.log.error(f"The Channel #{approvers_channel_name} defined as Approver Channel is unreachable."
                                      + f" Probably it's archived or the bot is not in the channel.")
                 raise Exception("Sorry, I cannot contact the approvers for this resource, their channel is unreachable."
                                 + " Please, contact your SDM Admin.")

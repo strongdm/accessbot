@@ -79,6 +79,7 @@ def create_config():
         'REQUIRED_FLAGS': None,
         'APPROVERS_CHANNEL_TAG': None,
         'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL': False,
+        'ENABLE_BOT_STATE_HANDLING': False,
     }
 
 
@@ -87,11 +88,23 @@ class DummyAccount:
         self.name = name
         self.tags = tags
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'tags': self.tags,
+        }
+
 
 class DummyResource:
     def __init__(self, name, tags):
         self.name = name
         self.tags = tags
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'tags': self.tags,
+        }
 
 
 class DummyRole:
