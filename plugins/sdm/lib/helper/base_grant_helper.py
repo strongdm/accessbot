@@ -93,7 +93,7 @@ class BaseGrantHelper(ABC):
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s granting access", execution_id, self.__grant_type)
         yield from self.__bot.get_approve_helper().evaluate(request_id, is_auto_approve=True)
-        self.__bot.increment_metrics([MetricGaugeType.TOTAL_AUTO_APPROVES])
+        self.__bot.get_metrics_helper().increment_auto_approvals()
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
         approvers_channel_name = sdm_object.tags.get(self.__bot.config['APPROVERS_CHANNEL_TAG']) if sdm_object.tags else None

@@ -25,7 +25,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
-        self._bot.increment_metrics([MetricGaugeType.TOTAL_MANUAL_APPROVES])
+        self._bot.get_metrics_helper().increment_manual_approvals()
 
     def __approve_access_resource(self, grant_request):
         duration = grant_request['flags'].get('duration')
@@ -39,7 +39,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_access_request_granted(grant_request['message'], resource, duration, needs_renewal)
-        self._bot.increment_metrics([MetricGaugeType.TOTAL_MANUAL_APPROVES])
+        self._bot.get_metrics_helper().increment_manual_approvals()
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)

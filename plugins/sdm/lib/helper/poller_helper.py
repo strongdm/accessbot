@@ -17,7 +17,7 @@ class PollerHelper:
                 self.__bot.log.info("##SDM## Cleaning grant requests, stale request_id = %s", request_id)
                 self.__bot.remove_grant_request(request_id)
                 self.__notify_grant_request_denied(grant_request)
-                self.__bot.increment_metrics([MetricGaugeType.TOTAL_TIMED_OUT_REQUESTS])
+                self.__bot.get_metrics_helper().increment_timed_out_requests()
 
     def stale_max_auto_approve_cleaner(self):
         max_auto_approve_interval = self.__bot.config['MAX_AUTO_APPROVE_INTERVAL']

@@ -1,12 +1,11 @@
 from .base_evaluate_request_helper import BaseEvaluateRequestHelper
-from metric_type import MetricGaugeType
 
 class DenyHelper(BaseEvaluateRequestHelper):
     def evaluate(self, request_id, **kwargs):
         grant_request = self._bot.get_grant_request(request_id)
         self._bot.remove_grant_request(request_id)
         yield from self.__notify_access_request_denied(kwargs['admin'], kwargs['reason'], grant_request)
-        self._bot.increment_metrics([MetricGaugeType.TOTAL_MANUAL_DENIES])
+        self._bot.get_metrics_helper().increment_manual_denials()
 
     def __notify_access_request_denied(self, admin, denial_reason, grant_request):
         requester = grant_request['message'].frm
