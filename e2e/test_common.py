@@ -22,7 +22,8 @@ class ErrBotExtraTestSettings:
                 'allowprivate': True,
                 'allowmuc': False,
             }
-        }
+        },
+        'EXPOSE_METRICS': False,
     }
     extra_plugin_dir = "plugins/sdm"
 
@@ -42,7 +43,8 @@ class MSTeamsErrBotExtraTestSettings:
                 'allowprivate': True,
                 'allowmuc': False,
             }
-        }
+        },
+        'EXPOSE_METRICS': False,
     }
     extra_plugin_dir = "plugins/sdm"
 

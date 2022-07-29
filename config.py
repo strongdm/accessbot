@@ -110,3 +110,5 @@ ACCESS_FORM_BOT_INFO = {
     "bot_id": None,  # will be initialized in SlackBoltBackend.resolve_access_form_bot_id method
     "nickname": os.getenv("SDM_ACCESS_FORM_BOT_NICKNAME")
 }
+
+EXPOSE_METRICS = os.getenv("SDM_EXPOSE_METRICS", "false").lower() == "true"
