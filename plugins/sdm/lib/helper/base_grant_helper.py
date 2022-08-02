@@ -2,8 +2,9 @@ import shortuuid
 from abc import ABC, abstractmethod
 from typing import Any
 from ..exceptions import NotFoundException, PermissionDeniedException
-from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string,\
-    convert_duration_flag_to_timedelta, get_approvers_channel
+from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string, \
+    convert_duration_flag_to_timedelta, get_approvers_channel, AllowedTagEnum, is_hidden, is_allowed, HiddenTagEnum, \
+    AllowedGroupsTagEnum
 from grant_request_type import GrantRequestType
 
 
@@ -15,14 +16,18 @@ class BaseGrantHelper(ABC):
         self.__grant_type = grant_type
         self.__auto_approve_tag_key = auto_approve_tag_key
         self.__auto_approve_all_key = auto_approve_all_key
+        self.__allowed_tag = AllowedTagEnum.RESOURCE if grant_type == GrantRequestType.ACCESS_RESOURCE else AllowedTagEnum.ROLE
+        self.__allowed_groups_tag = AllowedGroupsTagEnum.RESOURCE if grant_type == GrantRequestType.ACCESS_RESOURCE else AllowedGroupsTagEnum.ROLE
+        self.__hidden_tag = HiddenTagEnum.RESOURCE if grant_type == GrantRequestType.ACCESS_RESOURCE else HiddenTagEnum.ROLE
 
     def request_access(self, message, searched_name, flags: dict = {}):
         execution_id = shortuuid.ShortUUID().random(length=6)
         operation_desc = self.get_operation_desc()
-        self.__bot.log.info("##SDM## %s GrantHelper.access_%s new %s request for resource_name: %s", execution_id, self.__grant_type, operation_desc, searched_name)
+        self.__bot.log.info("##SDM## %s GrantHelper.access_%s new %s request for entity_name: %s", execution_id, self.__grant_type, operation_desc, searched_name)
         try:
             sdm_resource = self.get_item_by_name(searched_name, execution_id)
             sdm_account = self.__get_account(message)
+            self.__check_access_availability(sdm_resource, sdm_account, execution_id)
             self.check_permission(sdm_resource, sdm_account, searched_name)
             request_id = self.generate_grant_request_id()
             yield from self.__grant_access(message, sdm_resource, sdm_account, execution_id, request_id, flags)
@@ -113,7 +118,7 @@ class BaseGrantHelper(ABC):
             yield f"Thanks {formatted_sender_nick}, that is a valid request. Let me check with the team admins: {team_admins}\nYour request id is **{request_id}**"
         duration = convert_duration_flag_to_timedelta(flags.get('duration')) if flags.get('duration') else None
         duration_details = f" for {get_formatted_duration_string(duration)}" if duration else ''
-        request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.name} {formatted_resource_name}{duration_details}!"
+        request_details = f"Hey I have an {operation_desc} request from USER {formatted_sender_nick} for {self.__grant_type.value} {formatted_resource_name}{duration_details}!"
         reason = f" They provided the following reason: \"{flags['reason']}\"." if flags and flags.get('reason') else ''
         approval_instructions = f" To approve, enter: **yes {request_id}**. To deny with a reason, enter: **no {request_id} [optional-reason]**"
         renewal_note = self.__get_renewal_note_message(sdm_object, sdm_account)
@@ -175,3 +180,9 @@ class BaseGrantHelper(ABC):
 
     def __has_active_admins(self):
         return self.__bot.has_active_admins()
+
+    def __check_access_availability(self, sdm_entity, sdm_account, execution_id):
+        if is_hidden(self.__bot.config, self.__hidden_tag, sdm_entity) \
+                or not is_allowed(self.__bot.config, self.__allowed_tag, self.__allowed_groups_tag, sdm_entity, sdm_account):
+            self.__bot.log.info("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
+            raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")

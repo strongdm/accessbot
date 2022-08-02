@@ -18,17 +18,38 @@ class AllowedTagEnum(enum.Enum):
     RESOURCE = 'ALLOW_RESOURCE_TAG'
     ROLE = 'ALLOW_ROLE_TAG'
 
+class AllowedGroupsTagEnum(enum.Enum):
+    RESOURCE = 'ALLOW_RESOURCE_GROUPS_TAG'
+    ROLE = 'ALLOW_ROLE_GROUPS_TAG'
+
 def is_hidden(config, hidden_tag_enum, sdm_entity):
     hide_entity_tag = config[hidden_tag_enum.value]
     return hide_entity_tag and \
            hide_entity_tag in sdm_entity.tags and \
            (sdm_entity.tags.get(hide_entity_tag) is None or str(sdm_entity.tags.get(hide_entity_tag)).lower().strip() != 'false')
 
-def is_allowed(config, allowed_tag_enum, sdm_entity):
-    allowed_entity_tag = config[allowed_tag_enum.value]
-    return not allowed_entity_tag \
-        or (allowed_entity_tag in sdm_entity.tags and (sdm_entity.tags.get(allowed_entity_tag) is None
-            or str(sdm_entity.tags.get(allowed_entity_tag)).lower().strip() != 'false'))
+def is_allowed(config, allowed_tag_enum, allowed_groups_tag_enum, sdm_entity, sdm_account):
+    groups_tag = config.get('GROUPS_TAG')
+    allowed_entity_tag = config.get(allowed_tag_enum.value)
+    allowed_groups_entity_tag = config.get(allowed_groups_tag_enum.value)
+    if not allowed_entity_tag and (not allowed_groups_entity_tag or not groups_tag):
+        return True
+    allowed = False
+    if allowed_entity_tag:
+        sdm_entity_tag_value = sdm_entity.tags.get(allowed_entity_tag)
+        if allowed_entity_tag in sdm_entity.tags and (sdm_entity_tag_value is None or str(sdm_entity_tag_value).lower().strip() != 'false'):
+            allowed = True
+    if not allowed and allowed_groups_entity_tag and groups_tag:
+        sdm_entity_tag_value = sdm_entity.tags.get(allowed_groups_entity_tag)
+        entity_allowed_groups = str(sdm_entity_tag_value).lower().strip().split(',')
+        sdm_account_tag_value = sdm_account.tags[groups_tag]
+        user_groups = sdm_account_tag_value.strip().split(',')
+        if allowed_groups_entity_tag in sdm_entity.tags and groups_tag in sdm_account.tags \
+                and sdm_entity_tag_value is not None and sdm_account_tag_value is not None \
+                and has_intersection(user_groups, entity_allowed_groups):
+            allowed = True
+    return allowed
+
 
 def is_concealed(config, sdm_resource):
     conceal_resource_tag = config['CONCEAL_RESOURCE_TAG']
