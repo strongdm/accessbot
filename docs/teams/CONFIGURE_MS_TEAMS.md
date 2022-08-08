@@ -199,9 +199,15 @@ server {
 
 ![Manage AccessBot](https://user-images.githubusercontent.com/6556218/157347688-3015c400-2762-476a-b740-984c553c794e.png)
 
-25. Use “@AccessBot help “to get a list of the available commands
+25. Use “@AccessBot“ help to get a list of the available commands
 
 ![AccessBot Commands](https://user-images.githubusercontent.com/6556218/157347756-fbd58d83-b746-43cf-ae04-5b740b930b74.png)
+
+## Usage Example
+
+The following video shows the usage of AccessBot via MS Teams.
+
+https://user-images.githubusercontent.com/82273420/167859692-8e2592ee-570b-4f14-9a3d-922f8456644b.mp4
 
 ## Limitations
 

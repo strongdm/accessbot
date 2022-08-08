@@ -9,7 +9,7 @@ sys.path.append('plugins/sdm')
 sys.path.append('e2e')
 
 from test_common import create_config, DummyResource, send_message_override, \
-    callback_message_fn, get_dummy_person, ErrBotExtraTestSettings
+    callback_message_fn, get_dummy_person, ErrBotExtraTestSettings, DummyPerson, DummyRoom
 from lib import ApproveHelper, ResourceGrantHelper, PollerHelper
 from lib.exceptions import NotFoundException
 
@@ -19,7 +19,7 @@ resource_id = 1
 resource_name = "myresource"
 account_id = 1
 account_name = "myaccount@test.com"
-access_request_id = "12ab"
+access_request_id = "12AB"
 alternative_email_tag = "sdm_email"
 alternative_email = "myemail001@email.com"
 access_form_bot_id = "B0000000000"
@@ -197,28 +197,83 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
 
-    def test_access_command_from_access_form_bot(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot,
+    def test_access_command_grant_access_when_using_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason --duration 15m")
+        mocked_testbot_with_required_flags.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_required_flags.pop_message()
+        assert "access request" in mocked_testbot_with_required_flags.pop_message()
+        assert "Granting" in mocked_testbot_with_required_flags.pop_message()
+
+    def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" in request_message
+        assert "duration" in request_message
+
+    def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
+        mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
+        request_message = mocked_testbot_with_required_flags.pop_message()
+        assert "Missing required flags" in request_message
+        assert "reason" not in request_message
+        assert "duration" in request_message
+
+    def test_access_command_grant_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCesS TO Xxx")
+        mocked_testbot.push_message(f"YeS 12aB")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
+
+class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
+    @pytest.fixture
+    def mocked_testbot(self, testbot):
+        config = create_config()
+        return inject_config(testbot, config)
+
+    @pytest.fixture
+    def mocked_testbot_without_override(self, testbot):
+        config = create_config()
+        config['SENDER_NICK_OVERRIDE'] = None
+        config['SENDER_EMAIL_OVERRIDE'] = None
+        bot = inject_config(testbot, config, admins=['@admin'])
+        bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(side_effect=mocked_build_identifier_with_nick)
+        return bot
+
+    @pytest.fixture
+    def mocked_testbot_with_required_flags(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = required_flags
+        return mocked_testbot
+
+    def test_access_command_from_access_form_bot(self, mocked_testbot_without_override):
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot,
             bot_id=access_form_bot_id,
             room_id=room_id,
             room_name=room_name
         ))
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        mocked_testbot.push_message(f"yes {access_request_id}")
-        assert "valid request" in mocked_testbot.pop_message()
-        request_message = mocked_testbot.pop_message()
-        assert "access request" in request_message
-        assert "Granting" in mocked_testbot.pop_message()
-        mocked_testbot._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
-
-    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            mocked_testbot._bot
+        mocked_testbot_without_override._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = access_form_bot_id
+        mocked_testbot_without_override.push_message(f"access to Xxx --requester @user")
+        ack_message = mocked_testbot_without_override.pop_message()
+        assert "Thanks `@user`" in ack_message
+        assert "valid request" in ack_message
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot,
+            from_nick="admin"
         ))
-        mocked_testbot.push_message(f"access to Xxx --requester @user")
-        assert "You cannot use the requester flag." in mocked_testbot.pop_message()
+        mocked_testbot_without_override.push_message(f"yes {access_request_id}")
+        request_message = mocked_testbot_without_override.pop_message()
+        assert "access request" in request_message
+        assert "Granting" in mocked_testbot_without_override.pop_message()
+        mocked_testbot_without_override._bot.bot_config.ACCESS_FORM_BOT_INFO['bot_id'] = None
+
+    def test_access_command_fails_when_user_cannot_use_requester_flag(self, mocked_testbot_without_override):
+        mocked_testbot_without_override._bot.callback_message = MagicMock(side_effect=callback_message_fn(
+            mocked_testbot_without_override._bot
+        ))
+        mocked_testbot_without_override.push_message(f"access to Xxx --requester @user")
+        assert "You cannot use the requester flag." in mocked_testbot_without_override.pop_message()
 
     def test_access_command_grant_access_when_using_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason --duration 15m")
@@ -240,6 +295,13 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "Missing required flags" in request_message
         assert "reason" not in request_message
         assert "duration" in request_message
+
+    def test_access_command_grant_with_strange_casing(self, mocked_testbot):
+        mocked_testbot.push_message("AcCesS TO Xxx")
+        mocked_testbot.push_message(f"YeS 12aB")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+        assert "Granting" in mocked_testbot.pop_message()
 
 class Test_invalid_approver(ErrBotExtraTestSettings):
     @pytest.fixture
@@ -497,7 +559,7 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
-        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name}])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name, 'is_member': True}])
         return inject_config(testbot, config)
 
     @pytest.fixture
@@ -569,7 +631,7 @@ class Test_self_approve(ErrBotExtraTestSettings):
         testbot.bot.sender.room = create_room_mock(self.channel_name)
         testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
-        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name}])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name, 'is_member': True}])
         return inject_config(testbot, config, admins=[f'@not-admin'])
 
     def test_when_approver_is_not_the_requester(self, mocked_testbot):
@@ -729,7 +791,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         config = create_config()
         config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
-        testbot.bot.channels = MagicMock(return_value=[{'name': self.approvers_channel_name }])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.approvers_channel_name, 'is_member': True}])
         bot = inject_config(testbot, config, tags={'approvers-channel': self.approvers_channel_name })
         bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
             side_effect=mocked_build_identifier
@@ -743,8 +805,8 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         testbot.bot.channels = MagicMock(return_value=[
-            {'name': self.admins_channel_name},
-            {'name': self.approvers_channel_name },
+            {'name': self.admins_channel_name, 'is_member': True},
+            {'name': self.approvers_channel_name, 'is_member': True},
         ])
         bot = inject_config(testbot, config)
         bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
@@ -756,7 +818,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
     def mocked_testbot_with_wrong_config(self, testbot):
         config = create_config()
         config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
-        testbot.bot.channels = MagicMock(return_value=[{'name': self.approvers_channel_name }])
+        testbot.bot.channels = MagicMock(return_value=[{'name': self.approvers_channel_name, 'is_member': True}])
         return inject_config(testbot, config, tags={'approvers-channel': 'wrong-group'})
 
     @pytest.fixture
@@ -766,8 +828,8 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         config['APPROVERS_CHANNEL_TAG'] = 'approvers-channel'
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         testbot.bot.channels = MagicMock(return_value=[
-            {'name': self.admins_channel_name},
-            {'name': self.approvers_channel_name}
+            {'name': self.admins_channel_name, 'is_member': True},
+            {'name': self.approvers_channel_name, 'is_member': True}
         ])
         bot = inject_config(testbot, config, tags={'approvers-channel': self.approvers_channel_name })
         bot.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
@@ -799,7 +861,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert self.raw_messages[1].to.person == f"#{self.admins_channel_name}"
         self.raw_messages.clear()
 
-    def test_access_command_fails_when_approver_group_is_unreachable(self, mocked_testbot_with_wrong_config):
+    def test_access_command_fails_when_approvers_channel_is_unreachable(self, mocked_testbot_with_wrong_config):
         '''
         This test should raise an Exception when trying to build an identifier for an unreachable channel.
         '''
@@ -811,7 +873,6 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
             ]
         )
         mocked_testbot_with_wrong_config.push_message("access to Xxx")
-        assert "valid request" in mocked_testbot_with_wrong_config.pop_message()
         assert "cannot contact the approvers for this resource, their channel is unreachable" in mocked_testbot_with_wrong_config.pop_message()
 
     def test_fail_to_approve_access_command_from_admins_channel(self, mocked_testbot_with_admins_channel):
@@ -827,6 +888,17 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "access request" in mocked_testbot_with_admins_channel.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.approvers_channel_name}"
         assert "using the wrong channel" in mocked_testbot_with_admins_channel.pop_message()
+        self.raw_messages.clear()
+
+    def test_access_command_ignores_unreachable_admins_channel_when_approvers_channel_is_configured(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['ADMINS_CHANNEL'] = '#unreachable-channel'
+        mocked_testbot.push_message("access to Xxx")
+        ack_message = mocked_testbot.pop_message()
+        assert "valid request" in ack_message
+        assert "configured approvers channel" in ack_message
+        assert "access request" in mocked_testbot.pop_message()
+        assert self.raw_messages[1].to.person == f"#{self.approvers_channel_name}"
         self.raw_messages.clear()
 
 class Test_check_permission(ErrBotExtraTestSettings):
@@ -859,8 +931,8 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
     def mocked_testbot(self, testbot):
         config = create_config()
         testbot.bot.channels = MagicMock(return_value=[
-            {'name': self.admins_channel_name},
-            {'name': self.regular_channel_name},
+            {'name': self.admins_channel_name, 'is_member': True},
+            {'name': self.regular_channel_name, 'is_member': True},
         ])
         config['ADMINS_CHANNEL'] = f'#{self.admins_channel_name}'
         config['ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL'] = True
@@ -872,7 +944,6 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         return bot
 
     def test_access_command_grant_renewal(self, mocked_testbot):
-        from pprint import pprint
         mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             mocked_testbot._bot,
             room_name=self.regular_channel_name
@@ -975,3 +1046,6 @@ def raise_no_identifier(_):
 
 def mocked_build_identifier(param):
     return get_dummy_person(param)
+
+def mocked_build_identifier_with_nick(param):
+    return DummyPerson(param[1:], nick=param[1:])

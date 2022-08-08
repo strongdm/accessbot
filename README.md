@@ -14,14 +14,17 @@ AccessBot can be installed on Slack or MS Teams.
 
 A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
 
+You can also watch our [demo video](https://www.youtube.com/watch?v=LfsbXl0b3G8) of AccessBot on YouTube.
+
 ## Table of Contents
-* [Installation](#installation)
+* [Configuration](#configuration)
+* [Deploy](#deploy)
 * [Getting Started](#getting-started)
 * [Contributing](#contributing)
 * [Support](#support)
 
-## Installation
-In order to install AccessBot, first you need to define the following required environment variables:
+## Configuration
+In order to deploy AccessBot, first you need to define the following required environment variables:
 * **SDM_BOT_PLATFORM**. The platform that the bot will be installed on, i.e. "ms-teams", "slack" or blank (which will be interpreted as Slack by default)
 * **SDM_ADMINS**. List of admin users who will manage the bot and approve grant requests (by default).
   - For Slack platform: use the `username` (not Display Name) of each admin, e.g. `@user1 @user2` (See this [section](docs/TROUBLESHOOTING.md#getting-slack-usernames) for more.)
@@ -47,19 +50,41 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure Slack Classic](docs/slack/CONFIGURE_SLACK_CLASSIC.md)
 * [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
 
-For starting the bot we'll use [docker-compose](https://docs.docker.com/compose/install/). 
+
+## Deploy
+
+AccessBot is available as a Docker image. For deploying it we recommend you to use a container orchestrator, e.g. Kubernetes. Here's a [k8s deployment descriptor](k8s-descriptor.yaml) that you can use as a reference.
+
+Most customers deploy AccessBot as a k8s deployment of *one* replica using the bot's [healthcheck endpoint](.), so the Orchestrator ensures that there's always an instance of the bot available. At the moment, the bot doesn't support load balancing nor slack webhooks. 
+
+### Using disposable containers
+
+If you're using technologies that dispose containers, e.g. [Fargate](https://aws.amazon.com/fargate/), and manual approvals, you should enable state handling via `SDM_ENABLE_BOT_STATE_HANDLING` to persist manual grant requests. Please refer to the [documentation](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md#bot-configuration) for more details of this variable.
+
+To make the persistency work in this scenario, you need to mount a folder pointing to the path `/errbot/data/grant_requests` inside the container. This folder will store the grant requests state, persisting the data while the containers are disposed and redeployed.
+
+If you decide to deploy on Fargate and need some help, please refer to the [Fargate deployment docs](./docs/deploy/FARGATE.md).
+
+### Run locally
+
+#### Using Docker Compose
+
+For starting the bot with [docker compose](https://docs.docker.com/compose/install/). 
 Enter all required variables in the [docker-compose.yaml](docker-compose.yaml) file and execute:
+
 ```
-docker-compose build --no-cache 
-docker-compose up -d
+docker compose build --no-cache 
+docker compose up -d
 ```
 
-The bot should start running in the background. And if you want to check the logs you can run the following command: 
+Then, the bot should start running in the background. If you want to check the logs you can run the following command: 
 ```
 docker logs accessbot_accessbot_1
 ```
 
-If you want to install and execute the bot locally, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
+#### Without Docker
+
+If you want to install and execute the bot locally without Docker, please refer to: [Configure Local Environment](docs/CONFIGURE_LOCAL_ENV.md)
 
 ## Getting Started
 Once AccessBot is up and running, you can add it as an app or to a channel and start using it!
@@ -77,6 +102,8 @@ Please refer to the following [doc](https://www.strongdm.com/docs/automation/get
 * `access to resource-name [--reason text] [--duration duration]`. Grant temporary access to a resource. Reason and Duration are optional.
 * `show available roles`. Show all available roles*
 * `access to resource-name`. Grant temporary access to all resources assigned to a role
+
+NOTE: All AccessBot commands are case-insensitive.
 
 For example:
 

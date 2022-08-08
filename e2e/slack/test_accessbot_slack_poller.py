@@ -1,5 +1,6 @@
 # pylint: disable=invalid-name
 import os
+import time
 import pytest
 import sys
 from errbot.backends.base import Message
@@ -13,7 +14,7 @@ from lib import PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
 
-access_request_id = "12ab"
+access_request_id = "12AB"
 
 class Test_stale_grant_requests_cleaner(ErrBotExtraTestSettings):
     sdm_admin = "gbin@localhost"
@@ -104,6 +105,7 @@ class Test_stale_with_approvers_channel_tag_enabled(ErrBotExtraTestSettings):
         accessbot.enter_grant_request(access_request_id, Message(frm=sender_id),
                                       DummyResource('resource', {'approvers-channel': self.approvers_channel_name}),
                                       MagicMock(), MagicMock())
+        time.sleep(0.1)
         assert access_request_id in accessbot.get_grant_request_ids()
         assert "timed out" in mocked_testbot.pop_message()
         assert "not approved" in mocked_testbot.pop_message()
