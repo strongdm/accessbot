@@ -302,8 +302,6 @@ class AccessBot(BotPlugin):
         return WhoamiHelper(self)
 
     def get_metrics_helper(self):
-        if self.__metrics_helper is None:
-            self.__metrics_helper = MetricsHelper(self)
         return self.__metrics_helper
 
     def get_admin_ids(self):
