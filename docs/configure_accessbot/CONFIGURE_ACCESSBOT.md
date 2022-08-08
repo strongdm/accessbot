@@ -49,6 +49,7 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
 * **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
+* **SDM_ENABLE_BOT_STATE_HANDLING**. Boolean flag to enable persistent grant requests. When enabled, all grant requests will be synced in a local file, that way if AccessBot goes down, all ongoing requests will be restored. Default = false
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default
@@ -71,6 +72,8 @@ See image below for more information:
 * Use `plugin config AccessBot {}` for setting config to initial state. This command can be executed in a direct chat with AccessBot or in the `SDM_ADMINS_CHANNEL` if `SDM_ADMINS_CHANNEL_ELEVATE` is enabled
 * Use `plugin info AccessBot` for showing all configurations, including remaining auto-approve uses
 * Use `whoami` for showing user configuration. Use the `nick` field for the `SDM_ADMINS` variable
+
+NOTE: In the whoami command, the email field will show you the email that will be used in all your requests, but this value can change according to your configuration, e.g. defining the `SDM_SENDER_EMAIL_OVERRIDE`, `SDM_EMAIL_SLACK_FIELD` and/or `SDM_EMAIL_SUBADDRESS`.
 
 ### Known issues
 * When using `plugin config` from a Mac, you will need to disable: 

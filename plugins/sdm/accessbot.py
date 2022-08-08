@@ -1,15 +1,19 @@
 import os
 import re
 import time
+import json
+import copy
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message, webhook
+from errbot import BotPlugin, re_botcmd, Message, botcmd, webhook
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
+from collections import namedtuple
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
-    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, HealthCheckHelper
+    ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
+    GrantRequestHelper, WhoamiHelper, HealthCheckHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -45,7 +49,7 @@ def get_platform(bot):
 
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
-    __grant_requests = {}
+    __grant_requests_helper = None
     _platform = None
 
     def activate(self):
@@ -65,6 +69,19 @@ class AccessBot(BotPlugin):
         webserver = self.get_plugin('Webserver')
         webserver.configure(webserver.get_configuration_template())
         webserver.activate()
+        # TODO Extend this check to the rest of the method
+        # If something doesn't need to be "instantiated" again we shouldn't be doing it
+        if self.__grant_requests_helper is None:
+            self.__grant_requests_helper = GrantRequestHelper(self)
+        self._hide_utils_whoami_command()
+
+    def _hide_utils_whoami_command(self):
+        # this can change in future versions of errbot
+        utils = self.get_plugin('Utils')
+        utils.deactivate()
+        setattr(utils.whoami.__func__, '_err_command_hidden', True)
+        setattr(utils.whoami.__func__, '_err_command_name', 'utils-whoami')
+        utils.activate()
 
     def deactivate(self):
         self.get_plugin('Webserver').deactivate()
@@ -78,6 +95,9 @@ class AccessBot(BotPlugin):
         return config_template.get()
 
     def configure(self, configuration):
+        previous_config = {}
+        if hasattr(self, 'config'):
+            previous_config = dict(self.config)
         if configuration is not None and configuration != {}:
             admins_channel = configuration.get('ADMINS_CHANNEL')
             if admins_channel is not None and not admins_channel.startswith("#"):
@@ -89,6 +109,16 @@ class AccessBot(BotPlugin):
         else:
             config = {}
         super(AccessBot, self).configure(config)
+        self.__check_new_bot_state_handling_config(previous_config)
+
+    def __check_new_bot_state_handling_config(self, previous_config):
+        if self.__grant_requests_helper is None:
+            return
+        enable_bot_state_handling = self.config['ENABLE_BOT_STATE_HANDLING']
+        if not enable_bot_state_handling and previous_config.get('ENABLE_BOT_STATE_HANDLING'):
+            self.__grant_requests_helper.clear_cached_state()
+        elif enable_bot_state_handling and not previous_config.get('ENABLE_BOT_STATE_HANDLING'):
+            self.__grant_requests_helper.save_state()
 
     def update_access_control_admins(self):
         self._bot.bot_config.BOT_ADMINS.clear()
@@ -198,6 +228,13 @@ class AccessBot(BotPlugin):
             return
         yield from self.get_show_roles_helper().execute(message)
 
+    @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
+    def whoami(self, message, _):
+        """
+        Show your user details
+        """
+        return self.get_whoami_helper().execute(message)
+
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
@@ -248,38 +285,29 @@ class AccessBot(BotPlugin):
     def get_arguments_helper(self):
         return ArgumentsHelper()
 
+    def get_whoami_helper(self):
+        return WhoamiHelper(self)
+
     def get_health_check_helper(self):
         return HealthCheckHelper(self)
 
     def get_admin_ids(self):
         return self._platform.get_admin_ids()
 
-    def is_valid_grant_request_id(self, request_id):
-        return request_id in self.__grant_requests
-
     def enter_grant_request(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
-        self.__grant_requests[request_id] = {
-            'id': request_id,
-            'status': 'PENDING', # TODO Remove?
-            'timestamp': time.time(),
-            'message': message, # cannot be persisted in errbot state
-            'sdm_object': sdm_object,
-            'sdm_account': sdm_account,
-            'type': grant_request_type,
-            'flags': flags,
-        }
+        self.__grant_requests_helper.add(request_id, message, sdm_object, sdm_account, grant_request_type, flags)
 
     def grant_requests_exists(self, request_id: str):
-        return self.__grant_requests.get(request_id) is not None
+        return self.__grant_requests_helper.exists(request_id)
 
     def remove_grant_request(self, request_id):
-        self.__grant_requests.pop(request_id, None)
+        self.__grant_requests_helper.remove(request_id)
 
     def get_grant_request(self, request_id):
-        return self.__grant_requests[request_id]
+        return self.__grant_requests_helper.get(request_id)
 
     def get_grant_request_ids(self):
-        return list(self.__grant_requests.keys())
+        return self.__grant_requests_helper.get_request_ids()
 
     def add_thumbsup_reaction(self, message):
         if self._bot.mode != 'test':
