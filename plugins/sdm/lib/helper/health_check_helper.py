@@ -24,7 +24,7 @@ class HealthCheckHelper:
         return json.dumps(health_data)
 
     def get_uptime(self):
-        return str((datetime.now() - self.health_plugin._bot.startup_time).seconds)
+        return (datetime.now() - self.health_plugin._bot.startup_time).seconds
 
     def get_plugins_status(self):
         plugins_status = {}
