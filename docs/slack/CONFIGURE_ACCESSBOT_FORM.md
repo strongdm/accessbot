@@ -13,8 +13,8 @@ To request access to a StrongDM resource through AccessBot using a form set the 
 
 To know the value you should put in the environment variable, run the following command in the terminal (in the project root):
 
-```
-python3 tools/get-slack-handle.py -d "AccessBot Form" 
+```bash
+$ python3 tools/get-slack-handle.py -d "AccessBot Form" 
 ```
 After running this command, you should be able to see something like this in the terminal:
 

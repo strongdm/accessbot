@@ -5,14 +5,6 @@ from ..util import remove_bold_symbols
 
 
 class MSTeamsPlatform(BasePlatform):
-    def activate(self):
-        webserver = self._bot.get_plugin('Webserver')
-        webserver.configure(webserver.get_configuration_template())
-        webserver.activate()
-
-    def deactivate(self):
-        self._bot.get_plugin('Webserver').deactivate()
-
     def can_access_resource(self, message):
         self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)

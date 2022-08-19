@@ -1,19 +1,15 @@
 import os
 import re
-import time
-import json
-import copy
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message, botcmd
+from errbot import BotPlugin, re_botcmd, Message, webhook
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
-from collections import namedtuple
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper, WhoamiHelper
+    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -25,6 +21,7 @@ SHOW_RESOURCES_REGEX = r"show available resources ?(.+)?"
 SHOW_ROLES_REGEX = r"show available roles"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
+MSG_ERROR_OCCURRED = "An error occurred, please contact your SDM admin"
 
 def get_callback_message_fn(bot):
     def callback_message(msg):
@@ -38,6 +35,14 @@ def get_callback_message_fn(bot):
         ErrBot.callback_message(bot, msg)
     return callback_message
 
+def get_send_simple_reply(bot):
+    def send_simple_reply(msg, text, private=False, threaded=False):
+        if text.startswith(MSG_ERROR_OCCURRED):
+            accessbot = bot.plugin_manager.plugins['AccessBot']
+            accessbot.get_metrics_helper().increment_consecutive_errors()
+        return ErrBot.send_simple_reply(bot, msg, text, private=private, threaded=threaded)
+    return send_simple_reply
+
 def get_platform(bot):
     platform = bot.bot_config.BOT_PLATFORM if hasattr(bot.bot_config, 'BOT_PLATFORM') else None
     if platform == 'ms-teams':
@@ -50,24 +55,33 @@ def get_platform(bot):
 # pylint: disable=too-many-ancestors
 class AccessBot(BotPlugin):
     __grant_requests_helper = None
+    __metrics_helper = None
     _platform = None
 
     def activate(self):
         super().activate()
         self._platform = get_platform(self)
-        self._bot.MSG_ERROR_OCCURRED = 'An error occurred, please contact your SDM admin'
+        self._bot.MSG_ERROR_OCCURRED = MSG_ERROR_OCCURRED
         self._bot.callback_message = get_callback_message_fn(self._bot)
+        self._bot.send_simple_reply = get_send_simple_reply(self._bot)
         self.init_access_form_bot()
         self.update_access_control_admins()
         self['auto_approve_uses'] = {}
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
-        self._platform.activate()
+        self.__activate_webserver()
+
+    def __activate_webserver(self):
+        webserver = self.get_plugin('Webserver')
+        webserver.configure(webserver.get_configuration_template())
+        webserver.activate()
         # TODO Extend this check to the rest of the method
         # If something doesn't need to be "instantiated" again we shouldn't be doing it
         if self.__grant_requests_helper is None:
             self.__grant_requests_helper = GrantRequestHelper(self)
+        if self.__metrics_helper is None:
+            self.__metrics_helper = MetricsHelper(self)
         self._hide_utils_whoami_command()
 
     def _hide_utils_whoami_command(self):
@@ -79,7 +93,7 @@ class AccessBot(BotPlugin):
         utils.activate()
 
     def deactivate(self):
-        self._platform.deactivate()
+        self.get_plugin('Webserver').deactivate()
         super().deactivate()
 
     def init_access_form_bot(self):
@@ -151,11 +165,12 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text] [--duration duration]")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to <resource-name> [--reason text] [--duration duration]")
     def access_resource(self, message, match):
         """
-        Grant access to a resource (using the requester's email address)
+        Grant access to <resource-name> (using the requester's email address)
         """
+        self.__metrics_helper.increment_access_requests()
         arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
         if re.match("^role (.*)", arguments, flags=re.IGNORECASE):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
@@ -172,35 +187,42 @@ class AccessBot(BotPlugin):
             yield str(e)
             return
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
+        self.__metrics_helper.reset_consecutive_errors()
 
-    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
+    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role <role-name>")
     def assign_role(self, message, match):
         """
-        Grant access to all resources in a role (using the requester's email address)
+        Grant access to all resources in <role-name> (using the requester's email address)
         """
         if not self._platform.can_assign_role(message):
             return
+        self.__metrics_helper.increment_access_requests()
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
         yield from self.get_role_grant_helper().request_access(message, role_name)
+        self.__metrics_helper.reset_consecutive_errors()
 
     @re_botcmd(pattern=APPROVE_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def approve(self, message, match):
         """
         Approve a grant (resource or role)
         """
+        self.__metrics_helper.increment_received_messages()
         access_request_id = re.sub(APPROVE_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         approver = message.frm
         yield from self.get_approve_helper().execute(approver, access_request_id)
+        self.__metrics_helper.reset_consecutive_errors()
 
     @re_botcmd(pattern=DENY_REGEX, flags=re.IGNORECASE, prefixed=False, hidden=True)
     def deny(self, message, match):
         """
         Deny a grant request (resource or role)
         """
+        self.__metrics_helper.increment_received_messages()
         access_request_id = re.sub(DENY_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE).upper()
         denial_reason = re.sub(DENY_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
         admin = message.frm
         yield from self.get_deny_helper().execute(admin, access_request_id, denial_reason)
+        self.__metrics_helper.reset_consecutive_errors()
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources [--filter expression]")
@@ -208,10 +230,12 @@ class AccessBot(BotPlugin):
         """
         Show all available resources
         """
+        self.__metrics_helper.increment_received_messages()
         if not self._platform.can_show_resources(message):
             return
         flags = self.get_arguments_helper().extract_flags(message.body)
         yield from self.get_show_resources_helper().execute(message, flags=flags)
+        self.__metrics_helper.reset_consecutive_errors()
 
     #pylint: disable=unused-argument
     @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
@@ -219,9 +243,11 @@ class AccessBot(BotPlugin):
         """
         Show all available roles
         """
+        self.__metrics_helper.increment_received_messages()
         if not self._platform.can_show_roles(message):
             return
         yield from self.get_show_roles_helper().execute(message)
+        self.__metrics_helper.reset_consecutive_errors()
 
     @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
     def whoami(self, message, _):
@@ -233,6 +259,10 @@ class AccessBot(BotPlugin):
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
+
+    @webhook('/health-check')
+    def _health_check(self, _):
+        return self.get_health_check_helper().execute()
 
     @staticmethod
     def get_admins():
@@ -279,17 +309,25 @@ class AccessBot(BotPlugin):
     def get_whoami_helper(self):
         return WhoamiHelper(self)
 
+    def get_health_check_helper(self):
+        return HealthCheckHelper(self)
+
+    def get_metrics_helper(self):
+        return self.__metrics_helper
+
     def get_admin_ids(self):
         return self._platform.get_admin_ids()
 
     def enter_grant_request(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
         self.__grant_requests_helper.add(request_id, message, sdm_object, sdm_account, grant_request_type, flags)
+        self.__metrics_helper.increment_pending_requests()
 
     def grant_requests_exists(self, request_id: str):
         return self.__grant_requests_helper.exists(request_id)
 
     def remove_grant_request(self, request_id):
         self.__grant_requests_helper.remove(request_id)
+        self.__metrics_helper.decrement_pending_requests()
 
     def get_grant_request(self, request_id):
         return self.__grant_requests_helper.get(request_id)
