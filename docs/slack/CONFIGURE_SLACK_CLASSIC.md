@@ -7,7 +7,7 @@ parent: Slack
 
 # Configure Slack Classic
 
-**NOTE**: we are deprecating the support for the Slack Classic app version. We strongly recommend you to use the default Slack version (Bolt).
+## NOTE: The Slack Classic app version is no longer supported. Please use the default Slack version (Bolt)
 
 In order to configure AccessBot integration with Slack follow the next steps:
 
