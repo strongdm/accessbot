@@ -78,8 +78,8 @@ docker compose up -d
 ```
 
 Then, the bot should start running in the background. If you want to check the logs you can run the following command: 
-```
-docker logs accessbot_accessbot_1
+```bash
+$ docker logs accessbot_accessbot_1
 ```
 
 #### Without Docker

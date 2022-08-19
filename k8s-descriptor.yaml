@@ -25,30 +25,46 @@ spec:
         app: accessbot
     spec:
       containers:
-      - name: accessbot
-        image: public.ecr.aws/strongdm/accessbot:latest
-        env:
-        - name: SDM_ADMINS
-          value: "@nickname1 @nickname2"
-        - name: SDM_API_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: accessbot-secret
-              key: SDM_API_ACCESS_KEY
-        - name: SDM_API_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: accessbot-secret
-              key: SDM_API_SECRET_KEY
-        - name: SDM_BOT_PLATFORM
-          value: "slack"
-        - name: SLACK_APP_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: accessbot-secret
-              key: SLACK_APP_TOKEN
-        - name: SLACK_BOT_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: accessbot-secret
-              key: SLACK_BOT_TOKEN
+        - name: accessbot
+          image: public.ecr.aws/strongdm/accessbot:latest
+          startupProbe:
+            httpGet:
+              host: localhost
+              port: 3141
+              path: /health-check
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              host: localhost
+              port: 3141
+              path: /health-check
+            periodSeconds: 5
+          ports:
+            - containerPort: 3141
+              hostPort: 3141
+          env:
+            - name: SDM_ADMINS
+              value: "@nickname1 @nickname2"
+            - name: SDM_API_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: accessbot-secret
+                  key: SDM_API_ACCESS_KEY
+            - name: SDM_API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: accessbot-secret
+                  key: SDM_API_SECRET_KEY
+            - name: SDM_BOT_PLATFORM
+              value: "slack"
+            - name: SLACK_APP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: accessbot-secret
+                  key: SLACK_APP_TOKEN
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: accessbot-secret
+                  key: SLACK_BOT_TOKEN

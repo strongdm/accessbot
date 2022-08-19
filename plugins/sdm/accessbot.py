@@ -1,8 +1,7 @@
 import os
 import re
 from itertools import chain
-
-from errbot import BotPlugin, re_botcmd, Message
+from errbot import BotPlugin, re_botcmd, Message, webhook
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
@@ -10,7 +9,7 @@ import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper, WhoamiHelper, MetricsHelper
+    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -71,7 +70,12 @@ class AccessBot(BotPlugin):
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
-        self._platform.activate()
+        self.__activate_webserver()
+
+    def __activate_webserver(self):
+        webserver = self.get_plugin('Webserver')
+        webserver.configure(webserver.get_configuration_template())
+        webserver.activate()
         # TODO Extend this check to the rest of the method
         # If something doesn't need to be "instantiated" again we shouldn't be doing it
         if self.__grant_requests_helper is None:
@@ -89,7 +93,7 @@ class AccessBot(BotPlugin):
         utils.activate()
 
     def deactivate(self):
-        self._platform.deactivate()
+        self.get_plugin('Webserver').deactivate()
         super().deactivate()
 
     def init_access_form_bot(self):
@@ -256,6 +260,10 @@ class AccessBot(BotPlugin):
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
 
+    @webhook('/health-check')
+    def _health_check(self, _):
+        return self.get_health_check_helper().execute()
+
     @staticmethod
     def get_admins():
         return os.getenv("SDM_ADMINS", "").split(" ")
@@ -300,6 +308,9 @@ class AccessBot(BotPlugin):
 
     def get_whoami_helper(self):
         return WhoamiHelper(self)
+
+    def get_health_check_helper(self):
+        return HealthCheckHelper(self)
 
     def get_metrics_helper(self):
         return self.__metrics_helper
