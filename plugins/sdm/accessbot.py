@@ -165,10 +165,10 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to resource-name [--reason text] [--duration duration]")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to <resource-name> [--reason text] [--duration duration]")
     def access_resource(self, message, match):
         """
-        Grant access to a resource (using the requester's email address)
+        Grant access to <resource-name> (using the requester's email address)
         """
         self.__metrics_helper.increment_access_requests()
         arguments = re.sub(ACCESS_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
@@ -189,10 +189,10 @@ class AccessBot(BotPlugin):
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
         self.__metrics_helper.reset_consecutive_errors()
 
-    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role role-name")
+    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role <role-name>")
     def assign_role(self, message, match):
         """
-        Grant access to all resources in a role (using the requester's email address)
+        Grant access to all resources in <role-name> (using the requester's email address)
         """
         if not self._platform.can_assign_role(message):
             return
