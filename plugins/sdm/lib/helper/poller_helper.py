@@ -41,9 +41,10 @@ class PollerHelper:
 
     def __notify_evaluators(self, grant_request, text):
         sdm_object = grant_request['sdm_object']
-        approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
-        if approvers_channel is not None:
-            channel_id = self.__get_channel_id(f'#{approvers_channel}')
+        sdm_account = grant_request['sdm_account']
+        approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_account) or get_approvers_channel(self.__bot.config, sdm_object)
+        if approvers_channel_name is not None:
+            channel_id = self.__get_channel_id(f'#{approvers_channel_name}')
             return self.__bot.send(channel_id, text)
         return self.__notify_admins(text, grant_request['message'])
 
