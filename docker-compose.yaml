@@ -8,3 +8,5 @@ services:
     ports:
       - 3141:3141
       - 3142:3142
+    environment:
+      - LOG_LEVEL=debug
