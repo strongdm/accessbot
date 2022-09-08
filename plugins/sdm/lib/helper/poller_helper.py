@@ -1,7 +1,7 @@
+import datetime
 import time
 
 from ..util import get_approvers_channel
-from metric_type import MetricGaugeType
 
 
 class PollerHelper:
@@ -26,6 +26,12 @@ class PollerHelper:
         auto_approve_uses_counter = self.__bot.increase_auto_approve_uses_counter()
         if auto_approve_uses_counter >= (max_auto_approve_interval * 60):
             self.__bot.clean_auto_approve_uses()
+
+    def suspend_expired_service_accounts(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        for account_id, data in self.__bot.sa_attachments_expiry.items():
+            if now >= data['valid_until']:
+                self.__bot.suspend_account(data['account'])
 
     def __notify_grant_request_denied(self, grant_request):
         requester_id = grant_request['message'].frm

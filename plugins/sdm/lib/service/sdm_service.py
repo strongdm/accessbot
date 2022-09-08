@@ -62,6 +62,17 @@ class SdmService:
         except Exception as ex:
             raise Exception("Reinstate account failed: " + str(ex)) from ex
 
+    def suspend_account(self, account):
+        """
+        Suspend an account
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.suspend_account account_id: %s", account.id)
+            account.suspended = True
+            return self.__client.accounts.update(account)
+        except Exception as ex:
+            raise Exception("Reinstate account failed: " + str(ex)) from ex
+
     def account_grant_exists(self, resource, account_id):
         """
         Does an account grant exists - resource assigned to an account

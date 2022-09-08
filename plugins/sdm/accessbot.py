@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 from itertools import chain
@@ -58,6 +59,7 @@ class AccessBot(BotPlugin):
     __grant_requests_helper = None
     __metrics_helper = None
     _platform = None
+    sa_attachments_expiry = {}
 
     def activate(self):
         super().activate()
@@ -71,6 +73,7 @@ class AccessBot(BotPlugin):
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
+        self.start_poller(ONE_MINUTE, poller_helper.suspend_expired_service_accounts)
         self.__activate_webserver()
 
     def __activate_webserver(self):
@@ -261,6 +264,7 @@ class AccessBot(BotPlugin):
         service_account_name = re.sub(ASSIGN_ROLE_TO_SERVICE_ACCOUNT_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
         service_account = self.get_activate_sdm_account_helper().execute(service_account_name)
         yield from self.get_role_grant_helper().request_access(message, role_name, service_account=service_account)
+        self.register_granted_sa_attachment(service_account)
         self.__metrics_helper.reset_consecutive_errors()
 
     @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
@@ -447,3 +451,18 @@ class AccessBot(BotPlugin):
                 message.frm._channelid = previous_channel_id
             else:
                 raise Exception("You cannot use the requester flag.")
+
+    def register_granted_sa_attachment(self, service_account):
+        grant_start_from = datetime.datetime.now(datetime.timezone.utc)
+        grant_valid_until = grant_start_from + datetime.timedelta(minutes=self.config['GRANT_TIMEOUT'])
+        self.sa_attachments_expiry[service_account.id] = {
+            'valid_until': grant_valid_until,
+            'account': service_account
+        }
+
+    def remove_granted_sa_attachment(self, service_account):
+        del self.sa_attachments_expiry[service_account.id]
+
+    def suspend_account(self, account):
+        self.get_sdm_service().suspend_account(account)
+        self.remove_granted_sa_attachment(account)
