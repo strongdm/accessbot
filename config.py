@@ -2,7 +2,7 @@ import os
 import re
 
 def get_commands_enabled():
-    return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny").split(" ")
+    return os.getenv("SDM_COMMANDS_ENABLED", "access_resource assign_role show_resources show_roles approve deny assign_role_to_service_account").split(" ")
 
 def is_admins_channel_elevate_enabled():
     return str(os.getenv("SDM_ADMINS_CHANNEL_ELEVATE", "")).lower() == 'true' and os.getenv("SDM_ADMINS_CHANNEL") is not None
@@ -18,6 +18,11 @@ def get_access_controls():
         'AccessBot:deny': allow_all if 'deny' in commands_enabled else deny_all,
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
         'AccessBot:show_roles': allow_all if 'show_roles' in commands_enabled else deny_all,
+        'AccessBot:assign_role_to_service_account': {
+            'allowusers': BOT_ADMINS,
+            'allowprivate': True,
+            'allowmuc': False
+        } if 'assign_role_to_service_account' in commands_enabled else deny_all,
         'AccessBot:match_alias': allow_all,
         'AccessBot:accessbot-whoami': {
             'allowusers': ('*'),

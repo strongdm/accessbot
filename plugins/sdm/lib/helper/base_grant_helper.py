@@ -1,6 +1,9 @@
 import shortuuid
 from abc import ABC, abstractmethod
 from typing import Any
+
+import strongdm.models
+
 from ..exceptions import NotFoundException, PermissionDeniedException
 from ..util import can_auto_approve_by_tag, fuzzy_match, can_auto_approve_by_groups_tag, get_formatted_duration_string,\
     convert_duration_flag_to_timedelta, get_approvers_channel
@@ -18,13 +21,13 @@ class BaseGrantHelper(ABC):
         self.__auto_approve_tag_key = auto_approve_tag_key
         self.__auto_approve_all_key = auto_approve_all_key
 
-    def request_access(self, message, searched_name, flags: dict = {}):
+    def request_access(self, message, searched_name, flags: dict = {}, service_account=None):
         execution_id = shortuuid.ShortUUID().random(length=6)
         operation_desc = self.get_operation_desc()
         self.__bot.log.info("##SDM## %s GrantHelper.access_%s new %s request for resource_name: %s", execution_id, self.__grant_type, operation_desc, searched_name)
         try:
             sdm_resource = self.get_item_by_name(searched_name, execution_id)
-            sdm_account = self.__get_account(message)
+            sdm_account = service_account or self.__get_account(message)
             self.check_permission(sdm_resource, sdm_account, searched_name)
             request_id = self.generate_grant_request_id()
             yield from self.__grant_access(message, sdm_resource, sdm_account, execution_id, request_id, flags)
@@ -66,8 +69,11 @@ class BaseGrantHelper(ABC):
 
     def __grant_access(self, message, sdm_object, sdm_account, execution_id, request_id, flags: dict):
         sender_nick = self.__bot.get_sender_nick(message.frm)
-        sender_email = sdm_account.email
-        self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s sender_email: %s", execution_id, self.__grant_type, sender_nick, sender_email)
+        if hasattr(sdm_account, 'email'):
+            sender_info = f'sender_email: {sdm_account.email}'
+        else:
+            sender_info = f'sender_name: {sdm_account.name}'
+        self.__bot.log.info("##SDM## %s GrantHelper.__grant_%s sender_nick: %s %s", execution_id, self.__grant_type, sender_nick, sender_info)
         if self.__needs_auto_approve(sdm_object, sdm_account) and not self.__reached_max_auto_approve_uses(message.frm.person):
             yield from self.__auto_approve_access_request(message, sdm_object, sdm_account, execution_id, request_id, flags)
             return
@@ -80,7 +86,8 @@ class BaseGrantHelper(ABC):
         is_auto_approve_all_enabled = self.__bot.config[self.__auto_approve_all_key]
         return is_auto_approve_all_enabled \
                or can_auto_approve_by_tag(self.__bot.config, sdm_object, self.__auto_approve_tag_key) \
-               or can_auto_approve_by_groups_tag(self.__bot.config, sdm_object, sdm_account)
+               or can_auto_approve_by_groups_tag(self.__bot.config, sdm_object, sdm_account) \
+               or isinstance(sdm_account, strongdm.models.Service)
 
     def __reached_max_auto_approve_uses(self, requester_id):
         max_auto_approve_uses = self.__bot.config['MAX_AUTO_APPROVE_USES']

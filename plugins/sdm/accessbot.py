@@ -9,7 +9,7 @@ import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
+    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper, ActivateSDMAccountHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -19,6 +19,7 @@ DENY_REGEX = r"no (\w{4}) ?(.+)?"
 ASSIGN_ROLE_REGEX = r"access to role (.+)"
 SHOW_RESOURCES_REGEX = r"show available resources ?(.+)?"
 SHOW_ROLES_REGEX = r"show available roles"
+ASSIGN_ROLE_TO_SERVICE_ACCOUNT_REGEX = r"assign role (.+) to account (.+)"
 FIVE_SECONDS = 5
 ONE_MINUTE = 60
 MSG_ERROR_OCCURRED = "An error occurred, please contact your SDM admin"
@@ -249,6 +250,19 @@ class AccessBot(BotPlugin):
         yield from self.get_show_roles_helper().execute(message)
         self.__metrics_helper.reset_consecutive_errors()
 
+    #pylint: disable=unused-argument
+    @re_botcmd(pattern=ASSIGN_ROLE_TO_SERVICE_ACCOUNT_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="assign role <role-name> to account <account-name>")
+    def assign_role_to_service_account(self, message, match):
+        """
+        Assign a role to a service account
+        """
+        self.__metrics_helper.increment_received_messages()
+        role_name = re.sub(ASSIGN_ROLE_TO_SERVICE_ACCOUNT_REGEX, r"\1", match.string.replace("*", ""), flags=re.IGNORECASE)
+        service_account_name = re.sub(ASSIGN_ROLE_TO_SERVICE_ACCOUNT_REGEX, r"\2", match.string.replace("*", ""), flags=re.IGNORECASE)
+        service_account = self.get_activate_sdm_account_helper().execute(service_account_name)
+        yield from self.get_role_grant_helper().request_access(message, role_name, service_account=service_account)
+        self.__metrics_helper.reset_consecutive_errors()
+
     @re_botcmd(pattern=r"whoami", flags=re.IGNORECASE, prefixed=False, name="accessbot-whoami")
     def whoami(self, message, _):
         """
@@ -302,6 +316,9 @@ class AccessBot(BotPlugin):
 
     def get_show_roles_helper(self):
         return ShowRolesHelper(self)
+
+    def get_activate_sdm_account_helper(self):
+        return ActivateSDMAccountHelper(self)
 
     def get_arguments_helper(self):
         return ArgumentsHelper()

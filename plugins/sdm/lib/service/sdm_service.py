@@ -38,6 +38,30 @@ class SdmService:
             raise Exception("Sorry, cannot find your account!")
         return sdm_accounts[0]
 
+    def get_account_by_name(self, name):
+        """
+        Retrieves an account by name
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.get_account_by_name name: %s", name)
+            sdm_accounts = list(self.__client.accounts.list('name:"{}"'.format(name)))
+        except Exception as ex:
+            raise Exception("List accounts failed: " + str(ex)) from ex
+        if len(sdm_accounts) == 0:
+            raise Exception("Sorry, cannot find your account!")
+        return sdm_accounts[0]
+
+    def reinstate_account(self, account):
+        """
+        Reinstate an account
+        """
+        try:
+            self.__log.debug("##SDM## SdmService.reinstate_account account_id: %s", account.id)
+            account.suspended = False
+            return self.__client.accounts.update(account)
+        except Exception as ex:
+            raise Exception("Reinstate account failed: " + str(ex)) from ex
+
     def account_grant_exists(self, resource, account_id):
         """
         Does an account grant exists - resource assigned to an account
@@ -198,3 +222,10 @@ class SdmService:
     @staticmethod
     def remove_none_values(elements):
         return [e for e in elements if e is not None]
+
+    def attach_role_to_account(self, role_id, account_id):
+        grant = strongdm.AccountAttachment(
+            role_id=role_id,
+            account_id=account_id
+        )
+        return self.__client.account_attachments.create(grant)

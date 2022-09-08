@@ -13,3 +13,4 @@ from .grant_request_helper import *
 from .whoami_helper import *
 from .metrics_helper import *
 from .health_check_helper import *
+from .activate_sdm_account_helper import *
