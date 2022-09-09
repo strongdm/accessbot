@@ -29,9 +29,11 @@ class PollerHelper:
 
     def suspend_expired_service_accounts(self):
         now = datetime.datetime.now(datetime.timezone.utc)
-        for account_id, data in self.__bot.sa_attachments_expiry.items():
-            if now >= data['valid_until']:
-                self.__bot.suspend_account(data['account'])
+        for account_id in list(self.__bot.sa_attachments_expiry):
+            entry = self.__bot.sa_attachments_expiry[account_id]
+            if now >= entry['valid_until']:
+                self.__bot.log.info("##SDM## Suspending account \"%s\" due to the attachment grant timeout expired", entry['account'].name)
+                self.__bot.suspend_account(entry['account'])
 
     def __notify_grant_request_denied(self, grant_request):
         requester_id = grant_request['message'].frm

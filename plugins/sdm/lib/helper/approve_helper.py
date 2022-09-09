@@ -13,21 +13,23 @@ class ApproveHelper(BaseEvaluateRequestHelper):
 
     def evaluate(self, request_id, **kwargs):
         grant_request = self._bot.get_grant_request(request_id)
+        is_auto_approve = kwargs['is_auto_approve'] if kwargs.get('is_auto_approve') != None else False
         if grant_request['type'] == GrantRequestType.ASSIGN_ROLE.value:
-            yield from self.__approve_assign_role(grant_request)
+            yield from self.__approve_assign_role(grant_request, auto_approve=is_auto_approve)
         else:
             yield from self.__approve_access_resource(grant_request)
-        if kwargs.get('is_auto_approve') != None and kwargs['is_auto_approve'] == True:
+        if is_auto_approve:
             yield from self.__register_auto_approve_use(grant_request)
 
-    def __approve_assign_role(self, grant_request):
+    def __approve_assign_role(self, grant_request, auto_approve=False):
         yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'], grant_request['sdm_account'])
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'],
                                                              grant_request['sdm_object'].name,
                                                              grant_request['sdm_account'])
-        self._bot.get_metrics_helper().increment_manual_approvals()
+        if not auto_approve:
+            self._bot.get_metrics_helper().increment_manual_approvals()
 
     def __approve_access_resource(self, grant_request):
         duration = grant_request['flags'].get('duration')

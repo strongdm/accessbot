@@ -235,8 +235,14 @@ class SdmService:
         return [e for e in elements if e is not None]
 
     def attach_role_to_account(self, role_id, account_id):
-        grant = strongdm.AccountAttachment(
-            role_id=role_id,
-            account_id=account_id
-        )
-        return self.__client.account_attachments.create(grant)
+        try:
+            grant = strongdm.AccountAttachment(
+                role_id=role_id,
+                account_id=account_id
+            )
+            return self.__client.account_attachments.create(grant)
+        except strongdm.errors.AlreadyExistsError:
+            self.__log.info("##SDM## SdmService.attach_role_to_account AccountAttachments.Create failed due to an already existing attachment. The sa attachment expiry entry will be renewed")
+            return None
+        except Exception as ex:
+            raise Exception(f"An error occurred when attaching role to the provided account: {str(ex)}") from ex
