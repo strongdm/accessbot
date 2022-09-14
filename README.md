@@ -12,6 +12,8 @@ The resources can also be accessed by role grants, which means that the user can
 
 AccessBot can be installed on Slack or MS Teams.
 
+**IMPORTANT: The Slack Classic implementation has been deprecated. In case you're still using it, please migrate ASAP to the [Slack Bolt implementation](https://github.com/strongdm/accessbot/blob/main/docs/slack/CONFIGURE_SLACK.md).**
+
 A curated version of the documentation can be found [here](https://strongdm.github.io/accessbot/).
 
 You can also watch our [demo video](https://www.youtube.com/watch?v=LfsbXl0b3G8) of AccessBot on YouTube.
