@@ -40,9 +40,9 @@ def is_allowed(config, allowed_tag_enum, allowed_groups_tag_enum, sdm_entity, sd
         if allowed_entity_tag in sdm_entity.tags and (sdm_entity_tag_value is None or str(sdm_entity_tag_value).lower().strip() != 'false'):
             allowed = True
     if not allowed and allowed_groups_entity_tag and groups_tag:
-        sdm_entity_tag_value = sdm_entity.tags.get(allowed_groups_entity_tag)
-        entity_allowed_groups = str(sdm_entity_tag_value).lower().strip().split(',')
-        sdm_account_tag_value = sdm_account.tags[groups_tag]
+        sdm_entity_tag_value = sdm_entity.tags.get(allowed_groups_entity_tag, '').lower()
+        entity_allowed_groups = sdm_entity_tag_value.strip().split(',')
+        sdm_account_tag_value = sdm_account.tags.get(groups_tag, '').lower()
         user_groups = sdm_account_tag_value.strip().split(',')
         if allowed_groups_entity_tag in sdm_entity.tags and groups_tag in sdm_account.tags \
                 and sdm_entity_tag_value is not None and sdm_account_tag_value is not None \
