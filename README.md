@@ -50,7 +50,7 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure SDM](docs/configure_accessbot/CONFIGURE_SDM.md)
 * [Configure Slack](docs/slack/CONFIGURE_SLACK.md)
 * [Configure Slack Classic](docs/slack/CONFIGURE_SLACK_CLASSIC.md)
-* [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
+* [Configure MS Teams](docs/ms-teams/CONFIGURE_MS_TEAMS.md)
 
 
 ## Deploy
