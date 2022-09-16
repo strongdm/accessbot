@@ -1,11 +1,13 @@
 import json
 import time
 from collections import namedtuple
+from recordtype import recordtype
 import os
 from strongdm.models import User
 
 from grant_request_type import GrantRequestType
 from lib.models.base_resource import BaseResource
+from errbot.backends.botframework import Conversation
 
 class GrantRequestHelper:
     __grant_requests = {}
@@ -34,6 +36,11 @@ class GrantRequestHelper:
 
     def __serialize_grant_request(self, grant_request):
         msg_to = grant_request['message'].to
+        serialized_extras = {}
+        if grant_request['message'].extras.get('conversation'):
+            serialized_extras['conversation'] = self.__conversation_to_dict(grant_request['message'].extras['conversation'])
+        else:
+            serialized_extras = grant_request['message'].extras
         return {
             'id': grant_request['id'],
             'timestamp': grant_request['timestamp'],
@@ -43,7 +50,8 @@ class GrantRequestHelper:
                     'identifier': msg_to.__str__(),
                     'channelid': msg_to.channelid if hasattr(msg_to, 'channelid') else None
                 },
-                'extras': grant_request['message'].extras,
+                'body': grant_request['message'].body,
+                'extras': serialized_extras,
                 'is_group': grant_request['message'].is_group,
             },
             'sdm_object': self.__sdm_model_to_dict(grant_request['sdm_object']),
@@ -79,11 +87,16 @@ class GrantRequestHelper:
         message_dict = {
             'frm': self._bot.build_identifier(grant_request['message']['frm']),
             'to': self._bot.build_identifier(grant_request['message']['to']['identifier']),
+            'body': grant_request['message'].get('body'),
             'extras': grant_request['message'].get('extras'),
             'is_group': grant_request['message'].get('is_group'),
         }
+        if message_dict['extras'].get('conversation'):
+            conversation_dict = message_dict['extras'].get('conversation')
+            message_dict['extras']['conversation'] = namedtuple('conversation', conversation_dict.keys())(*conversation_dict.values())
         message_dict['to']._channelid = grant_request['message']['to'].get('channelid')
-        return namedtuple('message', message_dict.keys())(*message_dict.values())
+        Message = recordtype('Message', [(k, v) for k, v in message_dict.items()])
+        return Message()
 
     def __can_perform_state_handling(self):
         return self._bot.mode != 'test' and self._bot.config["ENABLE_BOT_STATE_HANDLING"]
@@ -115,6 +128,22 @@ class GrantRequestHelper:
 
     def __sdm_model_to_dict(self, object):
         return object if type(object) is dict else object.to_dict()
+    
+    def __conversation_to_dict(self, conversation):
+        if isinstance(conversation, dict):
+            return dict(conversation)
+        if not isinstance(conversation, Conversation):
+            return conversation._asdict()
+        serialized_conversation = dict(conversation.__dict__)
+        serialized_conversation['data'] = serialized_conversation['_request']
+        serialized_conversation['conversation'] = conversation.conversation
+        serialized_conversation['conversation_id'] = conversation.conversation_id
+        serialized_conversation['activity_id'] = conversation.activity_id
+        serialized_conversation['service_url'] = conversation.service_url
+        serialized_conversation['tenant_id'] = conversation.tenant_id
+        serialized_conversation['reply_url'] = conversation.reply_url
+        del serialized_conversation['_request']
+        return serialized_conversation
 
     def clear_cached_state(self):
         try:

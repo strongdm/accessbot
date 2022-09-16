@@ -188,4 +188,4 @@ class BaseGrantHelper(ABC):
         if is_hidden(self.__bot.config, self.__hidden_tag, sdm_entity) \
                 or not is_allowed(self.__bot.config, self.__allowed_tag, self.__allowed_groups_tag, sdm_entity, sdm_account):
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource hidden resource", execution_id)
-            raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
+            raise Exception("Access to this resource not available. Please contact your strongDM admins.")

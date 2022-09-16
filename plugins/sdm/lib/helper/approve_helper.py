@@ -52,7 +52,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             granted_resources_text = ''
             for resource in granted_resources:
                 if granted_resources_text:
-                    granted_resources_text += "\n"
+                    granted_resources_text = self._bot.format_breakline(granted_resources_text)
                 granted_resources_text += f"User already have access to {resource.name}"
             yield granted_resources_text
         # TODO Yield with a specific error when there are no resources to grant

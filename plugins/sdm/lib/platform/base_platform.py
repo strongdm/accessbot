@@ -49,6 +49,10 @@ class BasePlatform(ABC):
         pass
 
     @abstractmethod
+    def format_breakline(self, text):
+        pass
+
+    @abstractmethod
     def get_rich_identifier(self, identifier, message):
         pass
 

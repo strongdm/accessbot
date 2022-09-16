@@ -31,4 +31,4 @@ class ArgumentsHelper:
             if required_flag in valid_flags and extracted_flags.get(required_flag) is None:
                 missing_required_flags.append(required_flag)
         if len(missing_required_flags) > 0:
-            raise Exception(f'Missing required flags: {", ".join(missing_required_flags)}.')
+            raise Exception(f'You need to provide the following required flags: {", ".join(missing_required_flags)}.')

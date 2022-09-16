@@ -70,20 +70,34 @@ To make sure if AccessBot is working, you can go back to the `Channels` tab on t
 
 1. Generate an app id and enter the bot id
 * Download the [ms-teams/app folder](https://github.com/strongdm/accessbot/blob/main/ms-teams/app)
-* Generate an app id [here](https://www.uuidgenerator.net/version1) and enter it into the [manifest file](https://github.com/strongdm/accessbot/blob/main/ms-teams/app/manifest.json#L5)
-* Enter the **AZURE_APP_ID** into the [manifest file](https://github.com/strongdm/accessbot/blob/main/ms-teams/app/manifest.json#L42)
+* Generate a random id [here](https://www.uuidgenerator.net/version1) and define it in the ["id" field of the manifest.json file](../../ms-teams/app/manifest.json#L5)
+* Paste the **AZURE_APP_ID** on the ["botId" field of the manifest.json file](../../ms-teams/app/manifest.json#L38)
 
 2. Create a zip file of the app folder
 ```
 $ zip app.zip *
   adding: color.png (deflated 2%)
-  adding: manifest.json (deflated 64%)
+  adding: manifest.json (deflated 57%)
   adding: outline.png (stored 0%)
 ```
 
-3. Upload the app.zip file to [register the app](https://admin.teams.microsoft.com/) in your Org 
+3. Open your `Microsoft Teams App`, go to `Apps` and search for `Developer Portal`, then click on The `Developer Portal` card:
 
-![image](https://user-images.githubusercontent.com/313803/141984124-60ab1eb8-ef3c-4cbb-9179-6c3767b86f34.png)
+![screenshot-13](https://user-images.githubusercontent.com/49597325/190476467-560c14e8-b44e-430c-89b5-95dfaf06d74b.png)
+
+4. Click on the `Apps` tab of the `Developer Portal` app and click on the `Import app` button and select the created zip file:
+
+![screenshot-14](https://user-images.githubusercontent.com/49597325/190476632-b4dc9f11-723d-41e0-9d2b-75ec6a1d20cc.png)
+
+5. Once it finishes to upload the zip file data and load the app content, you can update the informations you prefer about the bot.
+
+6. Then go to the `Publish` section and click on the `Publish to org` submenu and click on the `Publish your app` button:
+
+![screenshot-15](https://user-images.githubusercontent.com/49597325/190476774-e53fd677-764f-450b-8e15-13426466b14c.png)
+
+7. After a while, your app should be submitted for approval to the IT Admin of your Microsoft Teams Organization.
+
+8. In [Admin Manage Apps page](https://admin.teams.microsoft.com/policies/manage-apps), the IT Admin of the organization should see a submitted custom app on the `Pending approval` card
 
 ## Add the Bot to your Team
 

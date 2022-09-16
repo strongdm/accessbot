@@ -207,14 +207,14 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" in request_message
         assert "duration" in request_message
 
     def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" not in request_message
         assert "duration" in request_message
 
@@ -285,14 +285,14 @@ class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" in request_message
         assert "duration" in request_message
 
     def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" not in request_message
         assert "duration" in request_message
 

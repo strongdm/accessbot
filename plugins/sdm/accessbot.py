@@ -412,6 +412,9 @@ class AccessBot(BotPlugin):
     def format_strikethrough(self, text):
         return self._platform.format_strikethrough(text)
 
+    def format_breakline(self, text):
+        return self._platform.format_breakline(text)
+
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
 

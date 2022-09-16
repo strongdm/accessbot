@@ -45,6 +45,9 @@ class MSTeamsPlatform(BasePlatform):
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"
 
+    def format_breakline(self, text):
+        return f"{text}<br>"
+
     def get_rich_identifier(self, identifier, message):
         extras = {
             'team_id': message.extras['conversation'].data['channelData']['team']['id'],
