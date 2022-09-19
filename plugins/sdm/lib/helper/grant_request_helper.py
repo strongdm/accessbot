@@ -7,7 +7,6 @@ from strongdm.models import User
 
 from grant_request_type import GrantRequestType
 from lib.models.base_resource import BaseResource
-from errbot.backends.botframework import Conversation
 
 class GrantRequestHelper:
     __grant_requests = {}
@@ -132,7 +131,7 @@ class GrantRequestHelper:
     def __conversation_to_dict(self, conversation):
         if isinstance(conversation, dict):
             return dict(conversation)
-        if not isinstance(conversation, Conversation):
+        if hasattr(conversation, '_asdict'):
             return conversation._asdict()
         serialized_conversation = dict(conversation.__dict__)
         serialized_conversation['data'] = serialized_conversation['_request']
