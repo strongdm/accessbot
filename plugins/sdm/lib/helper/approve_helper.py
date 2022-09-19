@@ -21,9 +21,13 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             yield from self.__register_auto_approve_use(grant_request)
 
     def __approve_assign_role(self, grant_request):
-        yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
-        self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
+        try:
+            yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
+        except Exception as e:
+            yield str(e)
+            return
+        self._bot.add_thumbsup_reaction(grant_request['message'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
         self._bot.get_metrics_helper().increment_manual_approvals()
 
@@ -48,6 +52,8 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
         granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
         granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
+        if len(granted_resources) == len(resources):
+            raise Exception(f"The user already have access to all resources assigned to the role {role_name}")
         if len(granted_resources) > 0:
             granted_resources_text = ''
             for resource in granted_resources:
