@@ -95,13 +95,33 @@ $ zip app.zip *
 
 ![screenshot-15](https://user-images.githubusercontent.com/49597325/190476774-e53fd677-764f-450b-8e15-13426466b14c.png)
 
-7. After a while, your app should be submitted for approval to the IT Admin of your Microsoft Teams Organization.
+7. After a while, your app should be submitted:
 
-8. In [Admin Manage Apps page](https://admin.teams.microsoft.com/policies/manage-apps), the IT Admin of the organization should see a submitted custom app on the `Pending approval` card
+![screenshot-16](https://user-images.githubusercontent.com/49597325/191028372-ebf9812c-43c5-44e4-8e4f-3f01d01fdb6d.png)
 
-## Add the Bot to your Team
+8. Then, go to `Teams`, click on the actions of the team you want to add the bot and click on `Manage Team`:
 
-![image](https://user-images.githubusercontent.com/313803/141984925-d847d84a-c4ff-49f8-be14-c2c632616fbf.png)
+![screenshot-17](https://user-images.githubusercontent.com/49597325/191032343-c1d4abab-2659-48cd-876c-862817bec16a.png)
+
+9. Click on the `Apps` tab and on the `More Apps` button:
+
+![screenshot-18](https://user-images.githubusercontent.com/49597325/191029186-5ac64ab5-ffef-43e4-8991-ad163e726694.png)
+
+10. Click on the submitted bot:
+
+![screenshot-19](https://user-images.githubusercontent.com/49597325/191029760-fd0316d7-a9ea-4bf3-a268-2e02471e35e1.png)
+
+11. Click on the `Add` button:
+
+![screenshot-20](https://user-images.githubusercontent.com/49597325/191030231-9318becd-b9bd-46f2-b1bc-e08a3336f768.png)
+
+And your bot is now installed on your organization and can be used on your teams.
+
+## How to use
+
+To use AccessBot commands on Teams, you need to add a mention to the bot before the command (see the image below for an example running the help command):
+
+![screenshot-21](https://user-images.githubusercontent.com/49597325/191031228-eb2b7360-8c4f-4059-8ae3-cfc97b612902.png)
 
 ## Limitations
 
