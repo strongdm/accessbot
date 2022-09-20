@@ -49,8 +49,11 @@ def get_bot_identity():
     platform = os.getenv('SDM_BOT_PLATFORM')
     if platform == 'ms-teams':
         return {
-            "appId": os.getenv("AZURE_APP_ID"),
-            "appPassword": os.getenv("AZURE_APP_PASSWORD")
+            "app_id": os.getenv("AZURE_APP_ID"),
+            "app_password": os.getenv("AZURE_APP_PASSWORD"),
+            "ad_tenant_id": os.getenv("AZURE_AD_TENANT_ID"),
+            "ad_app_id": os.getenv("AZURE_AD_APP_ID"),
+            "ad_app_secret": os.getenv("AZURE_AD_APP_SECRET"),
         }
     elif platform == 'slack-classic':
         return {

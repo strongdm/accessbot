@@ -154,8 +154,7 @@ class BaseGrantHelper(ABC):
             self.__bot.send(admin_id, text)
 
     def __get_account(self, message):
-        sender_email = self.__bot.get_sender_email(message.frm)
-        return self.__sdm_service.get_account_by_email(sender_email)
+        return self.__bot.get_sdm_account(message)
 
     def __try_fuzzy_matching(self, execution_id, term_list, role_name):
         similar_result = fuzzy_match(term_list, role_name)

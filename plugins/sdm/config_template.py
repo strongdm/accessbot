@@ -34,6 +34,7 @@ _INSTANCE = {
     'APPROVERS_CHANNEL_TAG': os.getenv("SDM_APPROVERS_CHANNEL_TAG"),
     'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL':  str(os.getenv("SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL", "")).lower() == 'true',
     'ENABLE_BOT_STATE_HANDLING': str(os.getenv("SDM_ENABLE_BOT_STATE_HANDLING", "")).lower() == 'true',
+    'USE_ALTERNATIVE_EMAILS': str(os.getenv("SDM_USE_ALTERNATIVE_EMAILS", "").lower() == 'true'),
 }
 
 def get():

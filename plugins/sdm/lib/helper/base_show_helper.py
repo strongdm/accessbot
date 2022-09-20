@@ -31,8 +31,7 @@ class BaseShowHelper(ABC):
         pass
 
     def __get_sdm_account(self, message):
-        sender_email = self._bot.get_sender_email(message.frm)
-        return self._sdm_service.get_account_by_email(sender_email)
+        return self._bot.get_sdm_account(message)
 
     def __get_key(self, item):
         return item.name
