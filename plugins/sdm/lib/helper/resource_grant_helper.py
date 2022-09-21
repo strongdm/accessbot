@@ -33,7 +33,7 @@ class ResourceGrantHelper(BaseGrantHelper):
         role_name = self.__bot.config['CONTROL_RESOURCES_ROLE_NAME']
         if role_name and not self.__is_resource_in_role(resource_name, role_name):
             self.__bot.log.info("##SDM## %s GrantHelper.__get_resource resource not in role %s", execution_id, role_name)
-            raise Exception("Access to this resource not available via bot. Please see your strongDM admins.")
+            raise Exception("Access to this resource not available. Please contact your strongDM admins.")
         return self.__sdm_service.get_resource_by_name(resource_name)
 
     def __is_resource_in_role(self, resource_name, role_name):
