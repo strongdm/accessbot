@@ -36,7 +36,7 @@ class MSTeamsPlatform(BasePlatform):
         return approver.email
 
     def clean_up_message(self, text):
-        unbolded_text = remove_bold_symbols(text)
+        unbolded_text = remove_bold_symbols(text.strip())
         return self.clean_message_at_symbols(unbolded_text)
 
     def clean_message_at_symbols(self, text):
