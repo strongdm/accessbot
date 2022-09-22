@@ -70,7 +70,8 @@ class Test_alternative_emails(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_with_alternative_emails(self, testbot):
         config = create_config()
-        testbot = inject_config(testbot, config, sdm_accounts_by_emails=[Exception('Sorry, cannot find your account!'), create_account_mock()])
+        testbot = inject_config(testbot, config, enable_aad=True,
+                                sdm_accounts_by_emails=[Exception('Sorry, cannot find your account!'), create_account_mock()])
         testbot._bot.callback_message = callback_message_fn(testbot._bot, from_useraadid='000-000')
         return testbot
 
@@ -85,7 +86,8 @@ class Test_alternative_emails(MSTeamsErrBotExtraTestSettings):
 
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], sdm_accounts_by_emails=None):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
+                  resources=[], sdm_accounts_by_emails=None, enable_aad=False):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)
@@ -95,6 +97,7 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.get_resource_grant_helper = MagicMock(return_value = create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     accessbot._bot.get_other_emails_by_aad_id = MagicMock(return_value = ['other@mail.com'])
+    accessbot._bot.azure_active_directory_is_configured = MagicMock(return_value = enable_aad)
     return testbot
 
 def create_resource_grant_helper(accessbot):
