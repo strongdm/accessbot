@@ -63,3 +63,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def has_active_admins(self):
         pass
+
+    @abstractmethod
+    def use_alternative_emails(self):
+        pass

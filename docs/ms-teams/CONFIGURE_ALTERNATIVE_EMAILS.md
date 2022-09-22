@@ -1,8 +1,8 @@
 # Configure Alternative Emails for MS Teams Platform
 
-If the users of your organization have multiple emails and the main one is not the one registered on strongDM you can configure alternative emails to them. These alternative emails will be used to reach your SDM account.
+If the users of your organization have multiple emails assigned and for some reason AccessBot is not able to find their accounts on strongDM you can add other emails to them on Azure Active Directory. These emails will be used to reach the strongDM account of the user.
 
-In order to make this work, you'll need to register an Azure Active Directory App that AccessBot will use to retrieve the users alternative emails.
+In order to make this work, you'll need to register an Azure Active Directory App that AccessBot will use to retrieve the other emails from the users.
 
 ## Set Up Azure Active Directory App
 
@@ -82,7 +82,7 @@ Now, to add alternative emails to regular users, the admin of the Azure Active D
 
 ![screenshot-12](https://user-images.githubusercontent.com/49597325/191581070-97628af9-a03c-4249-a2ed-1d4040345b2f.png)
 
-5. Click on "Add", type the alternative email (the one registered on strongDM) and click on "Save":
+5. Click on "Add", type the user's strongDM account email (registered on the strongDM organization) and click on "Save":
 
 ![screenshot-13](https://user-images.githubusercontent.com/49597325/191581401-3d3f038a-12e9-4c24-b340-bdb796bd7ce0.png)
 
@@ -90,6 +90,4 @@ Now, to add alternative emails to regular users, the admin of the Azure Active D
 
 ![screenshot-14](https://user-images.githubusercontent.com/49597325/191581673-2e73c3bb-b343-4615-8fb4-42944a374e3e.png)
 
-7. In your environment, set the variable `SDM_USE_ALTERNATIVE_EMAILS=true`
-
-That's it. Now the account has alternative emails configured.
+That's it! Now the account other emails will be used to reach the strongDM account.

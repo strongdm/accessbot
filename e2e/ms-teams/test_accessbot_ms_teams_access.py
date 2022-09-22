@@ -70,7 +70,6 @@ class Test_alternative_emails(MSTeamsErrBotExtraTestSettings):
     @pytest.fixture
     def mocked_testbot_with_alternative_emails(self, testbot):
         config = create_config()
-        config['ENABLE_ALTERNATIVE_EMAILS'] = True
         testbot = inject_config(testbot, config, sdm_accounts_by_emails=[Exception('Sorry, cannot find your account!'), create_account_mock()])
         testbot._bot.callback_message = callback_message_fn(testbot._bot, from_useraadid='000-000')
         return testbot

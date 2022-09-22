@@ -435,10 +435,10 @@ class AccessBot(BotPlugin):
                 raise Exception("You cannot use the requester flag.")
 
     def get_sdm_account(self, message):
-        sender_email = self.get_sender_email(message.frm)
-        emails = [sender_email]
-        if self.__use_alternative_emails():
-            emails.extend(self.__get_account_alternative_emails(message.frm))
+        emails = [
+            self.get_sender_email(message.frm),
+            *self.__get_account_alternative_emails(message.frm)
+        ]
         for index in range(len(emails)):
             try:
                 email = emails[index]
@@ -448,10 +448,7 @@ class AccessBot(BotPlugin):
                     raise e
         return None
 
-    def __use_alternative_emails(self):
-        return isinstance(self._platform, MSTeamsPlatform) and self.config['ENABLE_ALTERNATIVE_EMAILS']
-
     def __get_account_alternative_emails(self, frm):
-        if not self.__use_alternative_emails():
-            return []
-        return self._bot.get_other_emails_by_aad_id(frm.useraadid)
+        if self._platform.use_alternative_emails():
+            return self._bot.get_other_emails_by_aad_id(frm.useraadid)
+        return []

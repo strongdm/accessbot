@@ -80,3 +80,6 @@ class MSTeamsPlatform(BasePlatform):
 
     def has_active_admins(self):
         return len(self._bot.get_admins()) > 0
+
+    def use_alternative_emails(self):
+        return self._bot._bot.azure_active_directory_is_configured()
