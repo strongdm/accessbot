@@ -442,15 +442,14 @@ class AccessBot(BotPlugin):
         for index in range(len(emails)):
             try:
                 email = emails[index]
-                sdm_account = self.get_sdm_service().get_account_by_email(email)
-                break
+                return self.get_sdm_service().get_account_by_email(email)
             except Exception as e:
                 if index == len(emails) - 1:
                     raise e
-        return sdm_account
+        return None
 
     def __use_alternative_emails(self):
-        return isinstance(self._platform, MSTeamsPlatform) and self.config['USE_ALTERNATIVE_EMAILS']
+        return isinstance(self._platform, MSTeamsPlatform) and self.config['ENABLE_ALTERNATIVE_EMAILS']
 
     def __get_account_alternative_emails(self, frm):
         if not self.__use_alternative_emails():

@@ -66,6 +66,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def test_access_command_grant_not_approved(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message("no")  # Anything but yes
+        time.sleep(0.1)
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "timed out" in mocked_testbot.pop_message()
