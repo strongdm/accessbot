@@ -1,8 +1,8 @@
 import json
 import time
-from collections import namedtuple
-from recordtype import recordtype
 import os
+from dataclasses import make_dataclass
+
 from strongdm.models import User
 
 from grant_request_type import GrantRequestType
@@ -25,9 +25,10 @@ class GrantRequestHelper:
             if not os.path.exists(self.folder_path):
                 os.mkdir(self.folder_path)
             with open(self.file_path, "w") as state:
+                current_grant_requests = self.__grant_requests.values()
                 grant_requests_list = [
                     self.__serialize_grant_request(grant_request)
-                    for grant_request in self.__grant_requests.values()
+                    for grant_request in current_grant_requests
                 ]
                 state.write(json.dumps(grant_requests_list))
         except Exception as e:
@@ -92,10 +93,11 @@ class GrantRequestHelper:
         }
         if message_dict['extras'].get('conversation'):
             conversation_dict = message_dict['extras'].get('conversation')
-            message_dict['extras']['conversation'] = namedtuple('conversation', conversation_dict.keys())(*conversation_dict.values())
+            Conversation = make_dataclass('conversation', conversation_dict.keys())
+            message_dict['extras']['conversation'] = Conversation(**conversation_dict)
         message_dict['to']._channelid = grant_request['message']['to'].get('channelid')
-        Message = recordtype('Message', [(k, v) for k, v in message_dict.items()])
-        return Message()
+        Message = make_dataclass('Message', message_dict.keys())
+        return Message(**message_dict)
 
     def __can_perform_state_handling(self):
         return self._bot.mode != 'test' and self._bot.config["ENABLE_BOT_STATE_HANDLING"]

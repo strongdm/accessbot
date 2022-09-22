@@ -88,9 +88,11 @@ To create a service, follow the steps below:
 
 3. At the bottom of the page, click on `Next step`
 
-4. At the top of the page, select a Cluster VPC, a Subnet and select the same Security group used on the created EFS volume:
+4. At the top of the page, select a Cluster VPC, a Subnet and select the same Security Group used on the created EFS volume:
 
 ![image](https://user-images.githubusercontent.com/49597325/181533405-6bafe115-d3fd-4949-b182-7debd1fcc094.png)
+
+**Note**: make sure the EFS and the cluster service being created belongs to the same Security Group, because both resources must communicate with other. Without that your container might not even start because it'll not find the volume.
 
 5. Then, at the bottom of the page, click on `Next step`
 

@@ -266,7 +266,7 @@ class AccessBot(BotPlugin):
 
     @staticmethod
     def get_admins():
-        return os.getenv("SDM_ADMINS", "").split(" ")
+        return os.getenv("SDM_ADMINS", "").lower().split(" ")
 
     @staticmethod
     def get_api_access_key():
