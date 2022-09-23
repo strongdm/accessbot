@@ -433,3 +433,22 @@ class AccessBot(BotPlugin):
                 message.frm._channelid = previous_channel_id
             else:
                 raise Exception("You cannot use the requester flag.")
+
+    def get_sdm_account(self, message):
+        emails = [
+            self.get_sender_email(message.frm),
+            *self.__get_account_alternative_emails(message.frm)
+        ]
+        for index in range(len(emails)):
+            try:
+                email = emails[index]
+                return self.get_sdm_service().get_account_by_email(email)
+            except Exception as e:
+                if index == len(emails) - 1:
+                    raise e
+        return None
+
+    def __get_account_alternative_emails(self, frm):
+        if self._platform.use_alternative_emails():
+            return self._bot.get_other_emails_by_aad_id(frm.useraadid)
+        return []

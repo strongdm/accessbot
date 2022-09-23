@@ -67,6 +67,7 @@ def inject_mocks(testbot, config, roles = default_dummy_roles(), account_permitt
     accessbot.get_api_secret_key = MagicMock(return_value = "c2VjcmV0LWtleQ==") # valid base64 string
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_permitted_roles))
     accessbot.get_show_roles_helper = MagicMock(return_value = ShowRolesHelper(accessbot))
+    accessbot._bot.azure_active_directory_is_configured = MagicMock(return_value = False)
     return testbot
 
 def create_sdm_service_mock(roles, account_permitted_roles):

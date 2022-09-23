@@ -51,3 +51,6 @@ class SlackPlatform(BasePlatform):
             if f"#{channel['name']}" == channel_name:
                 return channel['is_member']
         return False
+
+    def use_alternative_emails(self):
+        return False
