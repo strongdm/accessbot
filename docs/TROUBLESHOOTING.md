@@ -57,7 +57,7 @@ It's likely the `SDM_ACCESS_FORM_BOT_NICKNAME` is not set or has been set incorr
 
 <details><Summary><code>"Sorry, cannot find your account!"</code></Summary>
   
-The email field (or the field set in `SDM_EMAIL_SLACK_FIELD` *must*  match exactly with the email that identified the user in strongDM. Verify that there are no differences between the two.
+The email field (or the field set in `SDM_EMAIL_SLACK_FIELD` *must* match exactly with an email that identifies a user in strongDM. Verify that there are no differences between the two.
 
 </details>
 
