@@ -4,9 +4,11 @@ title: Slack Accessbot Form (setup)
 nav_order: 5
 parent: Slack
 ---
+**We strongly encourage you to use [Workflow Builder](https://slack.com/help/articles/360035692513-Guide-to-Workflow-Builder) instead of AccessForm.**
+
 # AccessForm
 
-AccessForm is the free way to request access to a resource using a form within Slack.
+AccessForm is the free way to request access to a resource using a form within Slack. This method can be used when you don't have a Slack Business+ account.
 
 ## Create AccessForm
 
