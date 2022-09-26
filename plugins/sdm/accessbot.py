@@ -266,7 +266,7 @@ class AccessBot(BotPlugin):
 
     @staticmethod
     def get_admins():
-        return os.getenv("SDM_ADMINS", "").split(" ")
+        return os.getenv("SDM_ADMINS", "").lower().split(" ")
 
     @staticmethod
     def get_api_access_key():
@@ -412,6 +412,9 @@ class AccessBot(BotPlugin):
     def format_strikethrough(self, text):
         return self._platform.format_strikethrough(text)
 
+    def format_breakline(self, text):
+        return self._platform.format_breakline(text)
+
     def get_rich_identifier(self, identifier, message):
         return self._platform.get_rich_identifier(identifier, message)
 
@@ -430,3 +433,22 @@ class AccessBot(BotPlugin):
                 message.frm._channelid = previous_channel_id
             else:
                 raise Exception("You cannot use the requester flag.")
+
+    def get_sdm_account(self, message):
+        emails = [
+            self.get_sender_email(message.frm),
+            *self.__get_account_alternative_emails(message.frm)
+        ]
+        for index in range(len(emails)):
+            try:
+                email = emails[index]
+                return self.get_sdm_service().get_account_by_email(email)
+            except Exception as e:
+                if index == len(emails) - 1:
+                    raise e
+        return None
+
+    def __get_account_alternative_emails(self, frm):
+        if self._platform.use_alternative_emails():
+            return self._bot.get_other_emails_by_aad_id(frm.useraadid)
+        return []

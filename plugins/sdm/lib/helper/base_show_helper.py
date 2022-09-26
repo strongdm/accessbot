@@ -8,18 +8,18 @@ class BaseShowHelper(ABC):
 
     def execute(self, message, flags: dict = {}):
         filter = flags.get('filter') or ''
-        data = self.get_list(filter)
+        sdm_account = self.__get_sdm_account(message)
+        data = self.get_list(filter, sdm_account)
         if len(data) == 0:
             yield f"There are no available {self.__op_desc}"
             return
-        sdm_account = self.__get_sdm_account(message)
         resources = f"Available {self.__op_desc}:\n\n"
         for item in sorted(data, key=self.__get_key):
             resources += self.get_line(item, sdm_account)
         yield resources
 
     @abstractmethod
-    def get_list(self, filter):
+    def get_list(self, filter, sdm_account):
         pass
 
     @abstractmethod
@@ -31,8 +31,7 @@ class BaseShowHelper(ABC):
         pass
 
     def __get_sdm_account(self, message):
-        sender_email = self._bot.get_sender_email(message.frm)
-        return self._sdm_service.get_account_by_email(sender_email)
+        return self._bot.get_sdm_account(message)
 
     def __get_key(self, item):
         return item.name

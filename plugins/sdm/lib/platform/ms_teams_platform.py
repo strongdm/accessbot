@@ -36,14 +36,24 @@ class MSTeamsPlatform(BasePlatform):
         return approver.email
 
     def clean_up_message(self, text):
-        unbolded_text = remove_bold_symbols(text)
-        return re.sub(r'<at>.+</at>', '', unbolded_text).strip()
+        unbolded_text = remove_bold_symbols(text.strip())
+        return self.clean_message_at_symbols(unbolded_text)
+
+    def clean_message_at_symbols(self, text):
+        text_without_bot_mention = self.remove_bot_mention_symbols(text)
+        return re.sub(r'<at>|</at>', '', text_without_bot_mention).strip()
+
+    def remove_bot_mention_symbols(self, text):
+        return re.sub(r'^<at>[a-zA-Z0-9_ ]+</at>', '', text).strip()
 
     def format_access_request_params(self, resource_name, sender_nick):
         return f'**{resource_name}**', f'**{sender_nick}**'
 
     def format_strikethrough(self, text):
         return r"~~" + text + r"~~"
+
+    def format_breakline(self, text):
+        return f"{text}<br>"
 
     def get_rich_identifier(self, identifier, message):
         extras = {
@@ -70,3 +80,6 @@ class MSTeamsPlatform(BasePlatform):
 
     def has_active_admins(self):
         return len(self._bot.get_admins()) > 0
+
+    def use_alternative_emails(self):
+        return self._bot._bot.azure_active_directory_is_configured()

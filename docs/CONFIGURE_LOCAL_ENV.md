@@ -37,6 +37,7 @@ See [Configure Slack Classic Bot](slack/CONFIGURE_SLACK_CLASSIC.md)
 
 #### SDM_BOT_PLATFORM is `ms-teams`:
 ```bash
+$ export SDM_ADMINS=shane@strongdm.com # if multiple, use: user1@domain.com user2@domain.com
 $ export AZURE_APP_ID=app-id
 $ export AZURE_APP_PASSWORD=app-password
 ```

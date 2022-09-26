@@ -66,6 +66,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def test_access_command_grant_not_approved(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message("no")  # Anything but yes
+        time.sleep(0.1)
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "timed out" in mocked_testbot.pop_message()
@@ -207,14 +208,14 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" in request_message
         assert "duration" in request_message
 
     def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" not in request_message
         assert "duration" in request_message
 
@@ -285,14 +286,14 @@ class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     def test_access_command_fails_when_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" in request_message
         assert "duration" in request_message
 
     def test_access_command_fails_when_partially_missing_required_flags(self, mocked_testbot_with_required_flags):
         mocked_testbot_with_required_flags.push_message(f"access to Xxx --reason my reason")
         request_message = mocked_testbot_with_required_flags.pop_message()
-        assert "Missing required flags" in request_message
+        assert "provide the following required flags" in request_message
         assert "reason" not in request_message
         assert "duration" in request_message
 
@@ -425,6 +426,13 @@ class Test_allow_resource_tag(ErrBotExtraTestSettings):
         config['ALLOW_RESOURCE_TAG'] = "allow-resource"
         return inject_config(testbot, config, tags={'allow-resource': False})
 
+    @pytest.fixture
+    def mocked_testbot_allow_group(self, testbot):
+        config = create_config()
+        config['GROUPS_TAG'] = "groups"
+        config['ALLOW_RESOURCE_GROUPS_TAG'] = "allow-groups"
+        return inject_config(testbot, config, tags={'allow-groups': 'a-group'}, account_tags={'groups': 'a-group'})
+
     def test_access_command_fail_for_not_allowed_resources(self, mocked_testbot_allow_false):
         mocked_testbot_allow_false.push_message("access to Xxx")
         assert "not available" in mocked_testbot_allow_false.pop_message()
@@ -435,6 +443,13 @@ class Test_allow_resource_tag(ErrBotExtraTestSettings):
         assert "valid request" in mocked_testbot_allow_true.pop_message()
         assert "access request" in mocked_testbot_allow_true.pop_message()
         assert "Granting" in mocked_testbot_allow_true.pop_message()
+
+    def test_access_command_grant_when_match_allowed_group(self, mocked_testbot_allow_group):
+        mocked_testbot_allow_group.push_message("access to Xxx")
+        mocked_testbot_allow_group.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_allow_group.pop_message()
+        assert "access request" in mocked_testbot_allow_group.pop_message()
+        assert "Granting" in mocked_testbot_allow_group.pop_message()
 
 class Test_hide_resource_tag(ErrBotExtraTestSettings):
     @pytest.fixture

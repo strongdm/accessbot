@@ -89,7 +89,7 @@ class Test_invalid_request_id(ErrBotExtraTestSettings):
         assert "Invalid access request" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], alternate_email = False):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[]):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)

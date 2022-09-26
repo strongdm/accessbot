@@ -86,6 +86,7 @@ def inject_mocks(testbot, config, roles = [], account_tags = None, role_tags = N
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, role_tags))
     accessbot.get_role_grant_helper = MagicMock(return_value = create_role_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
+    accessbot._bot.azure_active_directory_is_configured = MagicMock(return_value = False)
     return testbot
 
 def create_role_grant_helper(accessbot):

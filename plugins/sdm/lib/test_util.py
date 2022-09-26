@@ -11,195 +11,305 @@ sys.path.append('e2e/')
 from test_common import DummyAccount, DummyResource, DummyPerson
 from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed, is_concealed, \
     can_auto_approve_by_groups_tag, has_intersection, convert_duration_flag_to_timedelta, \
-    get_formatted_duration_string, get_approvers_channel
+    get_formatted_duration_string, get_approvers_channel, AllowedGroupsTagEnum
 
+
+default_group = 'a-group'
 
 class Test_is_hidden_resource:
-    def test_hide_resource_when_tag_true(self):
-        config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'hide-resource': 'true'}
-        assert is_hidden(config, HiddenTagEnum.RESOURCE, sdm_resource)
 
-    def test_dont_hide_resource_when_tag_false(self):
-        config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'hide-resource': 'false'}
-        assert is_hidden(config, HiddenTagEnum.RESOURCE, sdm_resource) is False
+    @pytest.fixture
+    def mocked_resource(self):
+        return MagicMock(spec = Postgres)
 
-    def test_hide_resource_when_tag_have_no_value(self):
+    def test_hide_resource_when_tag_true(self, mocked_resource):
         config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'hide-resource': None}
-        assert is_hidden(config, HiddenTagEnum.RESOURCE, sdm_resource)
+        mocked_resource.tags = {'hide-resource': 'true'}
+        assert is_hidden(config, HiddenTagEnum.RESOURCE, mocked_resource)
 
-    def test_hide_resource_when_tag_have_unexpected_value(self):
+    def test_dont_hide_resource_when_tag_false(self, mocked_resource):
         config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'hide-resource': 'not-a-boolean'}
-        assert is_hidden(config, HiddenTagEnum.RESOURCE, sdm_resource)
+        mocked_resource.tags = {'hide-resource': 'false'}
+        assert not is_hidden(config, HiddenTagEnum.RESOURCE, mocked_resource)
 
-    def test_dont_hide_resource_when_tag_doesnt_exist(self):
+    def test_hide_resource_when_tag_have_no_value(self, mocked_resource):
+        config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
+        mocked_resource.tags = {'hide-resource': None}
+        assert is_hidden(config, HiddenTagEnum.RESOURCE, mocked_resource)
+
+    def test_hide_resource_when_tag_have_unexpected_value(self, mocked_resource):
+        config = {'HIDE_RESOURCE_TAG': 'hide-resource'}
+        mocked_resource.tags = {'hide-resource': 'not-a-boolean'}
+        assert is_hidden(config, HiddenTagEnum.RESOURCE, mocked_resource)
+
+    def test_dont_hide_resource_when_tag_doesnt_exist(self, mocked_resource):
         config = {'HIDE_RESOURCE_TAG': 'another-tag'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'hide-resource': 'true'}
-        assert is_hidden(config, HiddenTagEnum.RESOURCE, sdm_resource) is False
+        mocked_resource.tags = {'hide-resource': 'true'}
+        assert not is_hidden(config, HiddenTagEnum.RESOURCE, mocked_resource)
 
 class Test_is_allowed_resource:
-    def test_allow_resource_when_tag_true(self):
-        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'allow-resource': 'true'}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource)
 
-    def test_dont_allow_resource_when_tag_false(self):
-        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'allow-resource': 'false'}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
+    @pytest.fixture
+    def mocked_resource(self):
+        return MagicMock(spec = Postgres)
 
-    def test_allow_resource_when_tag_have_no_value(self):
-        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'allow-resource': None}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource)
+    @pytest.fixture
+    def mocked_account(self):
+        return DummyAccount('gbin', {})
 
-    def test_allow_resource_when_tag_have_unexpected_value(self):
+    def test_allow_resource_when_tag_true(self, mocked_account):
         config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'allow-resource': 'not-a-boolean'}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource)
+        mocked_resource = MagicMock(spec = Postgres)
+        mocked_resource.tags = {'allow-resource': 'true'}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
 
-    def test_dont_allow_resource_when_tag_doesnt_exist(self):
+    def test_dont_allow_resource_when_tag_false(self, mocked_resource, mocked_account):
+        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'false'}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_tag_have_no_value(self, mocked_resource, mocked_account):
+        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': None}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_tag_have_unexpected_value(self, mocked_resource, mocked_account):
+        config = {'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'not-a-boolean'}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_dont_allow_resource_when_tag_doesnt_exist(self, mocked_resource, mocked_account):
         config = {'ALLOW_RESOURCE_TAG': 'another-tag'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'allow-resource': 'true'}
-        assert is_allowed(config, AllowedTagEnum.RESOURCE, sdm_resource) is False
+        mocked_resource.tags = {'allow-resource': 'true'}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
 
+    def test_allow_resource_when_groups_tag_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups'}
+        mocked_resource.tags = {'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_dont_allow_resource_when_groups_tag_dont_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups'}
+        mocked_resource.tags = {'allow-groups': 'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_allow_tag_is_false_and_groups_tag_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'false', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_allow_tag_is_true_and_groups_tag_dont_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'true', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_all_allow_tags_enabled(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'true', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_dont_allow_resource_when_all_allow_tags_enabled_and_doesnt_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'false', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
 
 class Test_is_concealed_resource:
-    def test_conceal_resource_when_tag_true(self):
-        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'conceal-resource': 'true'}
-        assert is_concealed(config, sdm_resource)
 
-    def test_dont_conceal_resource_when_tag_false(self):
-        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'conceal-resource': 'false'}
-        assert is_concealed(config, sdm_resource) is False
+    @pytest.fixture
+    def mocked_resource(self):
+        return MagicMock(spec=Postgres)
 
-    def test_conceal_resource_when_tag_have_no_value(self):
-        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'conceal-resource': None}
-        assert is_concealed(config, sdm_resource)
+    @pytest.fixture
+    def mocked_account(self):
+        return DummyAccount('gbin', {})
 
-    def test_conceal_resource_when_tag_have_unexpected_value(self):
+    def test_conceal_resource_when_tag_true(self, mocked_resource):
         config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'conceal-resource': 'not-a-boolean'}
-        assert is_concealed(config, sdm_resource)
+        mocked_resource.tags = {'conceal-resource': 'true'}
+        assert is_concealed(config, mocked_resource)
 
-    def test_dont_conceal_resource_when_tag_doesnt_exist(self):
+    def test_dont_conceal_resource_when_tag_false(self, mocked_resource):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        mocked_resource.tags = {'conceal-resource': 'false'}
+        assert not is_concealed(config, mocked_resource)
+
+    def test_conceal_resource_when_tag_have_no_value(self, mocked_resource):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        mocked_resource.tags = {'conceal-resource': None}
+        assert is_concealed(config, mocked_resource)
+
+    def test_conceal_resource_when_tag_have_unexpected_value(self, mocked_resource):
+        config = {'CONCEAL_RESOURCE_TAG': 'conceal-resource'}
+        mocked_resource.tags = {'conceal-resource': 'not-a-boolean'}
+        assert is_concealed(config, mocked_resource)
+
+    def test_dont_conceal_resource_when_tag_doesnt_exist(self, mocked_resource):
         config = {'CONCEAL_RESOURCE_TAG': 'another-tag'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'conceal-resource': 'true'}
-        assert is_concealed(config, sdm_resource) is False
+        mocked_resource.tags = {'conceal-resource': 'true'}
+        assert not is_concealed(config, mocked_resource)
+
+    def test_dont_allow_resource_when_groups_tag_dont_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups'}
+        mocked_resource.tags = {'allow-groups': 'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_allow_tag_is_false_and_groups_tag_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'false', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_allow_tag_is_true_and_groups_tag_dont_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'true', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_allow_resource_when_all_allow_tags_enabled(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'true', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
+
+    def test_dont_allow_resource_when_all_allow_tags_enabled_and_doesnt_match(self, mocked_resource, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_RESOURCE_GROUPS_TAG': 'allow-groups', 'ALLOW_RESOURCE_TAG': 'allow-resource'}
+        mocked_resource.tags = {'allow-resource': 'false', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, mocked_resource, mocked_account)
 
 class Test_is_hidden_role:
-    def test_hide_role_when_tag_true(self):
-        config = {'HIDE_ROLE_TAG': 'hide-role'}
-        sdm_role = MagicMock(spec = Role)
-        sdm_role.tags = {'hide-role': 'true'}
-        assert is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
 
-    def test_dont_hide_role_when_tag_false(self):
-        config = {'HIDE_ROLE_TAG': 'hide-role'}
-        sdm_role = MagicMock(spec = Role)
-        sdm_role.tags = {'hide-role': 'false'}
-        assert not is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
+    @pytest.fixture
+    def mocked_role(self):
+        return MagicMock(spec=Role)
 
-    def test_hide_role_when_tag_has_no_value(self):
+    def test_hide_role_when_tag_true(self, mocked_role):
         config = {'HIDE_ROLE_TAG': 'hide-role'}
-        sdm_role = MagicMock(spec = Role)
-        sdm_role.tags = {'hide-role': None}
-        assert is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
+        mocked_role.tags = {'hide-role': 'true'}
+        assert is_hidden(config, HiddenTagEnum.ROLE, mocked_role)
 
-    def test_hide_role_when_tag_has_unexpected_value(self):
+    def test_dont_hide_role_when_tag_false(self, mocked_role):
         config = {'HIDE_ROLE_TAG': 'hide-role'}
-        sdm_role = MagicMock(spec = Role)
-        sdm_role.tags = {'hide-role': 'not-a-boolean'}
-        assert is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
+        mocked_role.tags = {'hide-role': 'false'}
+        assert not is_hidden(config, HiddenTagEnum.ROLE, mocked_role)
 
-    def test_dont_hide_role_when_tag_doesnt_exist(self):
+    def test_hide_role_when_tag_has_no_value(self, mocked_role):
         config = {'HIDE_ROLE_TAG': 'hide-role'}
-        sdm_role = MagicMock(spec = Role)
-        sdm_role.tags = {'another-tag': 'true'}
-        assert not is_hidden(config, HiddenTagEnum.ROLE, sdm_role)
+        mocked_role.tags = {'hide-role': None}
+        assert is_hidden(config, HiddenTagEnum.ROLE, mocked_role)
+
+    def test_hide_role_when_tag_has_unexpected_value(self, mocked_role):
+        config = {'HIDE_ROLE_TAG': 'hide-role'}
+        mocked_role.tags = {'hide-role': 'not-a-boolean'}
+        assert is_hidden(config, HiddenTagEnum.ROLE, mocked_role)
+
+    def test_dont_hide_role_when_tag_doesnt_exist(self, mocked_role):
+        config = {'HIDE_ROLE_TAG': 'hide-role'}
+        mocked_role.tags = {'another-tag': 'true'}
+        assert not is_hidden(config, HiddenTagEnum.ROLE, mocked_role)
 
 class Test_is_allowed_role:
-    def test_allow_role_when_tag_true(self):
-        config = {'ALLOW_ROLE_TAG': 'allow-role'}
-        sdm_role = MagicMock(spec = Postgres)
-        sdm_role.tags = {'allow-role': 'true'}
-        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
 
-    def test_dont_allow_role_when_tag_false(self):
-        config = {'ALLOW_ROLE_TAG': 'allow-role'}
-        sdm_role = MagicMock(spec = Postgres)
-        sdm_role.tags = {'allow-role': 'false'}
-        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role) is False
+    @pytest.fixture
+    def mocked_role(self):
+        return MagicMock(spec = Role)
 
-    def test_allow_role_when_tag_have_no_value(self):
-        config = {'ALLOW_ROLE_TAG': 'allow-role'}
-        sdm_role = MagicMock(spec = Postgres)
-        sdm_role.tags = {'allow-role': None}
-        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
+    @pytest.fixture
+    def mocked_account(self):
+        return DummyAccount('gbin', {})
 
-    def test_dont_allow_role_when_tag_have_unexpected_value(self):
+    def test_allow_role_when_tag_true(self, mocked_role, mocked_account):
         config = {'ALLOW_ROLE_TAG': 'allow-role'}
-        sdm_role = MagicMock(spec = Postgres)
-        sdm_role.tags = {'allow-role' : 'not-a-boolean'}
-        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role)
+        mocked_role.tags = {'allow-role': 'true'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
 
-    def test_dont_allow_role_when_tag_doesnt_exist(self):
+    def test_dont_allow_role_when_tag_false(self, mocked_role, mocked_account):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': 'false'}
+        assert not is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_allow_role_when_tag_have_no_value(self, mocked_role, mocked_account):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': None}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_dont_allow_role_when_tag_have_unexpected_value(self, mocked_role, mocked_account):
+        config = {'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role' : 'not-a-boolean'}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_dont_allow_role_when_tag_doesnt_exist(self, mocked_role, mocked_account):
         config = {'ALLOW_ROLE_TAG': 'another-tag'}
-        sdm_role = MagicMock(spec = Postgres)
-        sdm_role.tags = {'allow-role': 'true'}
-        assert is_allowed(config, AllowedTagEnum.ROLE, sdm_role) is False
+        mocked_role.tags = {'allow-role': 'true'}
+        assert not is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_dont_allow_role_when_groups_tag_dont_match(self, mocked_role, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_ROLE_GROUPS_TAG': 'allow-groups'}
+        mocked_role.tags = {'allow-groups': 'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_allow_role_when_allow_tag_is_false_and_groups_tag_match(self, mocked_role, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_ROLE_GROUPS_TAG': 'allow-groups', 'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': 'false', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_allow_role_when_allow_tag_is_true_and_groups_tag_dont_match(self, mocked_role, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_ROLE_GROUPS_TAG': 'allow-groups', 'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': 'true', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_allow_role_when_all_allow_tags_enabled(self, mocked_role, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_ROLE_GROUPS_TAG': 'allow-groups', 'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': 'true', 'allow-groups': f'other-group,{default_group}'}
+        mocked_account.tags = {'groups': default_group}
+        assert is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
+
+    def test_dont_allow_role_when_all_allow_tags_enabled_and_doesnt_match(self, mocked_role, mocked_account):
+        config = {'GROUPS_TAG': 'groups', 'ALLOW_ROLE_GROUPS_TAG': 'allow-groups', 'ALLOW_ROLE_TAG': 'allow-role'}
+        mocked_role.tags = {'allow-role': 'false', 'allow-groups': f'other-group'}
+        mocked_account.tags = {'groups': default_group}
+        assert not is_allowed(config, AllowedTagEnum.ROLE, AllowedGroupsTagEnum.ROLE, mocked_role, mocked_account)
 
 class Test_can_auto_approve_by_tag:
-    def test_auto_approve_when_tag_true(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': 'true'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
 
-    def test_dont_auto_approve_when_tag_false(self):
-        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': 'false'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG') is False
+    @pytest.fixture
+    def mocked_resource(self):
+        return MagicMock(spec=Postgres)
 
-    def test_auto_approve_when_tag_have_no_value(self):
+    def test_auto_approve_when_tag_true(self, mocked_resource):
         config = {'AUTO_APPROVE_TAG': 'auto-approve'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': None}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
+        mocked_resource.tags = {'auto-approve': 'true'}
+        assert can_auto_approve_by_tag(config, mocked_resource, 'AUTO_APPROVE_TAG')
 
-    def test_auto_approve_when_tag_have_unexpected_value(self):
+    def test_dont_auto_approve_when_tag_false(self, mocked_resource):
         config = {'AUTO_APPROVE_TAG': 'auto-approve'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': 'not-a-boolean'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG')
+        mocked_resource.tags = {'auto-approve': 'false'}
+        assert not can_auto_approve_by_tag(config, mocked_resource, 'AUTO_APPROVE_TAG')
 
-    def test_dont_auto_approve_when_tag_doesnt_exist(self):
+    def test_auto_approve_when_tag_have_no_value(self, mocked_resource):
+        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
+        mocked_resource.tags = {'auto-approve': None}
+        assert can_auto_approve_by_tag(config, mocked_resource, 'AUTO_APPROVE_TAG')
+
+    def test_auto_approve_when_tag_have_unexpected_value(self, mocked_resource):
+        config = {'AUTO_APPROVE_TAG': 'auto-approve'}
+        mocked_resource.tags = {'auto-approve': 'not-a-boolean'}
+        assert can_auto_approve_by_tag(config, mocked_resource, 'AUTO_APPROVE_TAG')
+
+    def test_dont_auto_approve_when_tag_doesnt_exist(self, mocked_resource):
         config = {'AUTO_APPROVE_TAG': 'another-tag'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve': 'true'}
-        assert can_auto_approve_by_tag(config, sdm_resource, 'AUTO_APPROVE_TAG') is False
+        mocked_resource.tags = {'auto-approve': 'true'}
+        assert not can_auto_approve_by_tag(config, mocked_resource, 'AUTO_APPROVE_TAG')
 
 class Test_can_auto_approve_by_groups_tag:
 
@@ -211,35 +321,34 @@ class Test_can_auto_approve_by_groups_tag:
     def test_account_without_groups(self):
         return DummyAccount('test', tags={})
 
-    def test_auto_approve_when_has_group_intersection(self, test_account):
-        config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve-groups': 'group-c,group-a'}
-        assert can_auto_approve_by_groups_tag(config, sdm_resource, test_account)
+    @pytest.fixture
+    def mocked_resource(self):
+        return MagicMock(spec=Postgres)
 
-    def test_dont_auto_approve_when_has_no_group_intersection(self, test_account):
+    def test_auto_approve_when_has_group_intersection(self, test_account, mocked_resource):
         config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve-groups': 'group-c'}
-        assert can_auto_approve_by_groups_tag(config, sdm_resource, test_account) is False
+        mocked_resource.tags = {'auto-approve-groups': 'group-c,group-a'}
+        assert can_auto_approve_by_groups_tag(config, mocked_resource, test_account)
 
-    def test_dont_auto_approve_when_tag_is_none(self, test_account):
+    def test_dont_auto_approve_when_has_no_group_intersection(self, test_account, mocked_resource):
         config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve-groups': None}
-        assert can_auto_approve_by_groups_tag(config, sdm_resource, test_account) is False
+        mocked_resource.tags = {'auto-approve-groups': 'group-c'}
+        assert can_auto_approve_by_groups_tag(config, mocked_resource, test_account) is False
 
-    def test_dont_auto_approve_when_tag_is_empty(self, test_account):
+    def test_dont_auto_approve_when_tag_is_none(self, test_account, mocked_resource):
         config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve-groups': ''}
-        assert can_auto_approve_by_groups_tag(config, sdm_resource, test_account) is False
+        mocked_resource.tags = {'auto-approve-groups': None}
+        assert can_auto_approve_by_groups_tag(config, mocked_resource, test_account) is False
 
-    def test_dont_auto_approve_when_account_has_no_groups(self, test_account_without_groups):
+    def test_dont_auto_approve_when_tag_is_empty(self, test_account, mocked_resource):
         config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
-        sdm_resource = MagicMock(spec = Postgres)
-        sdm_resource.tags = {'auto-approve-groups': 'group-a'}
-        assert can_auto_approve_by_groups_tag(config, sdm_resource, test_account_without_groups) is False
+        mocked_resource.tags = {'auto-approve-groups': ''}
+        assert can_auto_approve_by_groups_tag(config, mocked_resource, test_account) is False
+
+    def test_dont_auto_approve_when_account_has_no_groups(self, test_account_without_groups, mocked_resource):
+        config = {'AUTO_APPROVE_GROUPS_TAG': 'auto-approve-groups', 'GROUPS_TAG': 'groups'}
+        mocked_resource.tags = {'auto-approve-groups': 'group-a'}
+        assert can_auto_approve_by_groups_tag(config, mocked_resource, test_account_without_groups) is False
 
 class Test_has_intersection:
     def test_has_intersection(self):

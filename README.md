@@ -2,6 +2,8 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/strongdm/accessbot)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/strongdm/accessbot/accessbot?label=tests)
 
+**IMPORTANT: The Slack Classic implementation has been deprecated. In case you're still using it, please migrate ASAP to the [Slack Bolt implementation](https://github.com/strongdm/accessbot/blob/main/docs/slack/CONFIGURE_SLACK.md).**
+
 AccessBot is a chatbot that manages access to strongDM (SDM) resources through temporary grants. 
 Some main features are: 
 you can have a manual approval flow and an automated one for specific resources (or all of them if you want);
@@ -48,7 +50,7 @@ Detailed instructions about how to configure SDM and a platform (Slack, Slack Cl
 * [Configure SDM](docs/configure_accessbot/CONFIGURE_SDM.md)
 * [Configure Slack](docs/slack/CONFIGURE_SLACK.md)
 * [Configure Slack Classic](docs/slack/CONFIGURE_SLACK_CLASSIC.md)
-* [Configure MS Teams](docs/teams/CONFIGURE_MS_TEAMS.md)
+* [Configure MS Teams](docs/ms-teams/CONFIGURE_MS_TEAMS.md)
 
 
 ## Deploy

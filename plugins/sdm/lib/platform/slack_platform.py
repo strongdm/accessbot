@@ -39,6 +39,9 @@ class SlackPlatform(BasePlatform):
     def format_strikethrough(self, text):
         return r"~" + text + r"~"
 
+    def format_breakline(self, text):
+        return f"{text}\n"
+
     def get_rich_identifier(self, identifier, message):
         return identifier
 
@@ -47,4 +50,7 @@ class SlackPlatform(BasePlatform):
         for channel in channel_list:
             if f"#{channel['name']}" == channel_name:
                 return channel['is_member']
+        return False
+
+    def use_alternative_emails(self):
         return False
