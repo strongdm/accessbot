@@ -75,3 +75,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def is_admin_channel(self, channel):
         pass
+
+    @abstractmethod
+    def format_channel_name(self, channel_name):
+        pass

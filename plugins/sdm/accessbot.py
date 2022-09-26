@@ -7,7 +7,7 @@ from slack_sdk.errors import SlackApiError
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
-    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
+    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, SlackPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
     GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
 from lib.util import normalize_utf8
@@ -109,7 +109,7 @@ class AccessBot(BotPlugin):
             previous_config = dict(self.config)
         if configuration is not None and configuration != {}:
             admins_channel = configuration.get('ADMINS_CHANNEL')
-            if admins_channel is not None and not admins_channel.startswith("#"):
+            if admins_channel is not None and not admins_channel.startswith("#") and isinstance(self._platform, SlackPlatform):
                 channel = self._bot.build_identifier(configuration['ADMINS_CHANNEL'])
                 configuration['ADMINS_CHANNEL'] = f"#{channel.name}"
             config = dict(chain(config_template.get().items(), configuration.items()))
@@ -456,6 +456,9 @@ class AccessBot(BotPlugin):
 
     def is_admin_channel(self, channel):
         return self._platform.is_admin_channel(channel)
+
+    def format_channel_name(self, channel_name):
+        return self._platform.format_channel_name(channel_name)
 
     def __get_account_alternative_emails(self, frm):
         if self._platform.use_alternative_emails():

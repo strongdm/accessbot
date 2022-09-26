@@ -143,7 +143,8 @@ class BaseGrantHelper(ABC):
         if approvers_channel_tag is not None and sdm_object.tags is not None:
             approvers_channel = sdm_object.tags.get(approvers_channel_tag)
             if approvers_channel is not None:
-                self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel}'), text)
+                formatted_channel_name = self.__bot.format_channel_name(approvers_channel)
+                self.__bot.send(self.__bot.build_identifier(formatted_channel_name), text)
                 return
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:

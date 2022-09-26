@@ -85,3 +85,6 @@ class MSTeamsPlatform(BasePlatform):
         admin_team_name = match.group(1)
         admin_channel_name = match.group(2)
         return channel.team.name == admin_team_name and channel.name == admin_channel_name
+
+    def format_channel_name(self, channel_name):
+        return channel_name
