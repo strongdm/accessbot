@@ -54,3 +54,10 @@ class SlackPlatform(BasePlatform):
 
     def use_alternative_emails(self):
         return False
+
+    def get_channel(self, frm):
+        return None if not hasattr(frm, 'room') else f"#{frm.room.name}"
+
+    def is_admin_channel(self, channel):
+        admins_channel = self._bot.config['ADMINS_CHANNEL']
+        return channel == admins_channel

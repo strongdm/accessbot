@@ -49,9 +49,9 @@ class BaseEvaluateRequestHelper(ABC):
 
     def __is_admin(self, evaluator):
         admins_channel = self._bot.config['ADMINS_CHANNEL']
-        evaluator_channel = None if not hasattr(evaluator, 'room') else f"#{evaluator.room.name}"
+        evaluator_channel = self._bot.get_channel(evaluator)
         if admins_channel:
-            return evaluator_channel == admins_channel
+            return self._bot.is_admin_channel(evaluator_channel)
         return self._bot.get_sender_id(evaluator).lower() in self._bot.get_admins()
 
     def _notify_requester(self, requester_id, message, text):

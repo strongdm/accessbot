@@ -6,12 +6,10 @@ from ..util import remove_bold_symbols
 
 class MSTeamsPlatform(BasePlatform):
     def can_access_resource(self, message):
-        self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)
         return True
 
     def can_assign_role(self, message):
-        self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)
         return True
 
@@ -64,12 +62,6 @@ class MSTeamsPlatform(BasePlatform):
         identifier._extras = extras
         return identifier
 
-    def __verify_admins_channel_use(self):
-        if self._bot.config['ADMINS_CHANNEL']:
-            raise Exception("Sorry, it's not possible to request access to resources right now because an \
-                Admin Channel was defined, and Microsoft Teams doesn't support Admin's Channels. \
-                Please, contact your StrongDM admin.")
-
     def __verify_dm_availability(self, message):
         conversation = message.extras.get('conversation')
         if not conversation or not conversation.data['channelData'].get('team'):
@@ -83,3 +75,13 @@ class MSTeamsPlatform(BasePlatform):
 
     def use_alternative_emails(self):
         return self._bot._bot.azure_active_directory_is_configured()
+
+    def get_channel(self, frm):
+        return self._bot.get_channel_by_id(frm.extras['team_id'], frm.extras['channel_id'])
+
+    def is_admin_channel(self, channel):
+        admins_channel = self._bot.config['ADMINS_CHANNEL']
+        match = re.match(r'(.+)###(.+)', admins_channel)
+        admin_team_name = match.group(1)
+        admin_channel_name = match.group(2)
+        return channel.team.name == admin_team_name and channel.name == admin_channel_name

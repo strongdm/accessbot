@@ -67,3 +67,11 @@ class BasePlatform(ABC):
     @abstractmethod
     def use_alternative_emails(self):
         pass
+
+    @abstractmethod
+    def get_channel(self, frm):
+        pass
+
+    @abstractmethod
+    def is_admin_channel(self, channel):
+        pass

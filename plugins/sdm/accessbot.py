@@ -448,6 +448,15 @@ class AccessBot(BotPlugin):
                     raise e
         return None
 
+    def get_channel_by_id(self, team_id, channel_id):
+        return self._bot.get_channel_by_id(team_id, channel_id)
+
+    def get_channel(self, frm):
+        return self._platform.get_channel(frm)
+
+    def is_admin_channel(self, channel):
+        return self._platform.is_admin_channel(channel)
+
     def __get_account_alternative_emails(self, frm):
         if self._platform.use_alternative_emails():
             return self._bot.get_other_emails_by_aad_id(frm.useraadid)
