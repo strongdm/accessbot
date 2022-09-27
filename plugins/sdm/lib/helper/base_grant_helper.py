@@ -101,8 +101,8 @@ class BaseGrantHelper(ABC):
         self.__bot.get_metrics_helper().increment_auto_approvals()
 
     def __request_manual_approval(self, message, sdm_object, sdm_account, execution_id, request_id, sender_nick, flags: dict):
-        approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_account) \
-                                 or get_approvers_channel(self.__bot.config, sdm_object)
+        approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_object) \
+                                 or get_approvers_channel(self.__bot.config, sdm_account)
         self.__check_administration_availability(approvers_channel_name=approvers_channel_name)
         self.__enter_grant_request(message, sdm_object, sdm_account, self.__grant_type, request_id, flags=flags)
         yield from self.__notify_access_request_entered(sender_nick, sdm_object, sdm_account, request_id, message,
