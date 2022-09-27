@@ -906,8 +906,8 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert self.raw_messages[1].to.person == f"#{self.account_approvers_channel_name}"
         self.raw_messages.clear()
 
-    def test_send_request_message_to_account_approvers_channel_instead_of_resource_approvers_channel(self, mocked_testbot_account_and_resource_with_approvers_tag):
-        mocked_testbot_account_and_resource_with_approvers_tag.bot.sender.room = create_room_mock(self.account_approvers_channel_name)
+    def test_send_request_message_to_resource_approvers_channel_instead_of_account_approvers_channel(self, mocked_testbot_account_and_resource_with_approvers_tag):
+        mocked_testbot_account_and_resource_with_approvers_tag.bot.sender.room = create_room_mock(self.resource_approvers_channel_name)
         mocked_testbot_account_and_resource_with_approvers_tag.push_message("access to Xxx")
         mocked_testbot_account_and_resource_with_approvers_tag.push_message(f"yes {access_request_id}")
         ack_message = mocked_testbot_account_and_resource_with_approvers_tag.pop_message()
@@ -915,7 +915,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "configured approvers channel" in ack_message
         assert "access request" in mocked_testbot_account_and_resource_with_approvers_tag.pop_message()
         assert "Granting" in mocked_testbot_account_and_resource_with_approvers_tag.pop_message()
-        assert self.raw_messages[1].to.person == f"#{self.account_approvers_channel_name}"
+        assert self.raw_messages[1].to.person == f"#{self.resource_approvers_channel_name}"
         self.raw_messages.clear()
 
     def test_access_command_send_request_message_to_admins_channel(self, mocked_testbot_resource_without_approvers_tag):
