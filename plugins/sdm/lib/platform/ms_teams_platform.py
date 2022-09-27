@@ -77,7 +77,7 @@ class MSTeamsPlatform(BasePlatform):
         return self._bot._bot.azure_active_directory_is_configured()
 
     def get_channel(self, frm):
-        return self._bot.get_channel_by_id(frm.extras['team_id'], frm.extras['channel_id'])
+        return self._bot.get_ms_teams_channel_by_id(frm.extras['team_id'], frm.extras['channel_id'])
 
     def is_admin_channel(self, channel):
         admins_channel = self._bot.config['ADMINS_CHANNEL']

@@ -1,13 +1,14 @@
 import sys
-import time
 import pytest
 from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
 sys.path.append('e2e')
+sys.path.append('errbot-backend-botframework')
 
 from test_common import create_config, callback_message_fn, MSTeamsErrBotExtraTestSettings
 from lib import ApproveHelper, ResourceGrantHelper
+from botframework import ChannelIdentifier
 
 pytest_plugins = ["errbot.backends.test"]
 
@@ -28,7 +29,11 @@ class Test_default_flow(MSTeamsErrBotExtraTestSettings):
         assert "cannot execute this command via DM" in mocked_testbot.pop_message()
 
     def test_access_command_grant_when_self_approved(self, mocked_testbot):
-        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot,
+                                                                   from_extras={
+                                                                       'team_id': '19:ttt',
+                                                                       'channel_id': '19:ccc'
+                                                                   })
         mocked_testbot.push_message("access to Xxx")
         mocked_testbot.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot.pop_message()
@@ -39,6 +44,10 @@ class Test_default_flow(MSTeamsErrBotExtraTestSettings):
         mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             mocked_testbot._bot,
             from_email=account_name,
+            from_extras={
+                'team_id': '19:ttt',
+                'channel_id': '19:ccc'
+            },
             approver_is_admin=True
         ))
         mocked_testbot.push_message("access to Xxx")
@@ -71,7 +80,8 @@ class Test_alternative_emails(MSTeamsErrBotExtraTestSettings):
     def mocked_testbot_with_alternative_emails(self, testbot):
         config = create_config()
         testbot = inject_config(testbot, config, enable_aad=True,
-                                sdm_accounts_by_emails=[Exception('Sorry, cannot find your account!'), create_account_mock()])
+                                sdm_accounts_by_emails=[Exception('Sorry, cannot find your account!'),
+                                                        create_account_mock()])
         testbot._bot.callback_message = callback_message_fn(testbot._bot, from_useraadid='000-000')
         return testbot
 
@@ -98,6 +108,15 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
     accessbot._bot.get_other_emails_by_aad_id = MagicMock(return_value = ['other@mail.com'])
     accessbot._bot.azure_active_directory_is_configured = MagicMock(return_value = enable_aad)
+    accessbot._bot.get_channel_by_id = MagicMock(return_value=[
+        ChannelIdentifier(
+            {
+                'id': '19:ccc',
+                'displayName': 'Test Channel',
+                'team': {'id': '19:ttt', 'displayName': 'Test Team'}
+            }
+        )
+    ])
     return testbot
 
 def create_resource_grant_helper(accessbot):

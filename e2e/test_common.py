@@ -184,8 +184,8 @@ def send_message_override(bot, raw_messages):
 
 
 def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=False, from_nick=None, from_username=None,
-                        from_userid=None, from_useraadid=None, bot_id=None, room_id=None, room_name=None,
-                        check_elevate_admin_user=False):
+                        from_userid=None, from_useraadid=None, from_extras=None, bot_id=None, room_id=None,
+                        room_name=None, check_elevate_admin_user=False):
     def callback_message(msg):
         frm = bot.build_identifier(msg.frm.person)
         frm.bot_id = bot_id
@@ -197,6 +197,8 @@ def callback_message_fn(bot, from_email=admin_default_email, approver_is_admin=F
             frm.userid = from_userid
         if from_useraadid is not None:
             frm.useraadid = from_useraadid
+        if from_extras is not None:
+            frm.extras = from_extras
         if room_id is not None or room_name is not None:
             frm.room = DummyRoom(room_id, room_name)
         if approver_is_admin and "yes" in msg.body:

@@ -448,7 +448,7 @@ class AccessBot(BotPlugin):
                     raise e
         return None
 
-    def get_channel_by_id(self, team_id, channel_id):
+    def get_ms_teams_channel_by_id(self, team_id, channel_id):
         return self._bot.get_channel_by_id(team_id, channel_id)
 
     def get_channel(self, frm):
