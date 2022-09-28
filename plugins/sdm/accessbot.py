@@ -454,8 +454,8 @@ class AccessBot(BotPlugin):
     def get_channel(self, frm):
         return self._platform.get_channel(frm)
 
-    def is_admin_channel(self, channel):
-        return self._platform.is_admin_channel(channel)
+    def channel_match_str_rep(self, channel, str_rep):
+        return self._platform.channel_match_str_rep(channel, str_rep)
 
     def format_channel_name(self, channel_name):
         return self._platform.format_channel_name(channel_name)

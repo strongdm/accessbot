@@ -58,9 +58,10 @@ class SlackPlatform(BasePlatform):
     def get_channel(self, frm):
         return None if not hasattr(frm, 'room') else f"#{frm.room.name}"
 
-    def is_admin_channel(self, channel):
-        admins_channel = self._bot.config['ADMINS_CHANNEL']
-        return channel == admins_channel
+    def channel_match_str_rep(self, channel, str_rep):
+        return channel == str_rep
 
     def format_channel_name(self, channel_name):
+        if channel_name is None:
+            return None
         return f'#{channel_name}' if not channel_name.startswith("#") else channel_name

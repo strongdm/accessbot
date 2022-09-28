@@ -73,7 +73,7 @@ class BasePlatform(ABC):
         pass
 
     @abstractmethod
-    def is_admin_channel(self, channel):
+    def channel_match_str_rep(self, channel, str_rep):
         pass
 
     @abstractmethod

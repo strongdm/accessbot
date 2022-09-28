@@ -68,6 +68,7 @@ class MSTeamsPlatform(BasePlatform):
             raise Exception("You cannot execute this command via DM. Please, send a message via a team's channel.")
 
     def channel_is_reachable(self, channel):
+        # TODO: implement logic
         return True
 
     def has_active_admins(self):
@@ -79,9 +80,8 @@ class MSTeamsPlatform(BasePlatform):
     def get_channel(self, frm):
         return self._bot.get_ms_teams_channel_by_id(frm.extras['team_id'], frm.extras['channel_id'])
 
-    def is_admin_channel(self, channel):
-        admins_channel = self._bot.config['ADMINS_CHANNEL']
-        match = re.match(r'(.+)###(.+)', admins_channel)
+    def channel_match_str_rep(self, channel, str_rep):
+        match = re.match(r'(.+)###(.+)', str_rep)
         admin_team_name = match.group(1)
         admin_channel_name = match.group(2)
         return channel.team.name == admin_team_name and channel.name == admin_channel_name
