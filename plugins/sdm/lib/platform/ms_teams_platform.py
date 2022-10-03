@@ -22,7 +22,7 @@ class MSTeamsPlatform(BasePlatform):
         return True
 
     def get_admin_ids(self):
-        return [self._bot.build_identifier({ 'email': admin_email }) for admin_email in self._bot.get_admins()]
+        return [self._bot.build_identifier(admin_email) for admin_email in self._bot.get_admins()]
 
     def get_sender_id(self, sender):
         return sender.email
@@ -55,9 +55,7 @@ class MSTeamsPlatform(BasePlatform):
 
     def get_rich_identifier(self, identifier, message):
         extras = {
-            'team_id': message.extras['conversation'].data['channelData']['team']['id'],
-            'service_url': message.extras['conversation'].data['serviceUrl'],
-            'tenant_id': message.extras['conversation'].data['channelData']['tenant']['id']
+            'team_id': message.extras['conversation'].data['channelData']['team']['id']
         }
         identifier._extras = extras
         return identifier
@@ -77,14 +75,21 @@ class MSTeamsPlatform(BasePlatform):
     def use_alternative_emails(self):
         return self._bot._bot.azure_active_directory_is_configured()
 
-    def get_channel(self, frm):
-        return self._bot.get_ms_teams_channel_by_id(frm.extras['team_id'], frm.extras['channel_id'])
-
     def channel_match_str_rep(self, channel, str_rep):
-        match = re.match(r'(.+)###(.+)', str_rep)
+        if channel is None:
+            return False
+        match = re.match(r'(.+)###(.*)', str_rep)
         admin_team_name = match.group(1)
         admin_channel_name = match.group(2)
-        return channel.team.name == admin_team_name and channel.name == admin_channel_name
+        return channel.team.name == admin_team_name and \
+            (channel.name == admin_channel_name or \
+                (channel.name is None and admin_channel_name == ""))
 
     def format_channel_name(self, channel_name):
         return channel_name
+
+    def get_user_name(self, user):
+        return user.email
+
+    def format_user_handle(self, identifier):
+        return identifier.email
