@@ -67,6 +67,12 @@ class AccessBot(BotPlugin):
         self.init_access_form_bot()
         self.update_access_control_admins()
         self['auto_approve_uses'] = {}
+        # TODO Extend this check to the rest of the method
+        # If something doesn't need to be "instantiated" again we shouldn't be doing it
+        if self.__grant_requests_helper is None:
+            self.__grant_requests_helper = GrantRequestHelper(self)
+        if self.__metrics_helper is None:
+            self.__metrics_helper = MetricsHelper(self)
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
@@ -76,12 +82,6 @@ class AccessBot(BotPlugin):
         webserver = self.get_plugin('Webserver')
         webserver.configure(webserver.get_configuration_template())
         webserver.activate()
-        # TODO Extend this check to the rest of the method
-        # If something doesn't need to be "instantiated" again we shouldn't be doing it
-        if self.__grant_requests_helper is None:
-            self.__grant_requests_helper = GrantRequestHelper(self)
-        if self.__metrics_helper is None:
-            self.__metrics_helper = MetricsHelper(self)
         self._hide_utils_whoami_command()
 
     def _hide_utils_whoami_command(self):
@@ -141,18 +141,20 @@ class AccessBot(BotPlugin):
             self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
             admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
             members = self._bot.conversation_members(admin_channel)
-            for member_id in members:
-                identifier = self._bot.userid_to_username(member_id)
-                allowed_users += [f'@{identifier}']
+            for identifier in members:
+                user_name = self.get_user_name(identifier)
+                allowed_users += [user_name]
         self._bot.bot_config.BOT_ADMINS.extend(sorted(set(allowed_users)))
 
     def check_elevate_admin_user(self, msg):
         if not self.config.get('ADMINS_CHANNEL_ELEVATE') or self.config.get('ADMINS_CHANNEL') is None:
             return
-        user_is_admin = f'@{msg.frm.username}' in self._bot.bot_config.BOT_ADMINS
-        if hasattr(msg.frm, "room"):
+        user_handle = self.format_user_handle(msg.frm)
+        user_is_admin = user_handle in self._bot.bot_config.BOT_ADMINS
+        # TODO: check on slack platform
+        if hasattr(msg.frm, "room") and msg.frm.room is not None:
             if f'#{msg.frm.room.channelname}' == self.config['ADMINS_CHANNEL'] and not user_is_admin:
-                self._bot.bot_config.BOT_ADMINS.append(f'@{msg.frm.username}')
+                self._bot.bot_config.BOT_ADMINS.append(user_handle)
             return
         if not user_is_admin:
             return
@@ -160,7 +162,7 @@ class AccessBot(BotPlugin):
         admins_channel_members = self._bot.conversation_members(admins_channel)
         user_is_member_of_admins_channel = msg.frm.userid in admins_channel_members
         if not user_is_member_of_admins_channel:
-            self._bot.bot_config.BOT_ADMINS.remove(f'@{msg.frm.username}')
+            self._bot.bot_config.BOT_ADMINS.remove(user_handle)
 
     def check_configuration(self, configuration):
         pass
@@ -459,6 +461,12 @@ class AccessBot(BotPlugin):
 
     def format_channel_name(self, channel_name):
         return self._platform.format_channel_name(channel_name)
+
+    def get_user_name(self, user):
+        return self._platform.get_user_name(user)
+
+    def format_user_handle(self, identifier):
+        return self._platform.format_user_handle(identifier)
 
     def __get_account_alternative_emails(self, frm):
         if self._platform.use_alternative_emails():

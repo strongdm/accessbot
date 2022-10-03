@@ -55,9 +55,6 @@ class SlackPlatform(BasePlatform):
     def use_alternative_emails(self):
         return False
 
-    def get_channel(self, frm):
-        return None if not hasattr(frm, 'room') else f"#{frm.room.name}"
-
     def channel_match_str_rep(self, channel, str_rep):
         return channel == str_rep
 
@@ -65,3 +62,10 @@ class SlackPlatform(BasePlatform):
         if channel_name is None:
             return None
         return f'#{channel_name}' if not channel_name.startswith("#") else channel_name
+
+    def get_user_name(self, user):
+        username = self._bot._bot.userid_to_username(user)
+        return f'@{username}'
+
+    def format_user_handle(self, identifier):
+        return f'@{identifier.username}'
