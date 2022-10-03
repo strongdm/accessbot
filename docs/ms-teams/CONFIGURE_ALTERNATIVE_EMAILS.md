@@ -24,7 +24,7 @@ In order to make this work, you'll need to register an Azure Active Directory Ap
 
 5. After creating the resource, define the following environment variables using the specified values on the screenshot:
 - `AZURE_AD_APP_ID` - Application (client) ID
-- `AZURE_AD_TENANT_ID` - Directory (tenant) ID
+- `AZURE_AD_TENANT_ID` - Active Directory Tenant ID
 
 ![screenshot-5](https://user-images.githubusercontent.com/49597325/191574079-b95371c4-be98-4196-a41b-512e5d2ad47e.png)
 

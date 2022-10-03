@@ -48,6 +48,14 @@ In order to configure AccessBot integration with Microsoft Teams, follow the nex
 
 ![screenshot-10](https://user-images.githubusercontent.com/49597325/190441039-72546561-8d0e-4ca2-b64d-634bbaf8ea8e.png)
 
+12. Now go to the Azure Active Directory page:
+
+![image](https://user-images.githubusercontent.com/20745533/193577832-754365cd-18df-400e-9db5-78cff446bddd.png)
+
+13. Finally, copy the `Tenant ID` and paste it into the environment variable `AZURE_AD_TENANT_ID`.
+
+![image](https://user-images.githubusercontent.com/20745533/193578281-5c9c508c-ede2-45be-9712-1c8a90c8b3a3.png)
+
 And now we can use AccessBot in Microsoft Teams via DMs. In the following section we'll configure the bot to use into the Microsoft Teams Organization.
 
 **NOTE**: If you're passing environment variables via shell, ensure that you eclose the `AZURE_APP_PASSWORD` value between single quotes!
@@ -57,6 +65,7 @@ And now we can use AccessBot in Microsoft Teams via DMs. In the following sectio
 Start accessbot with the following environment variables: 
 * **AZURE_APP_ID** - The `Microsoft App ID` of the created Azure Bot
 * **AZURE_APP_PASSWORD** - The created client secret in the previous section
+* **AZURE_AD_TENANT_ID** - The `Tenant ID` value shown in the Azure Active Directory page
 * **SDM_BOT_PLATFORM** - Must be `ms-teams`.
 * **SDM_ADMINS** - The administrator's email addresses (separated by spaces)
 

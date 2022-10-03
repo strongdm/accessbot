@@ -21,8 +21,9 @@ There are a number of variables you can use for configuring AccessBot. Here you 
 * **SLACK_TOKEN**. Slack Bot User OAuth Token for Classic Slack bot version
 
 ### MS Teams (SDM_BOT_PLATFORM='ms-teams')
-* **AZURE_APP_ID**. Set to the **Microsoft App ID**
-* **AZURE_APP_PASSWORD**. Set to the **Secret Value** 
+* **AZURE_APP_ID**. Azure Bot application ID
+* **AZURE_APP_PASSWORD**. Azure Bot application password
+* **AZURE_AD_TENANT_ID_**. Azure Active Directory Tenant ID
 
 ## Internal configuration
 * **LOG_LEVEL**. Logging level. Default = INFO
@@ -34,14 +35,18 @@ The following variables can be changed at runtime via Slack or MS Teams -by a bo
 You just need to remove the "SDM_" prefix when configuring them. Here's a usage example of the command: `plugin config AccessBot {'ADMINS_CHANNEL': '#my-channel', 'ADMIN_TIMEOUT': 60}`.
 
 * **SDM_ADMIN_TIMEOUT**. Timeout in seconds for a request to be manually approved. Default = 30 sec
-* **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages, for example: `#accessbot-private` (important to start with `#`). Disabled by default
+* **SDM_ADMINS_CHANNEL**. Channel name to be used by administrators for approval messages. Disabled by default. See the following usage examples:
+  - For Slack: `SDM_ADMINS_CHANNEL=#accessbot-private`, the value needs to start with a `#` symbol, i.e., the channel name needs to come after a `#` symbol.
+  - For MS Teams: `SDM_ADMINS_CHANNEL=Admin Team###Admin Channel`, the team and the channel name must be separated by `###`. If you want to use the default channel of a team, you only need to leave off the channel name, e.g., `SDM_ADMINS_CHANNEL=Admin Team###`.
 * **SDM_ADMINS_CHANNEL_ELEVATE**. Boolean flag to allow usage of admin commands to all users inside the configured SDM_ADMINS_CHANNEL. When this is enabled the admin commands can no longer be sent via DM, only via the configured channel. Default = false
 * **SDM_ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL**. Flag to enable renewal of resource account grants. When enabled allows a user to make a new access request to a resource even if they already have access to it. Default = false
 * **SDM_ALLOW_RESOURCE_TAG**. Resource tag to be used for only showing the allowed resources. Ideally set the value to `true` or `false` (e.g. `allow-resource=true`). When there's no tag assigned, all resources are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_ALLOW_RESOURCE_GROUPS_TAG**. Resource tag to be used for only showing the allowed resources to the configured allowed user groups. The tag value should be the list of allowed user groups (see `SDM_GROUPS_TAG`) for that resource separated by comma. If this tag or the `SDM_GROUPS_TAG` is not configured, all resources are allowed (default behavior). Disabled by default ([see below](#Allow-Resource-By-Groups) for more info about using tags)
 * **SDM_ALLOW_ROLE_TAG**. Role tag to be used for only showing the allowed roles. Ideally set the value to `true` or `false` (e.g. `allow-role=true`). When there's no tag assigned, all roles are allowed (default behavior). Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_ALLOW_ROLE_GROUPS_TAG**. Role tag to be used for only showing the allowed roles to the configured allowed user groups. The tag value should be the list of allowed user groups (see `SDM_GROUPS_TAG`) for that role separated by comma. If this tag or the `SDM_GROUPS_TAG` is not configured, all resources are allowed (default behavior). Disabled by default ([see below](#Allow-Role-By-Groups) for more info about using tags)
-* **SDM_APPROVERS_CHANNEL_TAG**. Resource tag to be used for specifying the responsible approvers channel name for individual resources. For example: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=my-resource-approvers`, in this scenario all access requests for that resource would be sent only to the `#my-resource-approvers` Slack channel. Disabled by default
+* **SDM_APPROVERS_CHANNEL_TAG**. Resource tag to be used for specifying the responsible approvers channel name for individual resources. Disabled by default. See the following usage examples:
+  - For Slack: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=#my-resource-approvers`, in this scenario all access requests for that resource would be sent only to the `#my-resource-approvers` Slack channel.
+  - For MS Teams: `SDM_APPROVERS_CHANNEL_TAG=approvers-channel` and inside the tags of a resource we would have `approvers-channel=My Team###My Resource Approvers`, in this scenario all access requests for that resource would be sent only to the `My Resource Approvers` Teams channel. Note that in the tag value the team and the channel name must be separated by `###`. If you want to use the default channel of a team, you only need to leave off the channel name, e.g., `approvers-channel=My Team###`.
 * **SDM_AUTO_APPROVE_ALL**. Flag to enable auto-approve for all resources. Default = false
 * **SDM_AUTO_APPROVE_GROUPS_TAG**. Resource tag to be used for auto-approve groups. The tag value should be a list of groups (see `SDM_GROUPS_TAG`) separated by comma. Disabled by default
 * **SDM_AUTO_APPROVE_ROLE_ALL**. Flag to enable auto-approve for all roles. Default = false
