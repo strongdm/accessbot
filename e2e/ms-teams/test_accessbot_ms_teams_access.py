@@ -85,15 +85,9 @@ class Test_admins_channel(MSTeamsErrBotExtraTestSettings):
         config['ADMINS_CHANNEL'] = f"{self.admin_team}###{self.admin_channel}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            testbot._bot,
-            from_email=self.admin_email,
-            from_extras={
-                'team_id': '19:ttt',
-                'channel_id': '19:ccc'
-            }
+            testbot._bot
         ))
-        accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.build_identifier = MagicMock(side_effect=get_mocked_identifier)
+        testbot._bot.build_identifier = MagicMock(return_value=get_mocked_identifier(self.admin_team, self.admin_channel))
         return inject_config(testbot, config, account_email=self.admin_email)
 
     @pytest.fixture
@@ -101,19 +95,15 @@ class Test_admins_channel(MSTeamsErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"{self.admin_team}###{self.admin_channel}"
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
-        testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
-            testbot._bot,
-            from_email=self.admin_email,
-            from_extras={
-                'team_id': '19:ttt',
-                'channel_id': '19:ccc'
-            }
-        ))
+        testbot._bot.callback_message = callback_message_fn(
+            testbot._bot
+        )
         accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.channel_is_reachable = MagicMock(return_value=False)
         return inject_config(testbot, config, account_email=self.admin_email)
 
     def test_access_command_grant_from_admins_channel(self, mocked_testbot_with_admins_channel):
+        mocked_testbot_with_admins_channel._bot.build_identifier = MagicMock(return_value=get_mocked_identifier(self.admin_team, self.admin_channel))
         accessbot = mocked_testbot_with_admins_channel.bot.plugin_manager.plugins['AccessBot']
         accessbot._bot.get_channel_by_id = MagicMock(return_value=
             ChannelIdentifier(
@@ -129,11 +119,12 @@ class Test_admins_channel(MSTeamsErrBotExtraTestSettings):
         assert "valid request" in mocked_testbot_with_admins_channel.pop_message()
         assert "access request" in mocked_testbot_with_admins_channel.pop_message()
         assert "Granting" in mocked_testbot_with_admins_channel.pop_message()
-        assert self.raw_messages[1].to.name == self.admin_channel
-        assert self.raw_messages[1].to.team.name == self.admin_team
+        assert self.raw_messages[1].to.room.name == self.admin_channel
+        assert self.raw_messages[1].to.room.team.name == self.admin_team
         self.raw_messages.clear()
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_admins_channel):
+        mocked_testbot_with_admins_channel._bot.build_identifier = MagicMock(return_value=get_mocked_identifier('invalid team', 'invalid channel'))
         mocked_testbot_with_admins_channel.push_message("access to Xxx")
         mocked_testbot_with_admins_channel.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_admins_channel.pop_message()
@@ -158,17 +149,11 @@ class Test_approvers_channel_tag(MSTeamsErrBotExtraTestSettings):
         testbot.bot.send_message = send_message_override(testbot.bot, self.raw_messages)
         testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             testbot._bot,
-            from_email=self.admin_email,
-            from_extras={
-                'team_id': '19:ttt',
-                'channel_id': '19:ccc'
-            }
         ))
         testbot.bot.channels = MagicMock(return_value=[{'name': self.approvers_channel, 'is_member': True}])
         bot = inject_config(testbot, config, tags={'approvers-channel': f'{self.approvers_team}###{self.approvers_channel}'},
                                                    account_email=self.admin_email)
-        accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.build_identifier = MagicMock(side_effect=get_mocked_identifier)
+        testbot._bot.build_identifier = MagicMock(return_value=get_mocked_identifier(self.approvers_team, self.approvers_channel))
         return bot
 
     def test_access_command_send_request_message_to_approvers_channels(self, mocked_testbot):
@@ -188,8 +173,8 @@ class Test_approvers_channel_tag(MSTeamsErrBotExtraTestSettings):
         assert "configured approvers channel" in ack_message
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
-        assert self.raw_messages[1].to.name == self.approvers_channel
-        assert self.raw_messages[1].to.team.name == self.approvers_team
+        assert self.raw_messages[1].to.room.name == self.approvers_channel
+        assert self.raw_messages[1].to.room.team.name == self.approvers_team
         self.raw_messages.clear()
 
 
@@ -279,19 +264,25 @@ def create_account_mock(account_email=account_name):
     mock.email = account_email
     return mock
 
-def get_mocked_identifier(data):
-    if isinstance(data, dict):
-        return Identifier(data)
-    match = re.match(r'(.+)###(.+)', data)
-    team_name = match.group(1)
-    channel_name = match.group(2)
-    return ChannelIdentifier(
+def get_mocked_identifier(team, channel):
+    identifier = Identifier({
+        'room': ChannelIdentifier(
             {
                 'id': '19:ccc',
-                'displayName': channel_name,
-                'team': {'id': '19:ttt', 'displayName': team_name}
+                'displayName': channel,
+                'team': {'id': '19:ttt', 'displayName': team}
             }
-    )
+        )
+    })
+    # identifier.room = MagicMock(return_value=)
+    # identifier.room.team = MagicMock()
+    return identifier
+    # match = re.match(r'(.+)###(.+)', data)
+    # team_name = match.group(1)
+    # channel_name = match.group(2)
+    # return Identifier({
+    #     'room':
+    # })
 
 def get_dummy_team(name):
     return TeamIdentifier({'id': '19:ttt', 'displayName': name})

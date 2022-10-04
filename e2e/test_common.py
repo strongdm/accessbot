@@ -1,4 +1,5 @@
 from errbot import Message
+from errbot.backends.base import Identifier
 from errbot.core import ErrBot
 from errbot.backends.test import TestPerson as DummyErrbotPerson
 
@@ -148,17 +149,21 @@ class DummyPerson(DummyErrbotPerson):
     def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
         super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
         self._is_deleted = is_deleted
+        self.room = None
 
     @property
     def is_deleted(self):
         return self._is_deleted
 
 
-class DummyRoom:
+class DummyRoom(Identifier):
     def __init__(self, id, name, is_member=True):
         self.id = id
         self.name = name
         self.is_member = is_member
+
+    def __str__(self):
+        return f"#{self.name}"
 
     @property
     def channelname(self):

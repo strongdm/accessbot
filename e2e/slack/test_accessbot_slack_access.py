@@ -586,6 +586,7 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels._bot.callback_message = callback_message_fn(mocked_testbot_with_channels._bot, room_name=self.channel_name)
         mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
             return_value=get_dummy_person(f'#{self.channel_name}'))
         mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
@@ -597,6 +598,8 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels._bot.callback_message = callback_message_fn(mocked_testbot_with_channels._bot)
+        mocked_testbot_with_channels._bot.build_identifier = MagicMock(side_effect=mocked_build_identifier)
         mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
@@ -974,7 +977,7 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         ))
         mocked_testbot.push_message(f'yes {access_request_id}')
         assert "Access renewed" in mocked_testbot.pop_message()
-        assert self.raw_messages[3].to.person == f'#{self.regular_channel_name}'
+        assert self.raw_messages[3].to.channelname == self.regular_channel_name
         granted_message = mocked_testbot.pop_message()
         assert "Granting" in granted_message
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
@@ -1051,6 +1054,7 @@ def create_approver_mock(account_email=account_name):
 def create_room_mock(channel_name):
     mock = MagicMock()
     mock.name = channel_name
+    mock.__str__ = MagicMock(return_value=f"#{channel_name}")
     return mock
 
 def raise_no_resource_found(message='', match=''):

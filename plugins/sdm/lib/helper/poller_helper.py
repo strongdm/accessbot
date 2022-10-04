@@ -35,6 +35,8 @@ class PollerHelper:
     def __get_channel_id(self, requester_id):
         if type(requester_id) == str:
             return self.__bot.build_identifier(requester_id)
+        if not hasattr(requester_id, 'room'):
+            return None
         return self.__bot.build_identifier(requester_id.room.__str__())
 
     def __notify_evaluators(self, grant_request, text):

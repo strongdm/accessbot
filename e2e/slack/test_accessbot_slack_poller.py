@@ -112,7 +112,13 @@ class Test_stale_with_approvers_channel_tag_enabled(ErrBotExtraTestSettings):
         assert self.raw_messages[0].to.person == f"#{self.approvers_channel_name}"
         assert self.raw_messages[1].to.person == f"#{self.regular_channel_name}"
 
+def create_person_mock(name, channel_name):
+    mock = MagicMock()
+    mock.room = channel_name
+    return mock
+
 def create_room_mock(channel_name):
     mock = MagicMock()
     mock.name = channel_name
+    mock.__str__ = MagicMock(return_value=f"#{channel_name}")
     return mock

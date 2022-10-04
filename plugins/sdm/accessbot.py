@@ -135,15 +135,18 @@ class AccessBot(BotPlugin):
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].clear()
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = True
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = False
-        if self.config and self.config['ADMINS_CHANNEL_ELEVATE'] and self.config['ADMINS_CHANNEL']:
-            self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
-            self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = False
-            self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
-            admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
-            members = self._bot.conversation_members(admin_channel)
-            for identifier in members:
-                user_name = self.get_user_name(identifier)
-                allowed_users += [user_name]
+        if self.config and self.config['ADMINS_CHANNEL_ELEVATE']:
+            if self.config['ADMINS_CHANNEL'] and self.channel_is_reachable(self.config['ADMINS_CHANNEL']):
+                self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
+                self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = False
+                self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
+                admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
+                members = self._bot.conversation_members(admin_channel)
+                for identifier in members:
+                    user_name = self.get_user_name(identifier)
+                    allowed_users += [user_name]
+            else:
+                self.config['ADMINS_CHANNEL_ELEVATE'] = False
         self._bot.bot_config.BOT_ADMINS.extend(sorted(set(allowed_users)))
 
     def check_elevate_admin_user(self, msg):
