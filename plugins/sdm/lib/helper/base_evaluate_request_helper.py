@@ -53,7 +53,7 @@ class BaseEvaluateRequestHelper(ABC):
         return self._bot.get_sender_id(evaluator).lower() in self._bot.get_admins()
 
     def _notify_requester(self, requester_id, message, text):
-        if requester_id.room:
+        if hasattr(requester_id, 'room'):
             self._bot.send(requester_id.room, text, in_reply_to=message)
             return
         self._bot.send(requester_id, text, in_reply_to=message)

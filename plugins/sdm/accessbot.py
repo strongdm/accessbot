@@ -111,7 +111,7 @@ class AccessBot(BotPlugin):
             admins_channel = configuration.get('ADMINS_CHANNEL')
             if admins_channel is not None and not admins_channel.startswith("#") and isinstance(self._platform, SlackPlatform):
                 channel = self._bot.build_identifier(configuration['ADMINS_CHANNEL'])
-                configuration['ADMINS_CHANNEL'] = f"#{channel.name}"
+                configuration['ADMINS_CHANNEL'] = self.format_channel_name(channel.name)
             config = dict(chain(config_template.get().items(), configuration.items()))
         elif self._bot.mode != 'test':
             config = config_template.get()
@@ -153,15 +153,14 @@ class AccessBot(BotPlugin):
         user_is_admin = user_handle in self._bot.bot_config.BOT_ADMINS
         # TODO: check on slack platform
         if hasattr(msg.frm, "room") and msg.frm.room is not None:
-            if f'#{msg.frm.room.channelname}' == self.config['ADMINS_CHANNEL'] and not user_is_admin:
+            if self.format_channel_name(msg.frm.room.channelname) == self.format_channel_name(self.config['ADMINS_CHANNEL']) \
+                    and not user_is_admin:
                 self._bot.bot_config.BOT_ADMINS.append(user_handle)
             return
         if not user_is_admin:
             return
         admins_channel = self.build_identifier(self.config.get('ADMINS_CHANNEL'))
-        admins_channel_members = self._bot.conversation_members(admins_channel)
-        user_is_member_of_admins_channel = msg.frm.userid in admins_channel_members
-        if not user_is_member_of_admins_channel:
+        if not self.user_is_member_of_channel(msg.frm, admins_channel):
             self._bot.bot_config.BOT_ADMINS.remove(user_handle)
 
     def check_configuration(self, configuration):
@@ -472,3 +471,6 @@ class AccessBot(BotPlugin):
         if self._platform.use_alternative_emails():
             return self._bot.get_other_emails_by_aad_id(frm.useraadid)
         return []
+
+    def user_is_member_of_channel(self, user, channel):
+        return self._platform.user_is_member_of_channel(user, channel)

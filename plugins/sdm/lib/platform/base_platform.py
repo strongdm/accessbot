@@ -83,3 +83,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def format_user_handle(self, identifier):
         pass
+
+    @abstractmethod
+    def user_is_member_of_channel(self, user, channel):
+        pass

@@ -93,3 +93,7 @@ class MSTeamsPlatform(BasePlatform):
 
     def format_user_handle(self, identifier):
         return identifier.email
+
+    def user_is_member_of_channel(self, user, channel):
+        channel_members = self._bot._bot.conversation_members(channel)
+        return user.userid in map(lambda identifier: identifier.userid, channel_members)

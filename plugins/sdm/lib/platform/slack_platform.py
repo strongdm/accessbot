@@ -48,7 +48,7 @@ class SlackPlatform(BasePlatform):
     def channel_is_reachable(self, channel_name):
         channel_list = self._bot._bot.channels()
         for channel in channel_list:
-            if f"#{channel['name']}" == channel_name:
+            if self.format_channel_name(channel['name']) == self.format_channel_name(channel_name):
                 return channel['is_member']
         return False
 
@@ -56,7 +56,7 @@ class SlackPlatform(BasePlatform):
         return False
 
     def channel_match_str_rep(self, channel, str_rep):
-        return channel == str_rep
+        return channel.__str__() == self.format_channel_name(str_rep)
 
     def format_channel_name(self, channel_name):
         if channel_name is None:
@@ -69,3 +69,7 @@ class SlackPlatform(BasePlatform):
 
     def format_user_handle(self, identifier):
         return f'@{identifier.username}'
+
+    def user_is_member_of_channel(self, user, channel):
+        channel_members = self._bot._bot.conversation_members(channel)
+        return user.userid in channel_members
