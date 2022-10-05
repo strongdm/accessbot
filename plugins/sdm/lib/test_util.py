@@ -8,7 +8,7 @@ from strongdm import Postgres, Role
 
 sys.path.append('e2e/')
 
-from test_common import DummyAccount, DummyResource
+from test_common import DummyAccount, DummyResource, DummyPerson
 from .util import is_hidden, can_auto_approve_by_tag, HiddenTagEnum, AllowedTagEnum, is_allowed, is_concealed, \
     can_auto_approve_by_groups_tag, has_intersection, convert_duration_flag_to_timedelta, \
     get_formatted_duration_string, get_approvers_channel, AllowedGroupsTagEnum
@@ -445,6 +445,12 @@ class Test_get_approvers_channel:
         config = {'APPROVERS_CHANNEL_TAG': self.approvers_channel_tag}
         sdm_object = DummyResource('resource', {self.approvers_channel_tag: self.approvers_channel})
         approvers_channel = get_approvers_channel(config, sdm_object)
+        assert approvers_channel == self.approvers_channel
+
+    def test_get_channel_when_flag_is_enable_and_sdm_account_has_tag(self):
+        config = {'APPROVERS_CHANNEL_TAG': self.approvers_channel_tag}
+        sdm_account = DummyPerson('person', tags={self.approvers_channel_tag: self.approvers_channel})
+        approvers_channel = get_approvers_channel(config, sdm_account)
         assert approvers_channel == self.approvers_channel
 
     def test_dont_get_channel_when_sdm_object_has_tag_but_flag_is_disabled(self):

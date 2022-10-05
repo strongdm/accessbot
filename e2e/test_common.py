@@ -99,7 +99,7 @@ class DummyAccount:
 
 
 class DummyResource:
-    def __init__(self, name, tags):
+    def __init__(self, name, tags={}):
         self.name = name
         self.tags = tags
 
@@ -146,9 +146,10 @@ class DummyConversation:
 
 
 class DummyPerson(DummyErrbotPerson):
-    def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False):
+    def __init__(self, person, client=None, nick=None, fullname=None, email=None, is_deleted=False, tags={}):
         super().__init__(person, client=client, nick=nick, fullname=fullname, email=email)
         self._is_deleted = is_deleted
+        self.tags = tags
         self.room = None
 
     @property

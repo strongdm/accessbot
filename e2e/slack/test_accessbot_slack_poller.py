@@ -9,7 +9,8 @@ from unittest.mock import MagicMock
 sys.path.append('e2e')
 sys.path.append('plugins/sdm')
 
-from test_common import create_config, send_message_override, ErrBotExtraTestSettings, get_dummy_person, DummyResource
+from test_common import create_config, send_message_override, ErrBotExtraTestSettings, get_dummy_person, \
+    DummyResource, DummyRoom, DummyPerson
 from lib import PollerHelper
 
 pytest_plugins = ["errbot.backends.test"]
@@ -50,7 +51,7 @@ class Test_stale_grant_requests_cleaner(ErrBotExtraTestSettings):
     def test_when_handling_messages_from_a_channel(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         sender_id = accessbot.build_identifier(accessbot.config['SENDER_EMAIL_OVERRIDE'])
-        sender_id.room = create_room_mock(self.channel_name)
+        sender_id.room = DummyRoom(None, self.channel_name)
         accessbot.enter_grant_request(access_request_id, Message(frm = sender_id), MagicMock(), MagicMock(), MagicMock())
         assert access_request_id in accessbot.get_grant_request_ids()
 
@@ -98,13 +99,14 @@ class Test_stale_with_approvers_channel_tag_enabled(ErrBotExtraTestSettings):
         accessbot.config = config
         return testbot
 
-    def test_send_stale_message_to_approvers_channel(self, mocked_testbot):
+    def test_send_stale_message_to_approvers_channel_from_resource(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         sender_id = accessbot.build_identifier(accessbot.config['SENDER_EMAIL_OVERRIDE'])
-        sender_id.room = create_room_mock(self.regular_channel_name)
+        sender_id.room = DummyRoom(None, self.regular_channel_name)
         accessbot.enter_grant_request(access_request_id, Message(frm=sender_id),
                                       DummyResource('resource', {'approvers-channel': self.approvers_channel_name}),
-                                      MagicMock(), MagicMock())
+                                      DummyPerson('person'),
+                                      MagicMock())
         time.sleep(0.1)
         assert access_request_id in accessbot.get_grant_request_ids()
         assert "timed out" in mocked_testbot.pop_message()
@@ -112,13 +114,17 @@ class Test_stale_with_approvers_channel_tag_enabled(ErrBotExtraTestSettings):
         assert self.raw_messages[0].to.person == f"#{self.approvers_channel_name}"
         assert self.raw_messages[1].to.person == f"#{self.regular_channel_name}"
 
-def create_person_mock(name, channel_name):
-    mock = MagicMock()
-    mock.room = channel_name
-    return mock
-
-def create_room_mock(channel_name):
-    mock = MagicMock()
-    mock.name = channel_name
-    mock.__str__ = MagicMock(return_value=f"#{channel_name}")
-    return mock
+    def test_send_stale_message_to_approvers_channel_from_account(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        sender_id = accessbot.build_identifier(accessbot.config['SENDER_EMAIL_OVERRIDE'])
+        sender_id.room = DummyRoom(None, self.regular_channel_name)
+        accessbot.enter_grant_request(access_request_id, Message(frm=sender_id),
+                                      DummyResource('resource'),
+                                      DummyPerson('person', tags={'approvers-channel': self.approvers_channel_name}),
+                                      MagicMock())
+        assert access_request_id in accessbot.get_grant_request_ids()
+        time.sleep(0.1)
+        assert "timed out" in mocked_testbot.pop_message()
+        assert "not approved" in mocked_testbot.pop_message()
+        assert self.raw_messages[0].to.person == f"#{self.approvers_channel_name}"
+        assert self.raw_messages[1].to.person == f"#{self.regular_channel_name}"

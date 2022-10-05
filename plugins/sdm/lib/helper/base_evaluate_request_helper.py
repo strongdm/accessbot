@@ -37,10 +37,11 @@ class BaseEvaluateRequestHelper(ABC):
 
     def __is_allowed_to_evaluate(self, request_id, evaluator):
         grant_request = self._bot.get_grant_request(request_id)
+        sdm_account = grant_request['sdm_account']
         sdm_object = grant_request['sdm_object']
-        approvers_channel = self._bot.format_channel_name(get_approvers_channel(self._bot.config, sdm_object))
+        approvers_channel = get_approvers_channel(self._bot.config, sdm_object) or get_approvers_channel(self._bot.config, sdm_account)
         if approvers_channel is not None:
-            return self.__is_valid_approver_channel(evaluator, approvers_channel)
+            return self.__is_valid_approver_channel(evaluator, self._bot.format_channel_name(approvers_channel))
         return self.__is_admin(evaluator)
 
     def __is_valid_approver_channel(self, evaluator, approvers_channel):
