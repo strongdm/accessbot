@@ -86,6 +86,11 @@ class MSTeamsPlatform(BasePlatform):
                 (channel.name is None and admin_channel_name == ""))
 
     def format_channel_name(self, channel_name):
+        if channel_name is None:
+            return None
+        match = re.match(r'.+###', channel_name)
+        if match is None:
+            channel_name += '###'
         return channel_name
 
     def get_user_name(self, user):

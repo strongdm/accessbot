@@ -56,27 +56,36 @@ def get_platform(bot):
 class AccessBot(BotPlugin):
     __grant_requests_helper = None
     __metrics_helper = None
-    _platform = None
+    __platform = None
 
     def activate(self):
         super().activate()
-        self._platform = get_platform(self)
+        self.__init_state()
+        self.__format_config()
         self._bot.MSG_ERROR_OCCURRED = MSG_ERROR_OCCURRED
         self._bot.callback_message = get_callback_message_fn(self._bot)
         self._bot.send_simple_reply = get_send_simple_reply(self._bot)
         self.init_access_form_bot()
         self.update_access_control_admins()
         self['auto_approve_uses'] = {}
-        # TODO Extend this check to the rest of the method
-        # If something doesn't need to be "instantiated" again we shouldn't be doing it
-        if self.__grant_requests_helper is None:
-            self.__grant_requests_helper = GrantRequestHelper(self)
-        if self.__metrics_helper is None:
-            self.__metrics_helper = MetricsHelper(self)
         poller_helper = self.get_poller_helper()
         self.start_poller(FIVE_SECONDS, poller_helper.stale_grant_requests_cleaner)
         self.start_poller(ONE_MINUTE, poller_helper.stale_max_auto_approve_cleaner)
         self.__activate_webserver()
+
+    def __init_state(self):
+        # If something doesn't need to be "instantiated" again we shouldn't be doing it
+        if self.__platform is None:
+            self.__platform = get_platform(self)
+        if self.__grant_requests_helper is None:
+            self.__grant_requests_helper = GrantRequestHelper(self)
+        if self.__metrics_helper is None:
+            self.__metrics_helper = MetricsHelper(self)
+
+    def __format_config(self):
+        admins_channel = self.config.get('ADMINS_CHANNEL')
+        if admins_channel is not None:
+            self.config['ADMINS_CHANNEL'] = self.format_channel_name(admins_channel)
 
     def __activate_webserver(self):
         webserver = self.get_plugin('Webserver')
@@ -108,10 +117,6 @@ class AccessBot(BotPlugin):
         if hasattr(self, 'config'):
             previous_config = dict(self.config)
         if configuration is not None and configuration != {}:
-            admins_channel = configuration.get('ADMINS_CHANNEL')
-            if admins_channel is not None and not admins_channel.startswith("#") and isinstance(self._platform, SlackPlatform):
-                channel = self._bot.build_identifier(configuration['ADMINS_CHANNEL'])
-                configuration['ADMINS_CHANNEL'] = self.format_channel_name(channel.name)
             config = dict(chain(config_template.get().items(), configuration.items()))
         elif self._bot.mode != 'test':
             config = config_template.get()
@@ -179,7 +184,7 @@ class AccessBot(BotPlugin):
         if re.match("^role (.*)", arguments, flags=re.IGNORECASE):
             self.log.debug("##SDM## AccessBot.access better match for assign_role")
             return
-        if not self._platform.can_access_resource(message):
+        if not self.__platform.can_access_resource(message):
             return
         resource_name = self.get_arguments_helper().remove_flags(arguments)
         flags_validators = self.get_resource_grant_helper().get_flags_validators()
@@ -198,7 +203,7 @@ class AccessBot(BotPlugin):
         """
         Grant access to all resources in <role-name> (using the requester's email address)
         """
-        if not self._platform.can_assign_role(message):
+        if not self.__platform.can_assign_role(message):
             return
         self.__metrics_helper.increment_access_requests()
         role_name = re.sub(ASSIGN_ROLE_REGEX, "\\1", match.string.replace("*", ""), flags=re.IGNORECASE)
@@ -235,7 +240,7 @@ class AccessBot(BotPlugin):
         Show all available resources
         """
         self.__metrics_helper.increment_received_messages()
-        if not self._platform.can_show_resources(message):
+        if not self.__platform.can_show_resources(message):
             return
         flags = self.get_arguments_helper().extract_flags(message.body)
         yield from self.get_show_resources_helper().execute(message, flags=flags)
@@ -248,7 +253,7 @@ class AccessBot(BotPlugin):
         Show all available roles
         """
         self.__metrics_helper.increment_received_messages()
-        if not self._platform.can_show_roles(message):
+        if not self.__platform.can_show_roles(message):
             return
         yield from self.get_show_roles_helper().execute(message)
         self.__metrics_helper.reset_consecutive_errors()
@@ -320,7 +325,7 @@ class AccessBot(BotPlugin):
         return self.__metrics_helper
 
     def get_admin_ids(self):
-        return self._platform.get_admin_ids()
+        return self.__platform.get_admin_ids()
 
     def enter_grant_request(self, request_id: str, message, sdm_object, sdm_account, grant_request_type: GrantRequestType, flags: dict = None):
         self.__grant_requests_helper.add(request_id, message, sdm_object, sdm_account, grant_request_type, flags)
@@ -348,20 +353,20 @@ class AccessBot(BotPlugin):
         return override if override else f"@{sender.nick}"
 
     def get_sender_id(self, sender):
-        return self._platform.get_sender_id(sender)
+        return self.__platform.get_sender_id(sender)
 
     def get_sender_email(self, sender):
         override = self.config['SENDER_EMAIL_OVERRIDE']
         if override:
             return override
-        sender_email = self._platform.get_sender_email(sender)
+        sender_email = self.__platform.get_sender_email(sender)
         sdm_email_subaddress = self.config['EMAIL_SUBADDRESS']
         if sdm_email_subaddress:
             return sender_email.replace('@', f'+{sdm_email_subaddress}@')
         return sender_email
 
     def get_user_nick(self, user):
-        return self._platform.get_user_nick(user)
+        return self.__platform.get_user_nick(user)
 
     def increment_auto_approve_use(self, requester_id):
         prev = 0
@@ -408,25 +413,25 @@ class AccessBot(BotPlugin):
         return None
 
     def clean_up_message(self, message):
-        return self._platform.clean_up_message(normalize_utf8(message))
+        return self.__platform.clean_up_message(normalize_utf8(message))
 
     def format_access_request_params(self, resource_name, sender_nick):
-        return self._platform.format_access_request_params(resource_name, sender_nick)
+        return self.__platform.format_access_request_params(resource_name, sender_nick)
 
     def format_strikethrough(self, text):
-        return self._platform.format_strikethrough(text)
+        return self.__platform.format_strikethrough(text)
 
     def format_breakline(self, text):
-        return self._platform.format_breakline(text)
+        return self.__platform.format_breakline(text)
 
     def get_rich_identifier(self, identifier, message):
-        return self._platform.get_rich_identifier(identifier, message)
+        return self.__platform.get_rich_identifier(identifier, message)
 
     def channel_is_reachable(self, channel):
-        return self._platform.channel_is_reachable(channel)
+        return self.__platform.channel_is_reachable(channel)
 
     def has_active_admins(self):
-        return self._platform.has_active_admins()
+        return self.__platform.has_active_admins()
 
     def check_requester_flag(self, message: Message, requester: str):
         if requester is not None:
@@ -455,25 +460,22 @@ class AccessBot(BotPlugin):
     def get_ms_teams_channel_by_id(self, team_id, channel_id):
         return self._bot.get_channel_by_id(team_id, channel_id)
 
-    def get_channel(self, frm):
-        return self._platform.get_channel(frm)
-
     def channel_match_str_rep(self, channel, str_rep):
-        return self._platform.channel_match_str_rep(channel, str_rep)
+        return self.__platform.channel_match_str_rep(channel, str_rep)
 
     def format_channel_name(self, channel_name):
-        return self._platform.format_channel_name(channel_name)
+        return self.__platform.format_channel_name(channel_name)
 
     def get_user_name(self, user):
-        return self._platform.get_user_name(user)
+        return self.__platform.get_user_name(user)
 
     def format_user_handle(self, identifier):
-        return self._platform.format_user_handle(identifier)
+        return self.__platform.format_user_handle(identifier)
 
     def __get_account_alternative_emails(self, frm):
-        if self._platform.use_alternative_emails():
+        if self.__platform.use_alternative_emails():
             return self._bot.get_other_emails_by_aad_id(frm.useraadid)
         return []
 
     def user_is_member_of_channel(self, user, channel):
-        return self._platform.user_is_member_of_channel(user, channel)
+        return self.__platform.user_is_member_of_channel(user, channel)
