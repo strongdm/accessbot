@@ -2,7 +2,7 @@ import re
 from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
-from ..util import VALID_TIME_UNITS
+from ..util import VALID_TIME_UNITS, convert_duration_flag_to_timedelta
 
 
 class ResourceGrantHelper(BaseGrantHelper):
@@ -55,13 +55,28 @@ class ResourceGrantHelper(BaseGrantHelper):
         match = re.match(r'^\d+[a-zA-Z]?$', value)
         if not match:
             raise Exception('You need to enter a valid duration, e.g. 60m, 2h, etc.')
-        time_unit_match = re.search(r'[a-zA-Z]', value)
-        short_time_unit = time_unit_match.group() if time_unit_match else 'm'
-        if not VALID_TIME_UNITS.get(short_time_unit):
+        short_time_unit = self.get_short_time_unit_from_duration(value)
+        if short_time_unit is None:
             formatted_valid_time_units = ', '.join(VALID_TIME_UNITS.keys())
             raise Exception(f'You need to enter a valid duration unit. Valid units are: {formatted_valid_time_units}.')
         duration = int(re.search(r'\d+', value).group())
         if duration == 0:
             raise Exception('You need to enter a duration greater than zero.')
+        duration_limit_var = self.__bot.config['DURATION_FLAG_LIMIT']
+        if duration_limit_var is not None:
+            short_limit_time_unit = self.get_short_time_unit_from_duration(duration_limit_var)
+            if short_limit_time_unit is None:
+                self.__bot.log.error(f'Invalid duration limit: unparseable time unit from "{duration_limit_var}"')
+                raise Exception("An invalid duration limit was defined.")
+            duration_timedelta = convert_duration_flag_to_timedelta(value)
+            duration_limit_timedelta = convert_duration_flag_to_timedelta(duration_limit_var)
+            if duration_timedelta > duration_limit_timedelta:
+                raise Exception(f"You need to enter a duration lesser or equals to {duration_limit_var}")
         return True
 
+    def get_short_time_unit_from_duration(self, duration):
+        time_unit_match = re.search(r'[a-zA-Z]', duration)
+        short_time_unit = time_unit_match.group() if time_unit_match else 'm'
+        if not VALID_TIME_UNITS.get(short_time_unit):
+            return None
+        return short_time_unit
