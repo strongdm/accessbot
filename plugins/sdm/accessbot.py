@@ -85,7 +85,7 @@ class AccessBot(BotPlugin):
     def __format_config(self):
         admins_channel = self.config.get('ADMINS_CHANNEL')
         if admins_channel is not None:
-            self.config['ADMINS_CHANNEL'] = self.format_channel_name(admins_channel)
+            self.config['ADMINS_CHANNEL'] = self.format_channel_name(admins_channel.strip())
 
     def __activate_webserver(self):
         webserver = self.get_plugin('Webserver')
@@ -142,10 +142,10 @@ class AccessBot(BotPlugin):
         self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = False
         if self.config and self.config['ADMINS_CHANNEL_ELEVATE']:
             if self.config['ADMINS_CHANNEL'] and self.channel_is_reachable(self.config['ADMINS_CHANNEL']):
-                self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(self.config['ADMINS_CHANNEL'])
+                admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
+                self._bot.bot_config.ACCESS_CONTROLS['*']['allowrooms'].append(admin_channel.__str__())
                 self._bot.bot_config.ACCESS_CONTROLS['*']['allowprivate'] = False
                 self._bot.bot_config.ACCESS_CONTROLS['*']['allowmuc'] = True
-                admin_channel = self.build_identifier(self.config['ADMINS_CHANNEL'])
                 members = self._bot.conversation_members(admin_channel)
                 for identifier in members:
                     user_name = self.get_user_name(identifier)
