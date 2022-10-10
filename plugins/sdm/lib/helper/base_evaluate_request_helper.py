@@ -56,9 +56,8 @@ class BaseEvaluateRequestHelper(ABC):
         return self._bot.get_sender_id(evaluator).lower() in self._bot.get_admins()
 
     def _notify_requester(self, requester_id, message, text):
-        channel_id = self.__get_channel_id(requester_id)
-        if channel_id:
-            self._bot.send(channel_id, text, in_reply_to=message)
+        if hasattr(requester_id, 'room') and requester_id.room is not None:
+            self._bot.send(requester_id.room, text, in_reply_to=message)
             return
         self._bot.send(requester_id, text, in_reply_to=message)
 
@@ -68,5 +67,5 @@ class BaseEvaluateRequestHelper(ABC):
         return self._bot.build_identifier(f"#{requester_id.room.name}")
 
     @abstractmethod
-    def evaluate(request_id, **kwargs):
+    def evaluate(self, request_id, **kwargs):
         pass

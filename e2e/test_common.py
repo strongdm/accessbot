@@ -1,4 +1,5 @@
 from errbot import Message
+from errbot.backends.base import Identifier
 from errbot.core import ErrBot
 from errbot.backends.test import TestPerson as DummyErrbotPerson
 
@@ -155,7 +156,7 @@ class DummyPerson(DummyErrbotPerson):
         return self._is_deleted
 
 
-class DummyRoom:
+class DummyRoom(Identifier):
     def __init__(self, id, name, is_member=True):
         self.id = id
         self.name = name

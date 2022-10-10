@@ -54,6 +54,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+        assert f'Request "{access_request_id}" approved' in mocked_testbot.pop_message()
 
     def test_access_command_grant_timed_out(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -347,6 +348,7 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
         mocked_with_max_auto_approve.push_message("access to Xxx")
         mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
+        assert f'Request "{access_request_id}" approved' in mocked_with_max_auto_approve.pop_message()
         assert "valid request" in mocked_with_max_auto_approve.pop_message()
         assert "access request" in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
@@ -358,6 +360,7 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
         PollerHelper(accessbot).stale_max_auto_approve_cleaner()
         mocked_with_max_auto_approve.push_message("access to Xxx")
+        assert f'Request "{access_request_id}" approved' in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
@@ -588,13 +591,14 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
         mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
             return_value=get_dummy_person(f'#{self.channel_name}'))
-        mocked_testbot_with_channels.bot.sender.room = create_room_mock(self.channel_name)
+        mocked_testbot_with_channels.bot.sender.room = DummyRoom(None, self.channel_name)
         mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
         assert "access request" in mocked_testbot_with_channels.pop_message()
         assert "Granting" in mocked_testbot_with_channels.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.channel_name}"
+        assert f'Request "{access_request_id}" approved' in mocked_testbot_with_channels.pop_message()
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
         mocked_testbot_with_channels.push_message("access to Xxx")
@@ -643,7 +647,7 @@ class Test_self_approve(ErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f"#{self.channel_name}"
         config['ADMIN_TIMEOUT'] = 30
-        testbot.bot.sender.room = create_room_mock(self.channel_name)
+        testbot.bot.sender.room = DummyRoom(None, self.channel_name)
         testbot.bot.sender._nick = config['SENDER_NICK_OVERRIDE']
         testbot.bot.sender._email = config['SENDER_EMAIL_OVERRIDE']
         testbot.bot.channels = MagicMock(return_value=[{'name': self.channel_name, 'is_member': True}])
@@ -883,7 +887,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         return bot
 
     def test_access_command_send_request_message_to_resource_approvers_channels(self, mocked_testbot_resource_with_approvers_tag):
-        mocked_testbot_resource_with_approvers_tag.bot.sender.room = create_room_mock(self.resource_approvers_channel_name)
+        mocked_testbot_resource_with_approvers_tag.bot.sender.room = DummyRoom(None, self.resource_approvers_channel_name)
         mocked_testbot_resource_with_approvers_tag.push_message("access to Xxx")
         mocked_testbot_resource_with_approvers_tag.push_message(f"yes {access_request_id}")
         ack_message = mocked_testbot_resource_with_approvers_tag.pop_message()
@@ -892,10 +896,12 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "access request" in mocked_testbot_resource_with_approvers_tag.pop_message()
         assert "Granting" in mocked_testbot_resource_with_approvers_tag.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.resource_approvers_channel_name}"
+        assert f'Request "{access_request_id}" approved' in mocked_testbot_resource_with_approvers_tag.pop_message()
         self.raw_messages.clear()
 
     def test_access_command_send_request_message_to_account_approvers_channels(self, mocked_testbot_account_with_approvers_tag):
-        mocked_testbot_account_with_approvers_tag.bot.sender.room = create_room_mock(self.account_approvers_channel_name)
+        self.raw_messages.clear()
+        mocked_testbot_account_with_approvers_tag.bot.sender.room = DummyRoom(None, self.account_approvers_channel_name)
         mocked_testbot_account_with_approvers_tag.push_message("access to Xxx")
         mocked_testbot_account_with_approvers_tag.push_message(f"yes {access_request_id}")
         ack_message = mocked_testbot_account_with_approvers_tag.pop_message()
@@ -904,10 +910,12 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "access request" in mocked_testbot_account_with_approvers_tag.pop_message()
         assert "Granting" in mocked_testbot_account_with_approvers_tag.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.account_approvers_channel_name}"
+        assert f'Request "{access_request_id}" approved' in mocked_testbot_account_with_approvers_tag.pop_message()
         self.raw_messages.clear()
 
     def test_send_request_message_to_resource_approvers_channel_instead_of_account_approvers_channel(self, mocked_testbot_account_and_resource_with_approvers_tag):
-        mocked_testbot_account_and_resource_with_approvers_tag.bot.sender.room = create_room_mock(self.resource_approvers_channel_name)
+        self.raw_messages.clear()
+        mocked_testbot_account_and_resource_with_approvers_tag.bot.sender.room = DummyRoom(None, self.resource_approvers_channel_name)
         mocked_testbot_account_and_resource_with_approvers_tag.push_message("access to Xxx")
         mocked_testbot_account_and_resource_with_approvers_tag.push_message(f"yes {access_request_id}")
         ack_message = mocked_testbot_account_and_resource_with_approvers_tag.pop_message()
@@ -919,7 +927,8 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         self.raw_messages.clear()
 
     def test_access_command_send_request_message_to_admins_channel(self, mocked_testbot_resource_without_approvers_tag):
-        mocked_testbot_resource_without_approvers_tag.bot.sender.room = create_room_mock(self.admins_channel_name)
+        self.raw_messages.clear()
+        mocked_testbot_resource_without_approvers_tag.bot.sender.room = DummyRoom(None, self.admins_channel_name)
         mocked_testbot_resource_without_approvers_tag.push_message("access to Xxx")
         mocked_testbot_resource_without_approvers_tag.push_message(f"yes {access_request_id}")
         ack_message = mocked_testbot_resource_without_approvers_tag.pop_message()
@@ -928,6 +937,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "access request" in mocked_testbot_resource_without_approvers_tag.pop_message()
         assert "Granting" in mocked_testbot_resource_without_approvers_tag.pop_message()
         assert self.raw_messages[1].to.person == f"#{self.admins_channel_name}"
+        assert f'Request "{access_request_id}" approved' in mocked_testbot_resource_without_approvers_tag.pop_message()
         self.raw_messages.clear()
 
     def test_access_command_fails_when_approvers_channel_is_unreachable(self, mocked_testbot_with_wrong_config):
@@ -945,6 +955,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         assert "cannot contact the approvers for this request, their channel is unreachable" in mocked_testbot_with_wrong_config.pop_message()
 
     def test_fail_to_approve_access_command_from_admins_channel(self, mocked_testbot_with_admins_channel):
+        self.raw_messages.clear()
         mocked_testbot_with_admins_channel.push_message("access to Xxx")
         mocked_testbot_with_admins_channel._bot.callback_message = MagicMock(side_effect=callback_message_fn(
             mocked_testbot_with_admins_channel._bot,
@@ -960,6 +971,7 @@ class Test_approvers_channel_tag(ErrBotExtraTestSettings):
         self.raw_messages.clear()
 
     def test_access_command_ignores_unreachable_admins_channel_when_approvers_channel_is_configured(self, mocked_testbot_resource_with_approvers_tag):
+        self.raw_messages.clear()
         accessbot = mocked_testbot_resource_with_approvers_tag.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['ADMINS_CHANNEL'] = '#unreachable-channel'
         mocked_testbot_resource_with_approvers_tag.push_message("access to Xxx")
@@ -1028,7 +1040,7 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
         ))
         mocked_testbot.push_message(f'yes {access_request_id}')
         assert "Access renewed" in mocked_testbot.pop_message()
-        assert self.raw_messages[3].to.person == f'#{self.regular_channel_name}'
+        assert self.raw_messages[3].to.channelname == self.regular_channel_name
         granted_message = mocked_testbot.pop_message()
         assert "Granting" in granted_message
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
@@ -1100,11 +1112,6 @@ def create_approver_mock(account_email=account_name):
     mock = MagicMock()
     mock.email = account_email
     mock.nick = account_email
-    return mock
-
-def create_room_mock(channel_name):
-    mock = MagicMock()
-    mock.name = channel_name
     return mock
 
 def raise_no_resource_found(message='', match=''):

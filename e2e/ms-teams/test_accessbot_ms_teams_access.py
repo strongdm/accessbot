@@ -5,9 +5,11 @@ from unittest.mock import MagicMock
 
 sys.path.append('plugins/sdm')
 sys.path.append('e2e')
+sys.path.append('errbot-backend-botframework')
 
 from test_common import create_config, callback_message_fn, MSTeamsErrBotExtraTestSettings
 from lib import ApproveHelper, ResourceGrantHelper
+from botframework import ChannelIdentifier, Identifier, TeamIdentifier
 
 pytest_plugins = ["errbot.backends.test"]
 
@@ -131,6 +133,24 @@ def create_account_mock(account_email = account_name):
     mock.name = account_name
     mock.email = account_email
     return mock
+
+def get_mocked_identifier(team, channel):
+    identifier = Identifier({
+        'room': ChannelIdentifier(
+            {
+                'id': '19:ccc',
+                'displayName': channel,
+                'team': {'id': '19:ttt', 'displayName': team}
+            }
+        )
+    })
+    return identifier
+
+def get_dummy_team(name):
+    return TeamIdentifier({'id': '19:ttt', 'displayName': name})
+
+def get_dummy_channel(name, team):
+    return ChannelIdentifier({'id': '19:ttt', 'displayName': name, 'team': team})
 
 def create_approver_mock(account_email = account_name):
     mock = MagicMock()
