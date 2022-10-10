@@ -66,8 +66,11 @@ class MSTeamsPlatform(BasePlatform):
             raise Exception("You cannot execute this command via DM. Please, send a message via a team's channel.")
 
     def channel_is_reachable(self, channel):
-        # TODO: implement logic
-        return True
+        try:
+            self._bot.build_identifier(channel)
+            return True
+        except:
+            return False
 
     def has_active_admins(self):
         return len(self._bot.get_admins()) > 0

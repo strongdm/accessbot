@@ -1,3 +1,4 @@
+import re
 from .base_platform import BasePlatform
 from abc import abstractmethod
 
@@ -47,8 +48,16 @@ class SlackPlatform(BasePlatform):
 
     def channel_is_reachable(self, channel_name):
         channel_list = self._bot._bot.channels()
+        channel_mention_match = re.match(r'^<#(.+)\|>$', channel_name)
+        channel_handle_is_mention = False
+        if channel_mention_match is not None:
+            channel_handle_is_mention = True
+            formatted_channel_handle = channel_mention_match.group(1)
+        else:
+            formatted_channel_handle = self.format_channel_name(channel_name)
         for channel in channel_list:
-            if self.format_channel_name(channel['name']) == self.format_channel_name(channel_name):
+            it_channel_handle = channel['id'] if channel_handle_is_mention else self.format_channel_name(channel['name'])
+            if it_channel_handle == formatted_channel_handle:
                 return channel['is_member']
         return False
 
@@ -61,6 +70,9 @@ class SlackPlatform(BasePlatform):
     def format_channel_name(self, channel_name):
         if channel_name is None:
             return None
+        channel_mention_match = re.match(r'^<(.+)\|>$', channel_name)
+        if channel_mention_match:
+            return channel_name
         return f'#{channel_name}' if not channel_name.startswith("#") else channel_name
 
     def get_user_name(self, user):
