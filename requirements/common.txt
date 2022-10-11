@@ -9,3 +9,4 @@ fuzzywuzzy
 python-levenshtein-wheels
 memoization
 prometheus_client
+email_validator

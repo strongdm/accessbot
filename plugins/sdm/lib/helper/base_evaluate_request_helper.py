@@ -14,7 +14,7 @@ class BaseEvaluateRequestHelper(ABC):
 
         if not self._bot.grant_requests_exists(request_id):
             self._bot.log.debug("##SDM## %s EvaluateRequestHelper.execute invalid access request id: %s", execution_id, request_id)
-            yield f"Invalid access request id = {request_id}"
+            yield f'Invalid access request id = "{request_id}"'
             return
 
         if not self.__is_allowed_to_self_evaluate(request_id, user):
@@ -41,31 +41,23 @@ class BaseEvaluateRequestHelper(ABC):
         sdm_object = grant_request['sdm_object']
         approvers_channel = get_approvers_channel(self._bot.config, sdm_object) or get_approvers_channel(self._bot.config, sdm_account)
         if approvers_channel is not None:
-            return self.__is_valid_approver_channel(evaluator, approvers_channel)
+            return self.__is_valid_approver_channel(evaluator, self._bot.format_channel_name(approvers_channel))
         return self.__is_admin(evaluator)
 
     def __is_valid_approver_channel(self, evaluator, approvers_channel):
-        evaluator_channel = None if not hasattr(evaluator, 'room') else evaluator.room.name
-        return approvers_channel == evaluator_channel
+        return self._bot.channel_match_str_rep(evaluator.room, approvers_channel)
 
     def __is_admin(self, evaluator):
         admins_channel = self._bot.config['ADMINS_CHANNEL']
-        evaluator_channel = None if not hasattr(evaluator, 'room') else f"#{evaluator.room.name}"
         if admins_channel:
-            return evaluator_channel == admins_channel
+            return self._bot.channel_match_str_rep(evaluator.room, admins_channel)
         return self._bot.get_sender_id(evaluator).lower() in self._bot.get_admins()
 
     def _notify_requester(self, requester_id, message, text):
-        channel_id = self.__get_channel_id(requester_id)
-        if channel_id:
-            self._bot.send(channel_id, text, in_reply_to=message)
+        if hasattr(requester_id, 'room'):
+            self._bot.send(requester_id.room, text, in_reply_to=message)
             return
         self._bot.send(requester_id, text, in_reply_to=message)
-
-    def __get_channel_id(self, requester_id):
-        if not hasattr(requester_id, 'room'):
-            return None
-        return self._bot.build_identifier(f"#{requester_id.room.name}")
 
     @abstractmethod
     def evaluate(request_id, **kwargs):

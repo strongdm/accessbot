@@ -37,14 +37,14 @@ class PollerHelper:
             return self.__bot.build_identifier(requester_id)
         if not hasattr(requester_id, 'room'):
             return None
-        return self.__bot.build_identifier(f"#{requester_id.room.name}")
+        return self.__bot.build_identifier(requester_id.room.__str__())
 
     def __notify_evaluators(self, grant_request, text):
         sdm_object = grant_request['sdm_object']
         sdm_account = grant_request['sdm_account']
         approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_object) or get_approvers_channel(self.__bot.config, sdm_account)
         if approvers_channel_name is not None:
-            channel_id = self.__get_channel_id(f'#{approvers_channel_name}')
+            channel_id = self.__get_channel_id(self.__bot.format_channel_name(approvers_channel_name))
             return self.__bot.send(channel_id, text)
         return self.__notify_admins(text, grant_request['message'])
 

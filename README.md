@@ -43,6 +43,7 @@ For Slack platform, you need to provide the following required variables:
 For MS Teams platform, you need to provide the following required variables:
 * **AZURE_APP_ID**. Azure Bot application ID
 * **AZURE_APP_PASSWORD**. Azure Bot application password
+* **AZURE_AD_TENANT_ID_**. Azure Active Directory Tenant ID
 
 For a full list of configuration variables please read: [Configure AccessBot](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md)
 
