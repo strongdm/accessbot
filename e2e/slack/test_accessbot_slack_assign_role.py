@@ -83,7 +83,7 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
         mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
         mocked_with_max_auto_approve.push_message(f"yes {access_request_id}")
-        assert f'Request "{access_request_id}" approved' in mocked_with_max_auto_approve.pop_message()
+        assert f'Request auto-approved' in mocked_with_max_auto_approve.pop_message()
         assert "valid request" in mocked_with_max_auto_approve.pop_message()
         assert "assign request" in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
@@ -95,7 +95,7 @@ class Test_auto_approve_all(ErrBotExtraTestSettings):
         accessbot = mocked_with_max_auto_approve.bot.plugin_manager.plugins['AccessBot']
         PollerHelper(accessbot).stale_max_auto_approve_cleaner()
         mocked_with_max_auto_approve.push_message(f"access to role {role_name}")
-        assert f'Request "{access_request_id}" approved' in mocked_with_max_auto_approve.pop_message()
+        assert f'Request auto-approved' in mocked_with_max_auto_approve.pop_message()
         assert "Granting" in mocked_with_max_auto_approve.pop_message()
         assert "remaining" in mocked_with_max_auto_approve.pop_message()
 
