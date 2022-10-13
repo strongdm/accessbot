@@ -16,10 +16,12 @@ class ApproveHelper(BaseEvaluateRequestHelper):
             yield from self.__approve_assign_role(grant_request)
         else:
             yield from self.__approve_access_resource(grant_request)
+        message = grant_request['message']
         if kwargs.get('is_auto_approve') != None and kwargs['is_auto_approve'] == True:
             yield from self.__register_auto_approve_use(grant_request)
-        message = grant_request['message']
-        self._notify_requester(message.frm, message, f'**@{message.frm.nick}**: Request "{grant_request["id"]}" approved.')
+            self._notify_requester(message.frm, message, f'**@{message.frm.nick}**: Request auto-approved.')
+        else:
+            self._notify_requester(message.frm, message, f'**@{message.frm.nick}**: Request "{grant_request["id"]}" approved.')
 
     def __approve_assign_role(self, grant_request):
         self._bot.remove_grant_request(grant_request['id'])
