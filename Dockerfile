@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM python:3.9
 
 ENV ERRBOT_DIR=/errbot
 ENV SDM_DOCKERIZED=true
@@ -7,7 +7,6 @@ RUN mkdir -p $ERRBOT_DIR
 WORKDIR $ERRBOT_DIR
 
 COPY requirements/common.txt ./requirements.txt
-RUN apt update -y && apt install -y gcc
 RUN pip install \
       --no-cache-dir \
       --disable-pip-version-check \
