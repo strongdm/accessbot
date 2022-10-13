@@ -36,7 +36,9 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         config = create_config()
         config['ADMINS_CHANNEL'] = f'#{self.admins_channel}'
         config['ADMINS_CHANNEL_ELEVATE'] = True
-        return inject_config(testbot, config)
+        return inject_config(testbot, config, channels=[
+            create_room_mock(self.admins_channel)
+        ])
 
     def test_update_admins_when_admins_channel_is_configured(self, mocked_testbot):
         mocked_testbot.bot.plugin_manager.plugins['AccessBot'].update_access_control_admins()
@@ -80,7 +82,7 @@ class Test_update_access_control_admins(ErrBotExtraTestSettings):
         sleep(0.1)
         assert len(mocked_testbot._bot.bot_config.BOT_ADMINS) == 1
 
-def inject_config(testbot, config):
+def inject_config(testbot, config, channels):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.build_identifier = MagicMock(
@@ -88,6 +90,8 @@ def inject_config(testbot, config):
     )
     accessbot._bot.conversation_members = MagicMock(return_value = get_dummy_members())
     accessbot._bot.userid_to_username = MagicMock(side_effect = mocked_userid_to_username)
+    accessbot._bot.channels = MagicMock(return_value=channels)
+    accessbot.channel_is_reachable = MagicMock(return_value=True)
     return testbot
 
 def mocked_build_identifier(param):
@@ -102,3 +106,8 @@ def get_dummy_members():
         'channel_admin1',
         'channel_admin2'
     ]
+
+def create_room_mock(channel_name):
+    mock = MagicMock()
+    mock.name = channel_name
+    return mock

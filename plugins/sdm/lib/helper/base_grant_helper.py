@@ -142,7 +142,8 @@ class BaseGrantHelper(ABC):
 
     def __notify_admins(self, text, message, approvers_channel_name: str = None):
         if approvers_channel_name is not None:
-            self.__bot.send(self.__bot.build_identifier(f'#{approvers_channel_name}'), text)
+            formatted_channel_name = self.__bot.format_channel_name(approvers_channel_name)
+            self.__bot.send(self.__bot.build_identifier(formatted_channel_name), text)
             return
         admins_channel = self.__bot.config['ADMINS_CHANNEL']
         if admins_channel:
@@ -165,8 +166,9 @@ class BaseGrantHelper(ABC):
 
     def __check_administration_availability(self, approvers_channel_name: str = None):
         if self.__bot.config['APPROVERS_CHANNEL_TAG'] is not None and approvers_channel_name is not None:
-            if not self.__bot.channel_is_reachable(f"#{approvers_channel_name}"):
-                self.__bot.log.error(f"The Channel #{approvers_channel_name} defined as Approver Channel is unreachable."
+            formatted_approvers_channel_name = self.__bot.format_channel_name(approvers_channel_name)
+            if not self.__bot.channel_is_reachable(formatted_approvers_channel_name):
+                self.__bot.log.error(f"The Channel {formatted_approvers_channel_name} defined as Approver Channel is unreachable."
                                      + f" Probably it's archived or the bot is not in the channel.")
                 raise Exception("Sorry, I cannot contact the approvers for this request, their channel is unreachable."
                                 + " Please, contact your SDM Admin.")

@@ -589,6 +589,7 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         return inject_config(testbot, config)
 
     def test_access_command_grant_for_valid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels._bot.callback_message = callback_message_fn(mocked_testbot_with_channels._bot, room_name=self.channel_name)
         mocked_testbot_with_channels.bot.plugin_manager.plugins['AccessBot'].build_identifier = MagicMock(
             return_value=get_dummy_person(f'#{self.channel_name}'))
         mocked_testbot_with_channels.bot.sender.room = DummyRoom(None, self.channel_name)
@@ -601,6 +602,8 @@ class Test_admin_in_channel(ErrBotExtraTestSettings):
         assert f'Request "{access_request_id}" approved' in mocked_testbot_with_channels.pop_message()
 
     def test_access_command_fails_for_invalid_sender_room(self, mocked_testbot_with_channels):
+        mocked_testbot_with_channels._bot.callback_message = callback_message_fn(mocked_testbot_with_channels._bot)
+        mocked_testbot_with_channels._bot.build_identifier = MagicMock(side_effect=mocked_build_identifier)
         mocked_testbot_with_channels.push_message("access to Xxx")
         mocked_testbot_with_channels.push_message(f"yes {access_request_id}")
         assert "valid request" in mocked_testbot_with_channels.pop_message()
