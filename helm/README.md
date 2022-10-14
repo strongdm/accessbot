@@ -2,8 +2,10 @@
 
 ## Install Chart
 
+To deploy AccessBot using Helm, you need to create a `values.yaml` file using [values.yaml](./accessbot/values.yaml) as a base and fill it with your credentials and wanted settings. Then run the Helm command with the `--values` flag pointing to the created file, following the syntax below:
+
 ```
-helm install accessbot ./accessbot --values values-override.yaml
+helm install accessbot ./accessbot --values path-to-your-file.yaml
 ```
 
 ## Chart values
