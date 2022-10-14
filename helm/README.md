@@ -1,4 +1,4 @@
-# StrongDM AccessBot
+# Helm Chart Configuration
 
 ## Install Chart
 
@@ -7,8 +7,9 @@ helm install accessbot ./accessbot --values values-override.yaml
 ```
 
 ## Chart values
+
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+|:-----|:------|:---------|:-------------|
 | replicaCount | int | `1` | Number of replicas (pods) to launch. |
 | image.repository | string | `"tusproject/tusd"` | Name of the image repository to pull the container image from. |
 | image.pullPolicy | string | `"IfNotPresent"` | [Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for updating already existing images on a node. |
