@@ -1,15 +1,15 @@
 import os
 import re
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message, webhook
+from errbot import BotPlugin, re_botcmd, Message
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
 import config_template
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
-    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, SlackPlatform, \
+    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
+    GrantRequestHelper, WhoamiHelper, MetricsHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -269,10 +269,6 @@ class AccessBot(BotPlugin):
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
 
-    @webhook('/health-check')
-    def _health_check(self, _):
-        return self.get_health_check_helper().execute()
-
     @staticmethod
     def get_admins():
         return os.getenv("SDM_ADMINS", "").lower().split(" ")
@@ -317,9 +313,6 @@ class AccessBot(BotPlugin):
 
     def get_whoami_helper(self):
         return WhoamiHelper(self)
-
-    def get_health_check_helper(self):
-        return HealthCheckHelper(self)
 
     def get_metrics_helper(self):
         return self.__metrics_helper
