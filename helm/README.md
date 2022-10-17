@@ -1,14 +1,17 @@
-# StrongDM AccessBot
+# Helm Chart Configuration
 
 ## Install Chart
 
+To deploy AccessBot using Helm, you need to create a `values.yaml` file using [values.yaml](./accessbot/values.yaml) as a base and fill it with your credentials and wanted settings. Then run the Helm command with the `--values` flag pointing to the created file, following the syntax below:
+
 ```
-helm install accessbot ./accessbot --values values-override.yaml
+helm install accessbot ./accessbot --values path-to-your-file.yaml
 ```
 
 ## Chart values
+
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+|:-----|:------|:---------|:-------------|
 | replicaCount | int | `1` | Number of replicas (pods) to launch. |
 | image.repository | string | `"tusproject/tusd"` | Name of the image repository to pull the container image from. |
 | image.pullPolicy | string | `"IfNotPresent"` | [Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for updating already existing images on a node. |
