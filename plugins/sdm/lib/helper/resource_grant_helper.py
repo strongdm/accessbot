@@ -3,6 +3,7 @@ from grant_request_type import GrantRequestType
 from .base_grant_helper import BaseGrantHelper
 from ..exceptions import PermissionDeniedException
 from ..util import VALID_TIME_UNITS, convert_duration_flag_to_timedelta
+from readabledelta import readabledelta
 
 
 class ResourceGrantHelper(BaseGrantHelper):
@@ -62,16 +63,12 @@ class ResourceGrantHelper(BaseGrantHelper):
         duration = int(re.search(r'\d+', value).group())
         if duration == 0:
             raise Exception('You need to enter a duration greater than zero.')
-        duration_limit_var = self.__bot.config['DURATION_FLAG_LIMIT']
-        if duration_limit_var is not None:
-            short_limit_time_unit = self.get_short_time_unit_from_duration(duration_limit_var)
-            if short_limit_time_unit is None:
-                self.__bot.log.error(f'Invalid duration limit: unparseable time unit from "{duration_limit_var}"')
-                raise Exception("An invalid duration limit was defined.")
+        duration_limit = self.__bot.config['GRANT_TIMEOUT_LIMIT']
+        if duration_limit is not None:
             duration_timedelta = convert_duration_flag_to_timedelta(value)
-            duration_limit_timedelta = convert_duration_flag_to_timedelta(duration_limit_var)
+            duration_limit_timedelta = convert_duration_flag_to_timedelta(f"{duration_limit}m")
             if duration_timedelta > duration_limit_timedelta:
-                raise Exception(f"You need to enter a duration lesser or equals to {duration_limit_var}")
+                raise Exception(f"You need to enter a duration lesser or equals to {readabledelta(duration_limit_timedelta)}")
         return True
 
     def get_short_time_unit_from_duration(self, duration):

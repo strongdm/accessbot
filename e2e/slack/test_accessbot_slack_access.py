@@ -194,54 +194,46 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "You need to enter a duration greater than zero" in mocked_testbot.pop_message()
 
-    def test_access_command_fails_with_duration_flag_value_and_invalid_duration_limit(self, mocked_testbot):
-        duration = '45m'
-        duration_limit = '40x'
-        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
-        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
-        assert "invalid duration limit was defined" in mocked_testbot.pop_message()
-
     def test_access_command_with_duration_flag_value_lesser_than_duration_limit(self, mocked_testbot):
         duration = '40m'
-        duration_limit = '45m'
+        duration_limit = '45'
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
     def test_access_command_with_duration_flag_value_equals_to_duration_limit(self, mocked_testbot):
         duration = '40m'
-        duration_limit = '40m'
+        duration_limit = '40'
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
     def test_access_command_with_duration_flag_time_unit_different_than_duration_limit_unit(self, mocked_testbot):
-        duration = '40m'
-        duration_limit = '1h'
+        duration = '1h'
+        duration_limit = '60'
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
 
     def test_access_command_fails_with_duration_flag_value_greater_than_duration_limit(self, mocked_testbot):
         duration = '45m'
-        duration_limit = '40m'
+        duration_limit = '40'
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "need to enter a duration lesser or equals" in mocked_testbot.pop_message()
 
     def test_access_command_fails_with_duration_flag_time_unit_different_than_duration_limit_unit(self, mocked_testbot):
-        duration = '65m'
-        duration_limit = '1h'
+        duration = '2h'
+        duration_limit = '60'
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        accessbot.config['DURATION_FLAG_LIMIT'] = duration_limit
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "need to enter a duration lesser or equals" in mocked_testbot.pop_message()
         

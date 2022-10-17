@@ -54,6 +54,7 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 * **SDM_ENABLE_BOT_STATE_HANDLING**. Boolean flag to enable persistent grant requests. When enabled, all grant requests will be synced in a local file, that way if AccessBot goes down, all ongoing requests will be restored. Default = false
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
+* **SDM_GRANT_TIMEOUT_LIMIT**. Timeout limit in minutes for an access grant when using the `--duration` flag. Disabled by default
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default ([see below](#user-groups) for more info about using tags)
 * **SDM_HIDE_RESOURCE_TAG**. Resource tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_ROLE_TAG**. Role tag to be used for hiding available roles, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-role=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
