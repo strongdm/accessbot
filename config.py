@@ -73,7 +73,7 @@ def get_backend():
     return 'SlackBolt'
 
 def get_bot_extra_backend_dir():
-    platform = os.getenv('SDM_BOT_PLATFORM')
+    platform = os.getenv('SDM_BOT_PLATFORM').lower()
     if platform == 'ms-teams':
         return 'errbot-backend-botframework'
     elif platform == 'slack-classic':
@@ -92,7 +92,7 @@ BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
 
-BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM")
+BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM").lower()
 
 BOT_LOG_FILE = '' if str(os.getenv("SDM_DOCKERIZED", "")).lower() == 'true' else 'errbot.log'
 BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')

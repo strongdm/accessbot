@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import requests
 
 import strongdm
 
@@ -26,6 +27,8 @@ class HealthCheckHelper:
             'plugins_status': self.get_plugins_status(),
             'strongdm_status': self.get_sdm_status()
         }
+        if 'slack' in self.__bot.bot_config.BOT_PLATFORM:
+            health_data['slack_status'] = self.get_slack_status()
         return json.dumps(health_data)
 
     def get_uptime(self):
@@ -52,3 +55,6 @@ class HealthCheckHelper:
         except Exception as e:
             return e.__dict__.get('msg', 'unavailable')
         return 'available'
+
+    def get_slack_status(self):
+        return requests.request('GET', 'https://status.slack.com/api/v2.0.0/current').json()
