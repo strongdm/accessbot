@@ -67,3 +67,23 @@ class BasePlatform(ABC):
     @abstractmethod
     def use_alternative_emails(self):
         pass
+
+    @abstractmethod
+    def channel_match_str_rep(self, channel, str_rep):
+        pass
+
+    @abstractmethod
+    def format_channel_name(self, channel_name):
+        pass
+
+    @abstractmethod
+    def get_user_name(self, user):
+        pass
+
+    @abstractmethod
+    def format_user_handle(self, identifier):
+        pass
+
+    @abstractmethod
+    def user_is_member_of_channel(self, user, channel):
+        pass

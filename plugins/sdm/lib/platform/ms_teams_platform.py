@@ -6,12 +6,10 @@ from ..util import remove_bold_symbols
 
 class MSTeamsPlatform(BasePlatform):
     def can_access_resource(self, message):
-        self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)
         return True
 
     def can_assign_role(self, message):
-        self.__verify_admins_channel_use()
         self.__verify_dm_availability(message)
         return True
 
@@ -24,7 +22,7 @@ class MSTeamsPlatform(BasePlatform):
         return True
 
     def get_admin_ids(self):
-        return [self._bot.build_identifier({ 'email': admin_email }) for admin_email in self._bot.get_admins()]
+        return [self._bot.build_identifier(admin_email) for admin_email in self._bot.get_admins()]
 
     def get_sender_id(self, sender):
         return sender.email
@@ -57,18 +55,10 @@ class MSTeamsPlatform(BasePlatform):
 
     def get_rich_identifier(self, identifier, message):
         extras = {
-            'team_id': message.extras['conversation'].data['channelData']['team']['id'],
-            'service_url': message.extras['conversation'].data['serviceUrl'],
-            'tenant_id': message.extras['conversation'].data['channelData']['tenant']['id']
+            'team_id': message.extras['conversation'].data['channelData']['team']['id']
         }
         identifier._extras = extras
         return identifier
-
-    def __verify_admins_channel_use(self):
-        if self._bot.config['ADMINS_CHANNEL']:
-            raise Exception("Sorry, it's not possible to request access to resources right now because an \
-                Admin Channel was defined, and Microsoft Teams doesn't support Admin's Channels. \
-                Please, contact your StrongDM admin.")
 
     def __verify_dm_availability(self, message):
         conversation = message.extras.get('conversation')
@@ -76,10 +66,42 @@ class MSTeamsPlatform(BasePlatform):
             raise Exception("You cannot execute this command via DM. Please, send a message via a team's channel.")
 
     def channel_is_reachable(self, channel):
-        return True
+        try:
+            self._bot.build_identifier(channel)
+            return True
+        except:
+            return False
 
     def has_active_admins(self):
         return len(self._bot.get_admins()) > 0
 
     def use_alternative_emails(self):
         return self._bot._bot.azure_active_directory_is_configured()
+
+    def channel_match_str_rep(self, channel, str_rep):
+        if channel is None:
+            return False
+        match = re.match(r'(.+)###(.*)', str_rep)
+        admin_team_name = match.group(1)
+        admin_channel_name = match.group(2)
+        return channel.team.name == admin_team_name and \
+            (channel.name == admin_channel_name or \
+                (channel.name is None and admin_channel_name == ""))
+
+    def format_channel_name(self, channel_name):
+        if channel_name is None:
+            return None
+        match = re.match(r'.+###', channel_name)
+        if match is None:
+            channel_name += '###'
+        return channel_name
+
+    def get_user_name(self, user):
+        return user.email
+
+    def format_user_handle(self, identifier):
+        return identifier.email
+
+    def user_is_member_of_channel(self, user, channel):
+        channel_members = self._bot._bot.conversation_members(channel)
+        return user.userid in map(lambda identifier: identifier.userid, channel_members)

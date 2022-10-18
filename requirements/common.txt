@@ -10,3 +10,4 @@ python-levenshtein-wheels
 memoization
 prometheus_client
 readabledelta
+email_validator
