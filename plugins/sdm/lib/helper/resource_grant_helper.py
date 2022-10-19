@@ -50,6 +50,8 @@ class ResourceGrantHelper(BaseGrantHelper):
     def reason_flag_validator(self, value: str):
         if len(value) == 0:
             raise Exception('You need to enter a valid reason after the "--reason" flag.')
+        if self.__bot.config['REQUIRED_FLAGS'] is not None:
+            self.__verify_reason_template_match(value)
         return True
 
     def duration_flag_validator(self, value: str):
@@ -69,6 +71,18 @@ class ResourceGrantHelper(BaseGrantHelper):
             duration_limit_timedelta = convert_duration_flag_to_timedelta(f"{duration_limit}m")
             if duration_timedelta > duration_limit_timedelta:
                 raise Exception(f"You need to enter a duration lesser or equals to {readabledelta(duration_limit_timedelta)}")
+        return True
+
+    def __verify_reason_template_match(self, value):
+        reason_template_match = re.match(r'reason:/(.*)/', self.__bot.config['REQUIRED_FLAGS'])
+        if reason_template_match is not None:
+            template = reason_template_match.group(1)
+            try:
+                reason_template = re.compile(template)
+            except:
+                raise Exception('A reason template was defined, but it\'s invalid')
+            if reason_template.match(value) is None:
+                raise Exception(f'You need to provide a valid reason following the template: /{template}/.')
         return True
 
     def get_short_time_unit_from_duration(self, duration):

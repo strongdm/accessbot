@@ -26,6 +26,7 @@ access_form_bot_id = "B0000000000"
 room_id = "C00000000"
 room_name = "myroom"
 required_flags = "reason duration"
+reason_template = "\d \w+"
 
 class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     @pytest.fixture
@@ -46,6 +47,24 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def mocked_testbot_with_required_flags(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['REQUIRED_FLAGS'] = required_flags
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_reason_template(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/{reason_template}/'
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_wrong_reason_template(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/(./'
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_required_reason_template_and_duration(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/{reason_template}/ duration'
         return mocked_testbot
 
     def test_access_command_grant_approved(self, mocked_testbot):
@@ -269,6 +288,36 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason 1 reason")
+        assert "valid request" in mocked_testbot_with_reason_template.pop_message()
+        assert "access request" in mocked_testbot_with_reason_template.pop_message()
+
+    def test_fail_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_reason_template.pop_message()
+        assert "provide a valid reason" in request_message
+        assert reason_template in request_message
+
+    def test_fail_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_reason_template.pop_message()
+        assert "provide a valid reason" in request_message
+        assert reason_template in request_message
+
+    def test_fail_access_command_with_wrong_reason_template(self, mocked_testbot_with_wrong_reason_template):
+        mocked_testbot_with_wrong_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_wrong_reason_template.pop_message()
+        assert "template was defined, but it\'s invalid" in request_message
+
+    def test_access_command_with_reason_template_and_duration(self, mocked_testbot_with_required_reason_template_and_duration):
+        mocked_testbot_with_required_reason_template_and_duration.push_message(f"access to Xxx --reason 1 reason --duration 1m")
+        mocked_testbot_with_required_reason_template_and_duration.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+        assert "access request" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+        assert "Granting" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+
 
 class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     @pytest.fixture
