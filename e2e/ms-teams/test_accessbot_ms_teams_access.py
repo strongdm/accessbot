@@ -274,6 +274,24 @@ def get_mocked_identifier(team, channel):
             }
         )
     })
+    return identifier
+
+def get_dummy_team(name):
+    return TeamIdentifier({'id': '19:ttt', 'displayName': name})
+
+def get_dummy_channel(name, team):
+    return ChannelIdentifier({'id': '19:ttt', 'displayName': name, 'team': team})
+
+def get_mocked_identifier(team, channel):
+    identifier = Identifier({
+        'room': ChannelIdentifier(
+            {
+                'id': '19:ccc',
+                'displayName': channel,
+                'team': {'id': '19:ttt', 'displayName': team}
+            }
+        )
+    })
     # identifier.room = MagicMock(return_value=)
     # identifier.room.team = MagicMock()
     return identifier
