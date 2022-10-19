@@ -1,0 +1,13 @@
+[Core]
+name = HealthCheck
+module = health_check
+DependsOn = Webserver,Utils,Health
+
+[Documentation]
+description = Health checker plugin
+
+[Python]
+version = 3
+
+[Errbot]
+min = 5.2.0
