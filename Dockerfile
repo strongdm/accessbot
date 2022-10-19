@@ -19,7 +19,9 @@ COPY errbot-backend-botframework ./errbot-backend-botframework
 
 RUN mkdir ./data
 RUN mkdir -p plugins/sdm
+RUN mkdir -p plugins/health-check
 COPY plugins/sdm ./plugins/sdm/
+COPY plugins/health-check ./plugins/health-check/
 
 ENTRYPOINT [ "errbot" ]
 
