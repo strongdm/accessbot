@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  accessbot:
+    image: public.ecr.aws/strongdm/accessbot:latest
+    env_file:
+      # You could use env-file.example as a reference
+      - env-file
+    environment:
+      - SDM_EXPOSE_METRICS=true
+    ports:
+      - 3141:3141
+      - 3142:3142
+  prometheus:
+    build: tools/prometheus
+    ports:
+      - 9090:9090
+  grafana:
+    build: tools/grafana
+    ports:
+      - 3000:3000
+

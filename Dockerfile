@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM python:3.9
 
 ENV ERRBOT_DIR=/errbot
 ENV SDM_DOCKERIZED=true
@@ -19,7 +19,9 @@ COPY errbot-backend-botframework ./errbot-backend-botframework
 
 RUN mkdir ./data
 RUN mkdir -p plugins/sdm
+RUN mkdir -p plugins/health-check
 COPY plugins/sdm ./plugins/sdm/
+COPY plugins/health-check ./plugins/health-check/
 
 ENTRYPOINT [ "errbot" ]
 

@@ -48,7 +48,7 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert denial_reason in denied_response_message
 
     def test_access_command_grant_denied_with_strange_casing(self, mocked_testbot):
-        mocked_testbot.push_message("access to Xxx")
+        mocked_testbot.push_message("AcCeSs to Xxx")
         mocked_testbot.push_message(f"NO 12aB")
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
@@ -89,7 +89,7 @@ class Test_invalid_request_id(ErrBotExtraTestSettings):
         assert "Invalid access request" in mocked_testbot.pop_message()
 
 # pylint: disable=dangerous-default-value
-def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[], alternate_email = False):
+def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False, resources=[]):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     accessbot.get_admins = MagicMock(return_value = admins)

@@ -1,6 +1,7 @@
 import time
 
 from ..util import get_approvers_channel
+from metric_type import MetricGaugeType
 
 
 class PollerHelper:
@@ -16,6 +17,7 @@ class PollerHelper:
                 self.__bot.log.info("##SDM## Cleaning grant requests, stale request_id = %s", request_id)
                 self.__bot.remove_grant_request(request_id)
                 self.__notify_grant_request_denied(grant_request)
+                self.__bot.get_metrics_helper().increment_timed_out_requests()
 
     def stale_max_auto_approve_cleaner(self):
         max_auto_approve_interval = self.__bot.config['MAX_AUTO_APPROVE_INTERVAL']
@@ -35,13 +37,14 @@ class PollerHelper:
             return self.__bot.build_identifier(requester_id)
         if not hasattr(requester_id, 'room'):
             return None
-        return self.__bot.build_identifier(f"#{requester_id.room.name}")
+        return self.__bot.build_identifier(requester_id.room.__str__())
 
     def __notify_evaluators(self, grant_request, text):
         sdm_object = grant_request['sdm_object']
-        approvers_channel = get_approvers_channel(self.__bot.config, sdm_object)
-        if approvers_channel is not None:
-            channel_id = self.__get_channel_id(f'#{approvers_channel}')
+        sdm_account = grant_request['sdm_account']
+        approvers_channel_name = get_approvers_channel(self.__bot.config, sdm_object) or get_approvers_channel(self.__bot.config, sdm_account)
+        if approvers_channel_name is not None:
+            channel_id = self.__get_channel_id(self.__bot.format_channel_name(approvers_channel_name))
             return self.__bot.send(channel_id, text)
         return self.__notify_admins(text, grant_request['message'])
 

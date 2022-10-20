@@ -27,7 +27,7 @@ Besides the “manual approval” workflow, you can configure:
 * Automatic approval by tag for roles (`SDM_AUTO_APPROVE_ROLE_TAG`). Automatically grant access to all tagged available roles. Delete the tag or set it false to disable. Auto-approve roles will be highlighted when executing: _show available roles_
 * Show tagged roles (`SDM_ALLOW_ROLE_TAG`). Show tagged roles in the list of available roles. The tag value must be true to be enabled, set value to false or delete the tag to hide the role. Only allowed roles will be shown when executing: _show available roles_
 * Hide tagged roles (`SDM_HIDE_ROLE_TAG`). Remove tagged roles from the list of available roles. The tag value must be true to be enabled, set value to false or delete the tag to show the role. Hidden roles will not be shown when executing: _show available roles_
-* Specific approvers for specific resources (`SDM_APPROVERS_CHANNEL_TAG`). Tagged resources will send access requests to their responsible approvers. The tag value should be the name of the approvers channel for that resource.
+* Specific approvers for specific resources or accounts (`SDM_APPROVERS_CHANNEL_TAG`). Tagged resources/accounts will send access requests to their responsible approvers. The tag value should be the name of the approvers channel for that resource/account.
 
 ## Possible workflows
 Different workflows (permutations) can be configured using the flags mentioned above - adjustable at runtime via [plugin config](CONFIGURE_ACCESSBOT.md).
@@ -45,7 +45,7 @@ Different workflows (permutations) can be configured using the flags mentioned a
 
 ## Using tags
 Following some sample commands you can use for configuring tags (e.g. `SDM_AUTO_APPROVE_TAG=auto-approve`):
-```
+```bash
 $ sdm admin datasources list -e
 Datasource ID           Name                 Type          ...         Tags
 rs-4c29d3006066e7ef     snowflake-test-1     snowflake     ...

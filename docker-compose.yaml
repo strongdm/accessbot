@@ -5,5 +5,9 @@ services:
     env_file:
       # You could use env-file.example as a reference
       - env-file
+    # For Slack, no ports are required for basic operation. Expose 3141 for health checks.
+    # For Teams, port 3141 must be exposed for basic operation.
+    # For all platforms, expose port 3142 for Prometheus metrics.
     ports:
       - 3141:3141
+      - 3142:3142

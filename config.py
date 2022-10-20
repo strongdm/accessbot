@@ -19,8 +19,13 @@ def get_access_controls():
         'AccessBot:show_resources': allow_all if 'show_resources' in commands_enabled else deny_all,
         'AccessBot:show_roles': allow_all if 'show_roles' in commands_enabled else deny_all,
         'AccessBot:match_alias': allow_all,
+        'AccessBot:accessbot-whoami': {
+            'allowusers': ('*'),
+            'allowprivate': True,
+            'allowmuc': False,
+        },
         'help': { 'allowusers': ('*') },
-        'whoami': { 'allowusers': ('*') },
+        'whoami': deny_all,
         '*': {
             'allowusers': BOT_ADMINS,
             'allowrooms': [os.getenv('SDM_ADMINS_CHANNEL')],
@@ -44,8 +49,11 @@ def get_bot_identity():
     platform = os.getenv('SDM_BOT_PLATFORM')
     if platform == 'ms-teams':
         return {
-            "appId": os.getenv("AZURE_APP_ID"),
-            "appPassword": os.getenv("AZURE_APP_PASSWORD")
+            "app_id": os.getenv("AZURE_APP_ID", None),
+            "app_password": os.getenv("AZURE_APP_PASSWORD", None),
+            "ad_tenant_id": os.getenv("AZURE_AD_TENANT_ID", None),
+            "ad_app_id": os.getenv("AZURE_AD_APP_ID", None),
+            "ad_app_secret": os.getenv("AZURE_AD_APP_SECRET", None),
         }
     elif platform == 'slack-classic':
         return {
@@ -65,7 +73,7 @@ def get_backend():
     return 'SlackBolt'
 
 def get_bot_extra_backend_dir():
-    platform = os.getenv('SDM_BOT_PLATFORM')
+    platform = os.getenv('SDM_BOT_PLATFORM').lower()
     if platform == 'ms-teams':
         return 'errbot-backend-botframework'
     elif platform == 'slack-classic':
@@ -73,9 +81,10 @@ def get_bot_extra_backend_dir():
     return 'errbot-slack-bolt-backend/errbot_slack_bolt_backend'
 
 def get_bot_admins():
-    return os.getenv("SDM_ADMINS").split(" ")
+    return os.getenv("SDM_ADMINS").lower().split(" ")
 
-CORE_PLUGINS = ('ACLs', 'Health', 'Help', 'Plugins', 'Utils', 'Webserver')
+CORE_PLUGINS = ('ACLs', 'Backup', 'ChatRoom', 'CommandNotFoundFilter', 'Flows', 'Health', 'Help', 'Plugins', 'TextCmds',
+                'Utils', 'VersionChecker', 'Webserver')
 
 BACKEND = get_backend()
 BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
@@ -83,7 +92,7 @@ BOT_EXTRA_BACKEND_DIR = get_bot_extra_backend_dir()
 BOT_DATA_DIR = 'data'
 BOT_EXTRA_PLUGIN_DIR = 'plugins'
 
-BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM")
+BOT_PLATFORM = os.getenv("SDM_BOT_PLATFORM").lower()
 
 BOT_LOG_FILE = '' if str(os.getenv("SDM_DOCKERIZED", "")).lower() == 'true' else 'errbot.log'
 BOT_LOG_LEVEL = os.getenv("LOG_LEVEL", 'INFO')
@@ -104,3 +113,5 @@ ACCESS_FORM_BOT_INFO = {
     "bot_id": None,  # will be initialized in SlackBoltBackend.resolve_access_form_bot_id method
     "nickname": os.getenv("SDM_ACCESS_FORM_BOT_NICKNAME")
 }
+
+EXPOSE_METRICS = os.getenv("SDM_EXPOSE_METRICS", "false").lower() == "true"

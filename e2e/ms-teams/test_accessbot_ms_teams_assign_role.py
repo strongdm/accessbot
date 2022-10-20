@@ -7,9 +7,11 @@ from unittest.mock import MagicMock, patch
 
 sys.path.append('plugins/sdm')
 sys.path.append('e2e')
+sys.path.append('errbot-backend-botframework')
 
 from test_common import create_config, callback_message_fn, MSTeamsErrBotExtraTestSettings
 from lib import ApproveHelper, RoleGrantHelper
+from botframework import ChannelIdentifier
 
 pytest_plugins = ["errbot.backends.test"]
 
@@ -38,7 +40,11 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
 
     def test_assign_role_command(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot)
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot,
+                                                                   from_extras={
+                                                                       'team_id': '19:ttt',
+                                                                       'channel_id': '19:ccc'
+                                                                   })
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
             mocked_testbot.push_message(f"access to role {role_name}")
@@ -53,7 +59,13 @@ class Test_assign_role(MSTeamsErrBotExtraTestSettings):
 
     def test_assign_role_command_when_not_self_approved(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
-        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot, from_email=account_name, approver_is_admin=True)
+        mocked_testbot._bot.callback_message = callback_message_fn(mocked_testbot._bot,
+                                                                   from_email=account_name,
+                                                                   from_extras={
+                                                                       'team_id': '19:ttt',
+                                                                       'channel_id': '19:ccc'
+                                                                   },
+                                                                   approver_is_admin=True)
         grant_temporary_access_mock = accessbot.get_sdm_service().grant_temporary_access
         with patch('datetime.datetime', new = self.NewDate):
             mocked_testbot.push_message(f"access to role {role_name}")
@@ -86,6 +98,16 @@ def inject_mocks(testbot, config, roles = [], account_tags = None, role_tags = N
     accessbot.get_sdm_service = MagicMock(return_value = create_sdm_service_mock(roles, account_tags, role_tags))
     accessbot.get_role_grant_helper = MagicMock(return_value = create_role_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value = create_approve_helper(accessbot))
+    accessbot._bot.azure_active_directory_is_configured = MagicMock(return_value = False)
+    accessbot._bot.get_channel_by_id = MagicMock(return_value=[
+        ChannelIdentifier(
+            {
+                'id': '19:ccc',
+                'displayName': 'Test Channel',
+                'team': {'id': '19:ttt', 'displayName': 'Test Team'}
+            }
+        )
+    ])
     return testbot
 
 def create_role_grant_helper(accessbot):

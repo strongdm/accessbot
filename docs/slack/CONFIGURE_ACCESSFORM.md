@@ -4,13 +4,15 @@ title: Slack Accessbot Form (setup)
 nav_order: 5
 parent: Slack
 ---
+**We strongly encourage you to use [Workflow Builder](https://slack.com/help/articles/360035692513-Guide-to-Workflow-Builder) instead of AccessForm.**
+
 # AccessForm
 
-AccessForm is the free way to request access to a resource using a form within Slack.
+AccessForm is the free way to request access to a resource using a form within Slack. This method can be used when you don't have a Slack Business+ account.
 
 ## Create AccessForm
 
-In order to configure the form, you'd need to create a new Slack App, take a look [here](accessform-manifest.yaml)
+In order to configure the form, you'd need to create a new Slack App, take a look [here](../../tools/accessform/accessform-manifest.yaml)
 
 ## Installation and configuration
 
@@ -34,8 +36,8 @@ In order to configure the form, you'd need to create a new Slack App, take a loo
 
         - SDM_ACCESS_FORM_BOT_NICKNAME: obtained by executing the following command in a terminal inside the root folder of the `accessbot` project (remember to be inside the accessbot project virtual environment and to export the necessary environment variables, otherwise an error will occur) :
             
-            ```shell
-            python tools/get-slack-handle.py -d "AccessForm"
+            ```bash
+            $ python tools/get-slack-handle.py -d "AccessForm"
             ```
             > By default this nickname is `@accessform`.
 

@@ -1,18 +1,19 @@
 from .base_show_helper import BaseShowHelper
-from ..util import is_hidden, HiddenTagEnum, is_concealed, AllowedTagEnum, is_allowed, can_auto_approve_by_tag
+from ..util import is_hidden, HiddenTagEnum, is_concealed, AllowedTagEnum, is_allowed, can_auto_approve_by_tag, \
+    AllowedGroupsTagEnum
 
 
 class ShowResourcesHelper(BaseShowHelper):
     def __init__(self, bot):
         super().__init__(bot, "resources")
 
-    def get_list(self, filter):
+    def get_list(self, filter, sdm_account):
         role_name = self._bot.config["CONTROL_RESOURCES_ROLE_NAME"]
         if role_name is not None:
             resources = self._sdm_service.get_all_resources_by_role(role_name, filter = filter)
         else:
             resources = self._sdm_service.get_all_resources(filter = filter)
-        return self.__filter_resources(resources)
+        return self.__filter_resources(resources, sdm_account)
 
     def get_line(self, item, _):
         if self.is_auto_approve(item):
@@ -33,11 +34,11 @@ class ShowResourcesHelper(BaseShowHelper):
             and item.tags[self._bot.config["AUTO_APPROVE_GROUPS_TAG"]] is not None
         )
 
-    def __filter_resources(self, resources):
+    def __filter_resources(self, resources, sdm_account):
         return [
             resource
             for resource in resources
             if not is_hidden(self._bot.config, HiddenTagEnum.RESOURCE, resource)
             and not is_concealed(self._bot.config, resource)
-            and is_allowed(self._bot.config, AllowedTagEnum.RESOURCE, resource)
+            and is_allowed(self._bot.config, AllowedTagEnum.RESOURCE, AllowedGroupsTagEnum.RESOURCE, resource, sdm_account)
         ]

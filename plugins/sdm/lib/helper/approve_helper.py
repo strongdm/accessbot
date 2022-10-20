@@ -12,18 +12,27 @@ class ApproveHelper(BaseEvaluateRequestHelper):
 
     def evaluate(self, request_id, **kwargs):
         grant_request = self._bot.get_grant_request(request_id)
-        if grant_request['type'] == GrantRequestType.ASSIGN_ROLE:
+        if grant_request['type'] == GrantRequestType.ASSIGN_ROLE.value:
             yield from self.__approve_assign_role(grant_request)
         else:
             yield from self.__approve_access_resource(grant_request)
+        message = grant_request['message']
         if kwargs.get('is_auto_approve') != None and kwargs['is_auto_approve'] == True:
             yield from self.__register_auto_approve_use(grant_request)
+            self._notify_requester(message.frm, message, f'**@{message.frm.nick}**: Request auto-approved.')
+        else:
+            self._notify_requester(message.frm, message, f'**@{message.frm.nick}**: Request "{grant_request["id"]}" approved.')
 
     def __approve_assign_role(self, grant_request):
-        yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
-        self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
+        try:
+            yield from self.__grant_temporal_access_by_role(grant_request['sdm_object'].name, grant_request['sdm_account'].id)
+        except Exception as e:
+            yield str(e)
+            return
+        self._bot.add_thumbsup_reaction(grant_request['message'])
         yield from self.__notify_assign_role_request_granted(grant_request['message'], grant_request['sdm_object'].name)
+        self._bot.get_metrics_helper().increment_manual_approvals()
 
     def __approve_access_resource(self, grant_request):
         duration = grant_request['flags'].get('duration')
@@ -37,6 +46,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         self._bot.add_thumbsup_reaction(grant_request['message'])
         self._bot.remove_grant_request(grant_request['id'])
         yield from self.__notify_access_request_granted(grant_request['message'], resource, duration, needs_renewal)
+        self._bot.get_metrics_helper().increment_manual_approvals()
 
     def __grant_temporal_access_by_role(self, role_name, account_id):
         grant_start_from = datetime.datetime.now(datetime.timezone.utc)
@@ -45,11 +55,13 @@ class ApproveHelper(BaseEvaluateRequestHelper):
         granted_resources_via_account = self.__sdm_service.get_granted_resources_via_account(resources, account_id)
         granted_resources_via_role = self.__sdm_service.get_granted_resources_via_role(resources, account_id)
         granted_resources = self.__remove_duplicated_resources(granted_resources_via_account + granted_resources_via_role)
+        if len(granted_resources) == len(resources):
+            raise Exception(f"The user already have access to all resources assigned to the role {role_name}")
         if len(granted_resources) > 0:
             granted_resources_text = ''
             for resource in granted_resources:
                 if granted_resources_text:
-                    granted_resources_text += "\n"
+                    granted_resources_text = self._bot.format_breakline(granted_resources_text)
                 granted_resources_text += f"User already have access to {resource.name}"
             yield granted_resources_text
         # TODO Yield with a specific error when there are no resources to grant
