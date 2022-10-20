@@ -62,6 +62,8 @@ Now, after creating the Access Form Bot and configuring AccessBot on your machin
     > By default this nickname is `@accessform`.
 
       - Note: remember to define in the current session the AccessBot `SLACK_BOT_TOKEN` environment variable in order to execute the script, otherwise an error will occur.
+    
+  - `NGROK_AUTHTOKEN`: obtained on [https://dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) after creating an account on [https://ngrok.com](https://ngrok.com)
  
    
 3. Now we are ready to run the Access Form Bot container:
@@ -69,18 +71,21 @@ Now, after creating the Access Form Bot and configuring AccessBot on your machin
 ```bash
 $ docker run --env-file /path/to/access-form-env-file accessform
 ⚡️ Bolt app is running! (development server)
-your url is: https://wicked-carpets-double-187-65-73-208.loca.lt
 ```
 
-When running the container, you will see a URL similar to the above. This is your Ngrok Tunnel URL. We'll need it in a moment.
+4. Access [http://localhost:4040/inspect/http](http://localhost:4040/inspect/http) to see your ngrok links:
 
-4. Now, go to the "App Manifest" page, and find the "interactivity" section inside the YAML field.
+<img width="616" alt="image" src="https://user-images.githubusercontent.com/49597325/197025165-99fc8dcd-9200-4f0a-ad04-f8e9f75cdac3.png">
+
+You will only need the HTTPS one. Copy it.
+
+5. Now, go to the "App Manifest" page, and find the "interactivity" section inside the YAML field.
 
 ![image](https://user-images.githubusercontent.com/49597325/196991273-e02fd462-fdf9-4a81-b44d-9fe02b3239cf.png)
 
-Then, under the `request_url` field replace "https://your-subdomain.com" with your Ngrok Tunnel URL generated in a previous step and click on "Save Changes" in the top right corner of the page.
+Then, under the `request_url` field replace "https://your-link.ngrok.io" with your HTTPS Ngrok link generated in a previous step and click on "Save Changes" in the top right corner of the page.
 
-5. Finally, go to your Slack Workspace and add the bot into the channel which you got the Channel ID from. To do that, you can simply send a message mentioning the Access Form bot. In other words, just send a message with "@accessform", if that is the handle of your bot.
+6. Finally, go to your Slack Workspace and add the bot into the channel which you got the Channel ID from. To do that, you can simply send a message mentioning the Access Form bot. In other words, just send a message with "@accessform", if that is the handle of your bot.
 
 
 ## Usage Example
