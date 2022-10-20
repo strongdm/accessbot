@@ -213,4 +213,4 @@ In the example above, we're assuming that `SDM_ALLOW_ROLE_GROUPS_TAG=allow-group
 
 ## Resources access request form bot configuration
 
-* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the Access Form bot. For further information, please refer to [CONFIGURE_ACCESS_FORM_BOT.md](docs/slack/CONFIGURE_ACCESS_FORM_BOT.md).
+* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the Access Form bot. For further information, please refer to [CONFIGURE_ACCESS_FORM_BOT.md](../slack/CONFIGURE_ACCESS_FORM_BOT.md).

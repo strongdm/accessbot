@@ -22,7 +22,7 @@ In order to configure the form, you need to create a new Slack App.
 
 3. On step 1, select your organization and click on "Next".
 
-4. On step 2, copy and paste the content of the [access-form-manifest.yaml](tools/access-form/access-form-manifest.yaml) file into the "YAML" field, and click on "Next".
+4. On step 2, copy and paste the content of the [access-form-manifest.yaml](/tools/access-form/access-form-manifest.yaml) file into the "YAML" field, and click on "Next".
 
 ![image](https://user-images.githubusercontent.com/20745533/170761741-5184ab7f-496e-4be2-a818-42079524ad28.png)
 
@@ -39,12 +39,12 @@ In order to configure the form, you need to create a new Slack App.
 
 Now, after creating the Access Form Bot and configuring AccessBot on your machine, you can start configuring the Access Form backend.
 
-1. First, we need to build the container image using the Dockerfile located in [tools/access-form](tools/access-form):
+1. First, we need to build the container image using the Dockerfile located in [tools/access-form](/tools/access-form):
     ```bash
     $ docker build -t accessform tools/access-form
     ```
     - Note: in this example we are using Docker, but you can use your preferred container orchestrator.
-2. Now you need to configure the Access Form environment file following the template [access-form-env-file.example](tools/access-form/access-form-env-file.example) file. Inside you will find the following required variables:
+2. Now you need to configure the Access Form environment file following the template [access-form-env-file.example](/tools/access-form/access-form-env-file.example) file. Inside you will find the following required variables:
    - `SLACK_ACCESS_FORM_BOT_TOKEN`: obtained by accessing the "OAuth & Permissions" page of the Slack Access Form application:
       ![image](https://user-images.githubusercontent.com/20745533/170764833-22c9d936-5e45-42b5-b137-2a801a2435e0.png)
 
@@ -92,4 +92,4 @@ The following GIF shows an example of using the resource access form within Slac
 
 ## Access Form with Workflow Builder
 
-In case you want to use Workflow Builder to build the form, please refer to [CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md](docs/slack/CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md).
+In case you want to use Workflow Builder to build the form, please refer to [CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md](/docs/slack/CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md).
