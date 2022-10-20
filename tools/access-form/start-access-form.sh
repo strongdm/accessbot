@@ -1,4 +1,4 @@
 #!/bin/bash
 
-lt --port 3000 &
+ngrok authtoken $NGROK_AUTHTOKEN &
 python -u app.py

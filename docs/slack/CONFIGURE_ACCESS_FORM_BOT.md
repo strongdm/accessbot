@@ -72,13 +72,13 @@ $ docker run --env-file /path/to/access-form-env-file accessform
 your url is: https://wicked-carpets-double-187-65-73-208.loca.lt
 ```
 
-When running the container, you will see a URL similar to the above. This is your Local Tunnel URL. We'll need it in a moment.
+When running the container, you will see a URL similar to the above. This is your Ngrok Tunnel URL. We'll need it in a moment.
 
 4. Now, go to the "App Manifest" page, and find the "interactivity" section inside the YAML field.
 
-![image](https://user-images.githubusercontent.com/20745533/170771328-f3712964-dfce-493e-bfb0-9c3dee5f2359.png)
+![image](https://user-images.githubusercontent.com/49597325/196991273-e02fd462-fdf9-4a81-b44d-9fe02b3239cf.png)
 
-Then, under the `request_url` field replace "https://your-subdomain.loca.lt" with your Local Tunnel URL generated in a previous step and click on "Save Changes" in the top right corner of the page.
+Then, under the `request_url` field replace "https://your-subdomain.com" with your Ngrok Tunnel URL generated in a previous step and click on "Save Changes" in the top right corner of the page.
 
 5. Finally, go to your Slack Workspace and add the bot into the channel which you got the Channel ID from. To do that, you can simply send a message mentioning the Access Form bot. In other words, just send a message with "@accessform", if that is the handle of your bot.
 
