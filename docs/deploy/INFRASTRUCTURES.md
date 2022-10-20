@@ -8,7 +8,7 @@ When using Slack, AccessBot uses [Slack Socket Mode](https://api.slack.com/apis/
 
 <img src="https://user-images.githubusercontent.com/49597325/196509052-563074d2-54ec-47f2-9b1f-9fa955e4f8fd.png" height="600px" />
 
-Because of that, AccessBot doesn't support Load Balancing. And doesn't support [Slack Incomming Webhooks](https://api.slack.com/messaging/webhooks).
+Because of that, AccessBot doesn't support Load Balancing. Our recommendation is to use a Container Orchestrator and use it with a single replica and a liveness probe (e.g. [k8s-descriptor.yaml](/k8s-descriptor.yaml)). 
 
 In this scenario, for basic operations you don't need to configure any ingress rule.
 
