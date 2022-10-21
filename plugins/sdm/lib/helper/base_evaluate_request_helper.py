@@ -1,6 +1,7 @@
 import shortuuid
 from abc import ABC, abstractmethod
 
+from ..platform.ms_teams_platform import MSTeamsPlatform
 from ..util import get_approvers_channel
 
 
@@ -58,6 +59,13 @@ class BaseEvaluateRequestHelper(ABC):
             self._bot.send(requester_id.room, text, in_reply_to=message)
             return
         self._bot.send(requester_id, text, in_reply_to=message)
+
+    def get_sender_email(self, grant_request):
+        requester = grant_request['message'].frm
+        sender_email = self._bot.get_sender_email(requester)
+        if sender_email == requester.email and isinstance(self._bot.get_platform(), MSTeamsPlatform):
+            return grant_request['sdm_account'].email
+        return sender_email
 
     @abstractmethod
     def evaluate(self, request_id, **kwargs):
