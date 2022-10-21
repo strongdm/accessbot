@@ -6,7 +6,7 @@ from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
 import config_template
-from config import get_commands_aliases
+from enabled_commands_util import get_commands_aliases
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
     ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
