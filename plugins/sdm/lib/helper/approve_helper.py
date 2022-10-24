@@ -76,7 +76,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
 
     def __notify_access_request_granted(self, grant_request, resource, duration: str, is_renewal: bool):
         message = grant_request['message']
-        sender_email = self.get_sender_email(grant_request)
+        sender_email = grant_request['sdm_account'].email
         sender_nick = self._bot.get_sender_nick(message.frm)
         if duration:
             duration_flag_timedelta = convert_duration_flag_to_timedelta(duration)
@@ -92,7 +92,7 @@ class ApproveHelper(BaseEvaluateRequestHelper):
     def __notify_assign_role_request_granted(self, grant_request):
         message = grant_request['message']
         role_name = grant_request['sdm_object'].name
-        sender_email = self.get_sender_email(grant_request)
+        sender_email = grant_request['sdm_account'].email
         sender_nick = self._bot.get_sender_nick(message.frm)
         yield f"{sender_nick}: Granting {sender_email} access to resources in role '{role_name}' for {self._bot.config['GRANT_TIMEOUT']} minutes"
 
