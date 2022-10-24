@@ -55,7 +55,7 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 * **SDM_AUTO_APPROVE_TAG**. Resource tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
 * **SDM_CONCEAL_RESOURCE_TAG**. Resource tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
-* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
+* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
 * **SDM_ENABLE_BOT_STATE_HANDLING**. Boolean flag to enable persistent grant requests. When enabled, all grant requests will be synced in a local file, that way if AccessBot goes down, all ongoing requests will be restored. Default = false
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
@@ -213,4 +213,4 @@ In the example above, we're assuming that `SDM_ALLOW_ROLE_GROUPS_TAG=allow-group
 
 ## Resources access request form bot configuration
 
-* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the access form bot. For further information, please refer to [CONFIGURE_ACCESSBOT_FORM.md](../slack/CONFIGURE_ACCESSBOT_FORM.md).
+* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the Access Form bot. For further information, please refer to [CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md](/docs/slack/CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md).
