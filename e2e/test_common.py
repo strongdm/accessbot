@@ -87,9 +87,10 @@ def create_config():
 
 
 class DummyAccount:
-    def __init__(self, name, tags):
+    def __init__(self, name, tags, suspended=False):
         self.name = name
         self.tags = tags
+        self.suspended = suspended
 
     def to_dict(self):
         return {

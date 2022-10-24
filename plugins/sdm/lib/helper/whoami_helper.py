@@ -23,16 +23,18 @@ class WhoamiHelper:
     def __get_sdm_account_info(self, message):
         try:
             sdm_account = self.__bot.get_sdm_account(message)
+            if sdm_account is None:
+                raise Exception('SDM Account not found')
         except:
             return '* SDM Account status: NOT FOUND\n'
-        if sdm_account is None or len(sdm_account.tags.keys()) == 0:
-            return ''
-        info = "* SDM Account tags: "
-        for index, (tag, value) in enumerate(sdm_account.tags.items()):
-            if index > 0:
-                info += ", "
-            info += f"`{tag}: {value}`"
-        info += "\n"
+        info = ''
+        if sdm_account is not None and len(sdm_account.tags.keys()) > 0:
+            info += "* SDM Account tags: "
+            for index, (tag, value) in enumerate(sdm_account.tags.items()):
+                if index > 0:
+                    info += ", "
+                info += f"`{tag}: {value}`"
+            info += "\n"
         info += f"* SDM Account status: {'SUSPENDED' if sdm_account.suspended else 'ACTIVE'}\n"
         return info
 

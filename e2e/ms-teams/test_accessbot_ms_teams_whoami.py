@@ -59,20 +59,20 @@ class Test_whoami(MSTeamsErrBotExtraTestSettings):
     def test_whoami_command_when_and_override_email_enabled(self, mocked_testbot_with_email_override):
         mocked_testbot_with_email_override.push_message("whoami")
         message = mocked_testbot_with_email_override.pop_message()
-        assert "person" in message
+        assert "email" in message
         assert override_email in message
 
     def test_whoami_command_when_and_email_subaddress_enabled(self, mocked_testbot_with_email_subaddress):
         mocked_testbot_with_email_subaddress.push_message("whoami")
         message = mocked_testbot_with_email_subaddress.pop_message()
-        assert "person" in message
+        assert "email" in message
         assert email_with_subaddress in message
 
     def test_whoami_command_when_all_email_features_enabled(self, mocked_testbot_with_all_email_features):
         accessbot = mocked_testbot_with_all_email_features.bot.plugin_manager.plugins['AccessBot']
         mocked_testbot_with_all_email_features.push_message("whoami")
         message = mocked_testbot_with_all_email_features.pop_message()
-        assert "person" in message
+        assert "email" in message
         assert override_email in message
         accessbot.config['SENDER_EMAIL_OVERRIDE'] = None
         mocked_testbot_with_all_email_features.push_message("whoami")
