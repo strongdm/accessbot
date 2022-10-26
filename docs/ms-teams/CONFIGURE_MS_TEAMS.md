@@ -140,4 +140,4 @@ Due to some MS Teams current limitations, the following features are not support
 - Admins reachability: if you want the admins to manage the access requests via DMs, you need to make sure that all the
 `SDM_ADMINS` belong to all teams inside your organization, because when a user requests an access the bot searches for 
 the admins details inside the requester's team. So, because of this limitation we strongly recommend you to enable the
-[SDM_ADMINS_CHANNEL](/docs/configure_accessbot/CONFIGURE_ACCESSBOT.md#Bot-configuration) feature.
+[SDM_ADMINS_CHANNEL](/docs/slack/CONFIGURE_ACCESSBOT.md#Bot-configuration) feature.

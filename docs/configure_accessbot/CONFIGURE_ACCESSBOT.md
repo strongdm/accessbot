@@ -55,16 +55,18 @@ You just need to remove the "SDM_" prefix when configuring them. Here's a usage 
 * **SDM_AUTO_APPROVE_TAG**. Resource tag to be used for auto-approve resources. The tag value is not ignored, delete tag or set it false to disable. Disabled by default
 * **SDM_CONCEAL_RESOURCE_TAG**. Resource tag to be used for concealing resources, meaning that they are not going to be shown but remain accessible. Ideally set value to `true` or `false` (e.g. `conceal-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_CONTROL_RESOURCES_ROLE_NAME**. Role name to be used for getting available resources. Disabled by default
-* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](./CONFIGURE_ALTERNATIVE_EMAILS.md).
+* **SDM_EMAIL_SLACK_FIELD**. Slack Profile Tag to be used for specifying an SDM email. For further information, please refer to [CONFIGURE_ALTERNATIVE_EMAILS.md](CONFIGURE_ALTERNATIVE_EMAILS.md).
 * **SDM_EMAIL_SUBADDRESS**. Flag to be used for specifying a subaddress for the SDM email (e.g. "user@email.com" becomes "user+sub@email.com" when SDM_EMAIL_SUBADDRESS equals to "sub"). Disabled by default
 * **SDM_ENABLE_BOT_STATE_HANDLING**. Boolean flag to enable persistent grant requests. When enabled, all grant requests will be synced in a local file, that way if AccessBot goes down, all ongoing requests will be restored. Default = false
 * **SDM_ENABLE_RESOURCES_FUZZY_MATCHING**. Flag to enable fuzzy matching for resources when a perfect match is not found. Default = true
 * **SDM_GRANT_TIMEOUT**. Timeout in minutes for an access grant. Default = 60 min
+* **SDM_GRANT_TIMEOUT_LIMIT**. Timeout limit in minutes for an access grant when using the `--duration` flag. Disabled by default
 * **SDM_GROUPS_TAG**. User tag to be used for specifying the groups a user belongs to. Disabled by default ([see below](#user-groups) for more info about using tags)
 * **SDM_HIDE_RESOURCE_TAG**. Resource tag to be used for hiding available resources, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-resource=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_HIDE_ROLE_TAG**. Role tag to be used for hiding available roles, meaning that they are not going to be shown nor accessible. Ideally set value to `true` or `false` (e.g. `hide-role=true`). If there's no value, it's interpreted as `true`. Disabled by default ([see below](#using-tags) for more info about using tags)
 * **SDM_MAX_AUTO_APPROVE_USES** and **SDM_MAX_AUTO_APPROVE_INTERVAL**. Max number of times that the auto-approve functionality can be used in an interval of configured minutes. Disabled by default
 * **SDM_REQUIRED_FLAGS**. List of flags that should be required when using the "access" command. The flags should be separated by space, e.g. `reason duration`. By default, there are no required flags
+  - If you want to specify a template for the reason flag, you can define a regular expression (regex) wrapped by forward slashes (/) and preceded by a colon (:) after the reason, e.g. `reason:/regex/`. **IMPORTANT**: Don't use "--" in your template.
 * **SDM_RESOURCE_GRANT_TIMEOUT_TAG**. Resource tag to be used for registering the custom time (in minutes) that a specific resource will be made available for the user.
 * **SDM_SENDER_EMAIL_OVERRIDE**. Email to be used for all requests. Disabled by default (_useful for testing_)
 * **SDM_SENDER_NICK_OVERRIDE**. Nickname to be used for all requests. Disabled by default (_useful for testing_)
@@ -211,4 +213,4 @@ In the example above, we're assuming that `SDM_ALLOW_ROLE_GROUPS_TAG=allow-group
 
 ## Resources access request form bot configuration
 
-* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the access form bot. For further information, please refer to [CONFIGURE_ACCESSBOT_FORM.md](../slack/CONFIGURE_ACCESSBOT_FORM.md).
+* **SDM_ACCESS_FORM_BOT_NICKNAME**. Nickname of the Access Form bot. For further information, please refer to [CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md](/docs/slack/CONFIGURE_WORKFLOW_BUILDER_ACCESSBOT_FORM.md).

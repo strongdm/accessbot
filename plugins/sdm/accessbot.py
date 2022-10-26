@@ -1,15 +1,16 @@
 import os
 import re
 from itertools import chain
-from errbot import BotPlugin, re_botcmd, Message, webhook
+from errbot import BotPlugin, re_botcmd, Message
 from errbot.core import ErrBot
 from slack_sdk.errors import SlackApiError
 
 import config_template
+from enabled_commands_util import get_commands_aliases
 from lib import ApproveHelper, create_sdm_service, MSTeamsPlatform, PollerHelper, \
-    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, SlackPlatform, \
+    ShowResourcesHelper, ShowRolesHelper, SlackBoltPlatform, SlackRTMPlatform, \
     ResourceGrantHelper, RoleGrantHelper, DenyHelper, CommandAliasHelper, ArgumentsHelper, \
-    GrantRequestHelper, WhoamiHelper, MetricsHelper, HealthCheckHelper
+    GrantRequestHelper, WhoamiHelper, MetricsHelper
 from lib.util import normalize_utf8
 from grant_request_type import GrantRequestType
 
@@ -50,6 +51,13 @@ def get_platform(bot):
     elif platform == 'slack-classic':
         return SlackRTMPlatform(bot)
     return SlackBoltPlatform(bot)
+
+def get_command_alias_help(command: str):
+    aliases = get_commands_aliases()
+    command_alias = aliases[command]
+    if command_alias is None:
+        return ''
+    return f' - Command alias: {command_alias}'
 
 
 # pylint: disable=too-many-ancestors
@@ -174,7 +182,8 @@ class AccessBot(BotPlugin):
     def check_configuration(self, configuration):
         pass
 
-    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to <resource-name> [--reason text] [--duration duration]")
+    @re_botcmd(pattern=ACCESS_REGEX, flags=re.IGNORECASE, prefixed=False,
+               re_cmd_name_help="access to <resource-name> [--reason text] [--duration duration]" + get_command_alias_help('access_resource'))
     def access_resource(self, message, match):
         """
         Grant access to <resource-name> (using the requester's email address)
@@ -198,7 +207,8 @@ class AccessBot(BotPlugin):
         yield from self.get_resource_grant_helper().request_access(message, resource_name, flags=flags)
         self.__metrics_helper.reset_consecutive_errors()
 
-    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="access to role <role-name>")
+    @re_botcmd(pattern=ASSIGN_ROLE_REGEX, flags=re.IGNORECASE, prefixed=False,
+               re_cmd_name_help="access to role <role-name>" + get_command_alias_help('assign_role'))
     def assign_role(self, message, match):
         """
         Grant access to all resources in <role-name> (using the requester's email address)
@@ -234,7 +244,8 @@ class AccessBot(BotPlugin):
         self.__metrics_helper.reset_consecutive_errors()
 
     #pylint: disable=unused-argument
-    @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available resources [--filter expression]")
+    @re_botcmd(pattern=SHOW_RESOURCES_REGEX, flags=re.IGNORECASE, prefixed=False,
+               re_cmd_name_help="show available resources [--filter expression]" + get_command_alias_help('show_resources'))
     def show_resources(self, message, match):
         """
         Show all available resources
@@ -247,7 +258,8 @@ class AccessBot(BotPlugin):
         self.__metrics_helper.reset_consecutive_errors()
 
     #pylint: disable=unused-argument
-    @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False, re_cmd_name_help="show available roles")
+    @re_botcmd(pattern=SHOW_ROLES_REGEX, flags=re.IGNORECASE, prefixed=False,
+               re_cmd_name_help="show available roles" + get_command_alias_help('show_roles'))
     def show_roles(self, message, match):
         """
         Show all available roles
@@ -268,10 +280,6 @@ class AccessBot(BotPlugin):
     @re_botcmd(pattern=r'.+', flags=re.IGNORECASE, prefixed=False, hidden=True)
     def match_alias(self, message, _):
         yield from self.get_command_alias_helper().execute(message)
-
-    @webhook('/health-check')
-    def _health_check(self, _):
-        return self.get_health_check_helper().execute()
 
     @staticmethod
     def get_admins():
@@ -317,9 +325,6 @@ class AccessBot(BotPlugin):
 
     def get_whoami_helper(self):
         return WhoamiHelper(self)
-
-    def get_health_check_helper(self):
-        return HealthCheckHelper(self)
 
     def get_metrics_helper(self):
         return self.__metrics_helper
@@ -482,3 +487,6 @@ class AccessBot(BotPlugin):
 
     def get_platform_whoami_user_info(self, identifier):
         return self.__platform.get_whoami_user_info(identifier)
+
+    def get_platform(self):
+        return self.__platform

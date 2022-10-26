@@ -83,6 +83,7 @@ def create_config():
         'APPROVERS_CHANNEL_TAG': None,
         'ALLOW_RESOURCE_ACCESS_REQUEST_RENEWAL': False,
         'ENABLE_BOT_STATE_HANDLING': False,
+        'GRANT_TIMEOUT_LIMIT': None,
     }
 
 

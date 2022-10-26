@@ -10,7 +10,7 @@ class DenyHelper(BaseEvaluateRequestHelper):
     def __notify_access_request_denied(self, admin, denial_reason, grant_request):
         requester = grant_request['message'].frm
         sdm_object_name = grant_request['sdm_object'].name
-        sender_email = self._bot.get_sender_email(requester)
+        sender_email = grant_request['sdm_account'].email
         sender_nick = self._bot.get_sender_nick(requester)
         admin_nick = self._bot.get_sender_nick(admin)
         denial_message = f"Your request **{grant_request['id']}** has been denied by admin {admin_nick}"

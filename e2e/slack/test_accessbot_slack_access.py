@@ -26,6 +26,7 @@ access_form_bot_id = "B0000000000"
 room_id = "C00000000"
 room_name = "myroom"
 required_flags = "reason duration"
+reason_template = "\d \w+"
 
 class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     @pytest.fixture
@@ -46,6 +47,24 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
     def mocked_testbot_with_required_flags(self, mocked_testbot):
         accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
         accessbot.config['REQUIRED_FLAGS'] = required_flags
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_reason_template(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/{reason_template}/'
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_wrong_reason_template(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/(./'
+        return mocked_testbot
+
+    @pytest.fixture
+    def mocked_testbot_with_required_reason_template_and_duration(self, mocked_testbot):
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['REQUIRED_FLAGS'] = f'reason:/{reason_template}/ duration'
         return mocked_testbot
 
     def test_access_command_grant_approved(self, mocked_testbot):
@@ -195,6 +214,49 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         mocked_testbot.push_message(f"access to Xxx --duration {duration}")
         assert "You need to enter a duration greater than zero" in mocked_testbot.pop_message()
 
+    def test_access_command_with_duration_flag_value_lesser_than_duration_limit(self, mocked_testbot):
+        duration = '40m'
+        duration_limit = '45'
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+
+    def test_access_command_with_duration_flag_value_equals_to_duration_limit(self, mocked_testbot):
+        duration = '40m'
+        duration_limit = '40'
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+
+    def test_access_command_with_duration_flag_time_unit_different_than_duration_limit_unit(self, mocked_testbot):
+        duration = '1h'
+        duration_limit = '60'
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "valid request" in mocked_testbot.pop_message()
+        assert "access request" in mocked_testbot.pop_message()
+
+    def test_access_command_fails_with_duration_flag_value_greater_than_duration_limit(self, mocked_testbot):
+        duration = '45m'
+        duration_limit = '40'
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "need to enter a duration lesser or equals" in mocked_testbot.pop_message()
+
+    def test_access_command_fails_with_duration_flag_time_unit_different_than_duration_limit_unit(self, mocked_testbot):
+        duration = '2h'
+        duration_limit = '60'
+        accessbot = mocked_testbot.bot.plugin_manager.plugins['AccessBot']
+        accessbot.config['GRANT_TIMEOUT_LIMIT'] = duration_limit
+        mocked_testbot.push_message(f"access to Xxx --duration {duration}")
+        assert "need to enter a duration lesser or equals" in mocked_testbot.pop_message()
+        
     def test_access_command_fails_for_unreachable_admin_users(self, mocked_testbot_with_no_admin_users):
         mocked_testbot_with_no_admin_users.push_message("access to Xxx")
         assert "no active Slack Admin" in mocked_testbot_with_no_admin_users.pop_message()
@@ -226,6 +288,36 @@ class Test_default_flow(ErrBotExtraTestSettings):  # manual approval
         assert "valid request" in mocked_testbot.pop_message()
         assert "access request" in mocked_testbot.pop_message()
         assert "Granting" in mocked_testbot.pop_message()
+
+    def test_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason 1 reason")
+        assert "valid request" in mocked_testbot_with_reason_template.pop_message()
+        assert "access request" in mocked_testbot_with_reason_template.pop_message()
+
+    def test_fail_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_reason_template.pop_message()
+        assert "provide a valid reason" in request_message
+        assert reason_template in request_message
+
+    def test_fail_access_command_with_reason_template(self, mocked_testbot_with_reason_template):
+        mocked_testbot_with_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_reason_template.pop_message()
+        assert "provide a valid reason" in request_message
+        assert reason_template in request_message
+
+    def test_fail_access_command_with_wrong_reason_template(self, mocked_testbot_with_wrong_reason_template):
+        mocked_testbot_with_wrong_reason_template.push_message(f"access to Xxx --reason reason")
+        request_message = mocked_testbot_with_wrong_reason_template.pop_message()
+        assert "template was defined, but it\'s invalid" in request_message
+
+    def test_access_command_with_reason_template_and_duration(self, mocked_testbot_with_required_reason_template_and_duration):
+        mocked_testbot_with_required_reason_template_and_duration.push_message(f"access to Xxx --reason 1 reason --duration 1m")
+        mocked_testbot_with_required_reason_template_and_duration.push_message(f"yes {access_request_id}")
+        assert "valid request" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+        assert "access request" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+        assert "Granting" in mocked_testbot_with_required_reason_template_and_duration.pop_message()
+
 
 class Test_access_flow_from_access_form(ErrBotExtraTestSettings):
     @pytest.fixture
@@ -691,7 +783,7 @@ class Test_alternative_email(ErrBotExtraTestSettings):
         config['SENDER_EMAIL_OVERRIDE'] = None
         testbot.bot.sender.userid = 'XXX'
         testbot.bot.find_user_profile = MagicMock(return_value=mocked_user_profile)
-        return inject_config(testbot, config)
+        return inject_config(testbot, config, account_email=alternative_email)
 
     def test_alternative_email(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -709,7 +801,7 @@ class Test_override_email(ErrBotExtraTestSettings):
     def mocked_testbot(self, testbot):
         config = create_config()
         config['SENDER_EMAIL_OVERRIDE'] = self.override_email
-        return inject_config(testbot, config)
+        return inject_config(testbot, config, account_email=self.override_email)
 
     def test_override_email(self, mocked_testbot):
         mocked_testbot.push_message("access to Xxx")
@@ -730,7 +822,7 @@ class Test_email_subaddress(ErrBotExtraTestSettings):
         config['SENDER_EMAIL_OVERRIDE'] = None
         config['SENDER_NICK_OVERRIDE'] = None
         config['EMAIL_SUBADDRESS'] = self.email_subaddress
-        return inject_config(testbot, config, admins=[f'@{account_name}'])
+        return inject_config(testbot, config, admins=[f'@{account_name}'], account_email=self.account_name_with_subaddress)
 
     def test_email_subaddress(self, mocked_testbot):
         mocked_testbot._bot.callback_message = MagicMock(side_effect=callback_message_fn(
@@ -1058,7 +1150,7 @@ class Test_access_request_renewal(ErrBotExtraTestSettings):
 
 # pylint: disable=dangerous-default-value
 def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources_by_role=[], account_grant_exists=False,
-                  resources=[], account_tags={}):
+                  resources=[], account_tags={}, account_email=account_name):
     accessbot = testbot.bot.plugin_manager.plugins['AccessBot']
     accessbot.config = config
     # The default implementation is not compatible with the backend identifier.
@@ -1067,8 +1159,9 @@ def inject_config(testbot, config, admins=["gbin@localhost"], tags={}, resources
     accessbot.get_admins = MagicMock(return_value=admins)
     accessbot.get_api_access_key = MagicMock(return_value="api-access_key")
     accessbot.get_api_secret_key = MagicMock(return_value="c2VjcmV0LWtleQ==")  # valid base64 string
-    accessbot.get_sdm_service = MagicMock(
-        return_value=create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags))
+    accessbot.get_sdm_service = MagicMock(return_value=create_sdm_service_mock(
+        tags, resources_by_role, account_grant_exists, resources, account_tags, account_email=account_email
+    ))
     accessbot.get_resource_grant_helper = MagicMock(return_value=create_resource_grant_helper(accessbot))
     accessbot.get_approve_helper = MagicMock(return_value=create_approve_helper(accessbot))
     testbot._bot.init_access_form_bot = MagicMock(return_value=None)
@@ -1082,13 +1175,13 @@ def create_resource_grant_helper(accessbot):
 def create_approve_helper(accessbot):
     return ApproveHelper(accessbot)
 
-def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags):
+def create_sdm_service_mock(tags, resources_by_role, account_grant_exists, resources, account_tags, account_email=account_name):
     mock = MagicMock()
     if len(resources) > 0:
         mock.get_resource_by_name = MagicMock(side_effect=raise_no_resource_found)
     else:
         mock.get_resource_by_name = MagicMock(return_value=create_resource_mock(tags))
-    mock.get_account_by_email = MagicMock(return_value=create_account_mock(account_tags=account_tags))
+    mock.get_account_by_email = MagicMock(return_value=create_account_mock(account_tags=account_tags, account_email=account_email))
     mock.grant_temporary_access = MagicMock()
     mock.get_all_resources_by_role = MagicMock(return_value=resources_by_role)
     mock.account_grant_exists = MagicMock(return_value=account_grant_exists)
