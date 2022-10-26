@@ -1,6 +1,7 @@
 import shortuuid
 from abc import ABC, abstractmethod
 
+from ..platform.ms_teams_platform import MSTeamsPlatform
 from ..util import get_approvers_channel
 
 

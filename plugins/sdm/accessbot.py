@@ -484,3 +484,6 @@ class AccessBot(BotPlugin):
 
     def user_is_member_of_channel(self, user, channel):
         return self.__platform.user_is_member_of_channel(user, channel)
+
+    def get_platform(self):
+        return self.__platform
