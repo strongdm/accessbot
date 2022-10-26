@@ -42,7 +42,7 @@ Note: If you don't have a File System ID, click on [Amazon EFS console](https://
 
 ![image](https://user-images.githubusercontent.com/49597325/181516509-37418164-2dc4-4f71-a7c3-2fdc4de26e5a.png)
 
-Note: The `SDM_ENABLE_BOT_STATE_HANDLING` is essential if you want to use manual approvals. For more information, please refer to the [CONFIGURE_ACCESSBOT](../configure_accessbot/CONFIGURE_ACCESSBOT.md#bot-configuration) docs
+Note: The `SDM_ENABLE_BOT_STATE_HANDLING` is essential if you want to use manual approvals. For more information, please refer to the [CONFIGURE_ACCESSBOT](../slack/CONFIGURE_ACCESSBOT.md#bot-configuration) docs
 
 10. In the `Storage and Logging` section, select the created volume and type "/errbot/data/grant_requests" in the `Container Path`
 

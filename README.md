@@ -64,7 +64,7 @@ Refer to [this docs](./docs/deploy/INFRASTRUCTURES.md) to learn more about the A
 
 ### Using disposable containers
 
-If you're using technologies that dispose containers, e.g. [Fargate](https://aws.amazon.com/fargate/), and manual approvals, you should enable state handling via `SDM_ENABLE_BOT_STATE_HANDLING` to persist manual grant requests. Please refer to the [documentation](docs/configure_accessbot/CONFIGURE_ACCESSBOT.md#bot-configuration) for more details of this variable.
+If you're using technologies that dispose containers, e.g. [Fargate](https://aws.amazon.com/fargate/), and manual approvals, you should enable state handling via `SDM_ENABLE_BOT_STATE_HANDLING` to persist manual grant requests. Please refer to the [documentation](docs/slack/CONFIGURE_ACCESSBOT.md#bot-configuration) for more details of this variable.
 
 To make the persistency work in this scenario, you need to mount a folder pointing to the path `/errbot/data/grant_requests` inside the container. This folder will store the grant requests state, persisting the data while the containers are disposed and redeployed.
 
