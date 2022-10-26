@@ -105,3 +105,11 @@ class MSTeamsPlatform(BasePlatform):
     def user_is_member_of_channel(self, user, channel):
         channel_members = self._bot._bot.conversation_members(channel)
         return user.userid in map(lambda identifier: identifier.userid, channel_members)
+
+    def get_whoami_user_info(self, identifier):
+        if not self.use_alternative_emails():
+            return ''
+        info = '- Azure AD alternative emails: '
+        info += ', '.join(self._bot._bot.get_other_emails_by_aad_id(identifier.useraadid))
+        info += '\n'
+        return info

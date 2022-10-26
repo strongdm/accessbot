@@ -485,5 +485,8 @@ class AccessBot(BotPlugin):
     def user_is_member_of_channel(self, user, channel):
         return self.__platform.user_is_member_of_channel(user, channel)
 
+    def get_platform_whoami_user_info(self, identifier):
+        return self.__platform.get_whoami_user_info(identifier)
+
     def get_platform(self):
         return self.__platform

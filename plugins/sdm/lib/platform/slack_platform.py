@@ -85,3 +85,6 @@ class SlackPlatform(BasePlatform):
     def user_is_member_of_channel(self, user, channel):
         channel_members = self._bot._bot.conversation_members(channel)
         return user.userid in channel_members
+
+    def get_whoami_user_info(self, _):
+        return ''

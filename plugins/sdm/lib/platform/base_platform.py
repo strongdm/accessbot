@@ -87,3 +87,7 @@ class BasePlatform(ABC):
     @abstractmethod
     def user_is_member_of_channel(self, user, channel):
         pass
+
+    @abstractmethod
+    def get_whoami_user_info(self, identifier):
+        pass
