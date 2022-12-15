@@ -29,6 +29,10 @@ There are a number of variables you can use for configuring AccessBot. Here you 
 * **LOG_LEVEL**. Logging level. Default = INFO
 * **SDM_DOCKERIZED**. Logging type. Default = true (_when using docker_), meaning logs go to STDOUT
 * **SDM_COMMANDS_ENABLED**. AccessBot commands to be enabled. Default = `access_resource assign_role show_resources show_roles approve deny`. You could also specify aliases for specific commands. In that case, only add `:alias` after the command name, for example: `access_resource:acres show_resources:sares`.
+* **SDM_SLACK_CONVERSATIONS_TYPES**. Configure slack conversations (channels) types to pull using the endpoint [conversations.list](https://api.slack.com/methods/conversations.list). Default = public_channel,private_channel
+* **SDM_SLACK_USERS_PAGE_LIMIT**. Configure page limit to be used when pulling users from slack. Default = 500
+* **SDM_SLACK_CONVERSATIONS_PAGE_LIMIT**. Configure page limit to be used when pulling conversations/channels from slack. Default = 500
+* **SDM_SLACK_CACHE_TTL_SECONDS**. Configure cache time-to-live in seconds. Default = 4 * 60 * 60 = 4 hours
 
 ## Bot configuration
 The following variables can be changed at runtime via Slack or MS Teams -by a bot admin- using the `plugin config AccessBot {}` command.
