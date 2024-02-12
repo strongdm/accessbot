@@ -1,12 +1,40 @@
 # AccessBot
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/strongdm/accessbot)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/strongdm/accessbot/accessbot?label=tests)
 
-**Thank you for your interest in AccessBot. As a result of the positive feedback we have received about the AccessBot project, we want to further invest in our core product offering to deliver functionality that will address similar challenges. We will give time and attention to the development of these feature sets over the next few quarters.**
+---
 
-**In the meantime,  we are freezing the current version of [AccessBot v2.0.78](https://github.com/strongdm/accessbot/releases/tag/2.0.78) and have halted any non-critical bug fixes. We’ll continue to support the existing version while we work to build out the core product to meet similar use cases to those that AccessBot serves. Let us know if you have any questions about how this might impact you or the projects you are working on.**
+## Important Notice: AccessBot End-of-Life and Alternatives
 
-*The Slack Classic implementation has been deprecated. In case you're still using it, please migrate ASAP to the [Slack Bolt implementation](https://github.com/strongdm/accessbot/blob/main/docs/slack/CONFIGURE_SLACK.md).*
+Thank you for your interest in AccessBot. While we appreciate the positive feedback it has received, we have decided to **discontinue development and support for AccessBot** in favor of focusing on our core product offerings.
+
+**AccessBot has been superseded by "Integration for Slack,"** included within the StrongDM Enterprise Bundle and paired with the "Access Workflows" feature. This integration provides similar functionality to AccessBot, allowing users to easily manage access requests and approvals directly within Slack.
+
+### Here's what this means for you:
+
+- Latest release of AccessBot v2.0.79 will continue to function as long as the Slack API has no changes, but no further development or bug fixes will be implemented.
+- No further Support will be provided for accessbot issues. Troubleshooting page linked below can be of help.
+- We recommend transitioning to the "Integration for Slack" as your primary tool for managing access requests.
+- If you have any questions or concerns about this transition, please don't hesitate to contact us.
+
+We're excited about the possibilities that "Integration for Slack" and "Access Workflows" offer, and we believe they represent a significant improvement over AccessBot. We hope you'll explore these features and see how they can benefit your organization.
+
+### Additional Resources:
+
+- StrongDM Enterprise Bundle: https://www.strongdm.com/pricing/
+- Access Workflows: https://www.strongdm.com/docs/admin/workflows/
+- Integration for Slack: https://www.strongdm.com/docs/admin/workflows/slack/
+- Accessbot troubleshooting: https://strongdm.github.io/accessbot/docs/TROUBLESHOOTING.html
+
+### Thank you for your understanding.
+
+Sincerely,<br>
+The StrongDM Team
+
+---
+
+## Legacy information
+
+> The Slack Classic implementation has been deprecated. In case you're still using it, please migrate ASAP to the [Slack Bolt implementation](https://github.com/strongdm/accessbot/blob/main/docs/slack/CONFIGURE_SLACK.md).*
 
 AccessBot is a chatbot that manages access to strongDM (SDM) resources through temporary grants. 
 Some main features are: 
@@ -142,4 +170,3 @@ In case you want to contribute to the project, please check our [guidelines](CON
 
 ## Support
 In case you need support, please check our [Frequently Asked Questions](docs/FAQ.md) and [support](SUPPORT.md) documents.
-
