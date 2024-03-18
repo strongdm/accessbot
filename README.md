@@ -135,6 +135,7 @@ You would expect to see no error in your logs and the messages **Yes I am alive*
 
 If that's the case, enter any of the following commands:
 * `help`. Show available commands 
+* `whoami`. Show the user profile and the SDM Account details
 * `show available resources [--filter expression]`. Show available resources - all or a filtered subset. Filters are optional. 
 Please refer to the following [doc](https://www.strongdm.com/docs/automation/getting-started/filters) for getting the list of available filters.
 * `access to resource-name [--reason text] [--duration duration]`. Grant temporary access to a resource. Reason and Duration are optional.

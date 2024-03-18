@@ -1,6 +1,5 @@
 # Frequently Asked Questions
 
-
 ## Can a user request and grant access to resources to themselves? (like in the gif)
 Not really, what you see in the gif happens because the requester is the bot admin. The normal flow is actually what you’d expect: user x requests access, and users y or z (bot admins) approve.
 You might want to take a look at the [ACCESS_CONFIGURATION](ACCESS_CONFIGURATION.md) - _specially the possible workflows_
@@ -23,3 +22,6 @@ Invite AccessBot to your private channel and add the scope `usergroups:read` to 
 
 ## How can I get my AccessBot version?
 Send the following direct message to the Bot: `plugin config AccessBot`
+
+## How can I get my profile details?
+Send the following direct message to the Bot: `whoami`. It'll show you the details of your Slack account and SDM Account.
